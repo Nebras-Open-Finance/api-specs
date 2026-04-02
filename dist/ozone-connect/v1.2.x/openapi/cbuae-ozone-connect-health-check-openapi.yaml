@@ -1,0 +1,192 @@
+openapi: 3.0.1
+
+info:
+  title: Ozone Connect - Health Check APIs
+  contact:
+    name: Ozone Financial Technology Limited
+  description: |
+    This document provides the OAS3 specification for Health Check APIs for Ozone Connect.
+
+    These APIs should be implemented by an financial institution so that Ozone
+    can ensure that the institution's Ozone Connect implementation is up and running.
+
+    Please refer to the API Hub documentation for details of test cases that are 
+    available for this API using the Ozone Connect test suite.
+
+    ### Changes in Version 2025.10
+
+    * Corrected Schema Object definitions to ensure compatibility with ajv.
+
+    ### Changes in Version 2025.06.0
+
+    * Added Security Requirements as Ozone Connect API design guidelines.
+
+    * Added `default` response to all API operations as per Ozone Connect API design 
+      guidelines. This prescribes an error response structure that should be used but 
+      does not mandate the HTTP status code to be used, leaving this at the discretion 
+      of the implementer.
+
+    * Removed test case guidance and references from the API description as now 
+      maintained on a API Hub documentation page.
+
+  version: "2025.10"
+
+servers:
+  - url: https://<your-ozone-connect-server>
+
+tags:
+  - name: health-check
+    description: APIs that should be implemented by Financial Institutions to expose health check 
+      operations
+
+security:
+  - {}
+
+paths:
+  /hello:
+    get:
+      operationId: hello
+      summary: check connectivity without a mutual tls check
+      tags:
+        - health-check
+      description:
+        Check connectivity without a mutual tls CheckDetails.
+
+        This health check is used to check that the end-to-end network connectivity is working as expected. This is a simple health check that does not require mutual TLS.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck200Response'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /hello-mtls:
+    get:
+      operationId: helloMtls
+      summary: check connectivity including mtls
+      tags:
+        - health-check
+      description:
+        Check connectivity including mutual TLS CheckDetails.
+
+        This health check is used to check that the end-to-end network connectivity is working as expected including mutual tls.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck200Response'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+  /echo-cert:
+    get:
+      operationId: echoCert
+      tags:
+        - health-check
+      summary: Provides information about the client cert that the server received
+      description:
+        This health check endpoint assists in debugging mutual tls client issues.
+
+        The health check returns information about the client certificate and the issuer of the client certificate that the server received.
+
+        Where mtls cannot be established, the server will return a 401 response.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckCertResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+
+components:
+  responses:
+    UnauthorizedResponse:
+      description: Unauthorized response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HealthCheck4xxResponse'
+    DefaultErrorResponse:
+      description: Default error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HealthCheck4xxResponse'
+  schemas:
+    HealthCheck200Response:
+      type: object
+      description:
+        Succesful response on a health check
+      properties:
+        connectionEstablished:
+          type: boolean
+
+        mtlsStatus:
+          type: string
+          enum:
+            - established
+            - not-established
+            - not-checked
+
+        hostName:
+          type: string
+
+      required:
+        - connectionEstablished
+        - mtlsStatus
+        - hostName
+
+    HealthCheck4xxResponse:
+      type: object
+      description:
+        Response when connection could not be established
+      properties:
+        errorMessage:
+          type: string
+
+      required:
+        - errorMessage
+
+    HealthCheckCertResponse:
+      type: object
+      properties:
+        connectionEstablished:
+          type: boolean
+
+        mtlsStatus:
+          type: string
+          enum:
+            - established
+            - not-established
+
+        hostName:
+          type: string
+
+        clientCertificate:
+          type: object
+          properties:
+            subject:
+              type: string
+
+            issuer:
+              type: string
+          required:
+            - subject
+            - issuer
+
+      required:
+        - connectionEstablished
+        - mtlsStatus
+        - hostName
+        - clientCertificate

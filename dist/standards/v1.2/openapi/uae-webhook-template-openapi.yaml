@@ -1,0 +1,193 @@
+openapi: 3.0.0
+info: 
+  description: OpenAPI description provided **as a template** for guidance in implementing Webhooks under the UAE Open Finance Programme.
+  title: UAE Webhook Template
+  version: v1.2
+servers:
+  - url: "{hostUrl}"
+    description: Template URL on which Webhook is published
+    variables:
+      hostUrl:
+        default: "https://example.com"
+        description: The URL on which the Webhook is hosted. This is indicative and use as a templating mechanism in this OpenAPI description. TPPs must implement the Webhook on a URL of their choice
+paths:
+  /:
+    post:
+      summary: Event Notification Template
+      description: |
+        This endpoint provides a template for the implementation of Webhooks at a TPP. A 204 HTTP return code with an empty payloadz is expected in acknowledgement of receipt
+      operationId: EventNotification
+      requestBody: 
+        content:
+          application/jwt:
+            schema:
+              $ref: "#/components/schemas/AEWebhookEventSigned"
+      responses:
+        '204':
+          description: Event notification acknowledgement. No further attempts to deliver the event will be made.
+        default:
+          description: Any other responses will be considered an error and must follow the standards format
+          content:
+            application/jwt:
+              schema:
+                $ref: "#/components/schemas/AEErrorResponseSigned"
+      security: 
+        - LFIWebhookSecurity: []
+components:
+  securitySchemes:
+    LFIWebhookSecurity:
+      type: http
+      description: "A JWT minted by the event notifier that will be validated by the TPP"
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AEJwt:
+      description: |
+        [https://www.rfc-editor.org/rfc/rfc7519](https://www.rfc-editor.org/rfc/rfc7519)
+      type: "object"
+      properties:
+        iss:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)
+          type: string
+        exp:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)
+          type: number
+        nbf:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
+          type: number
+        aud:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+          type: array
+          items:
+            type: string
+        iat:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)
+          type: number
+      required: [iss, exp, nbf]
+    AEError:
+        description: "Error"
+        type: "object"
+        required:
+          - "Code"
+          - "Message"
+        additionalProperties: false
+        minProperties: 1
+        properties:
+          Code:
+            description: "Low level textual error code"
+            type: "string"
+            enum:
+              - "AccessToken.Unauthorized"
+              - "AccessToken.InvalidScope"
+              - "Consent.TransientAccountAccessFailure"
+              - "Consent.AccountTemporarilyBlocked"
+              - "Consent.PermanentAccountAccessFailure"
+              - "Consent.Invalid"
+              - "Consent.BusinessRuleViolation"
+              - "Consent.FailsControlParameters"
+              - "Consent.InvalidUserIdentifier"
+              - "JWS.InvalidSignature"
+              - "JWS.Malformed"
+              - "JWS.InvalidClaim"
+              - "JWS.InvalidHeader"
+              - "JWE.DecryptionError"
+              - "JWE.InvalidHeader"
+              - "GenericRecoverableError"
+              - "GenericError"
+              - "Event.UnexpectedEvent"
+              - "Body.InvalidFormat"
+              - "Resource.InvalidResourceId"
+              - "Resource.InvalidFormat"
+          Message:
+            description: Error description provided for diagnostic purposes
+            type: string
+            minLength: 1
+            maxLength: 500
+          Path:
+            description: "Recommended but optional reference to the JSON Path of the field with error, e.g., Data.Initiation.InstructedAmount.Currency"
+            type: "string"
+            minLength: 1
+            maxLength: 500
+          Url:
+            description: "URL to help remediate the problem, or provide more information, or to API Reference, or help etc"
+            type: "string"
+    AEErrorResponse:
+        description: "An array of detail error codes, and messages, and URLs to documentation to help remediation."
+        type: "object"
+        properties:
+          Errors:
+            items:
+              $ref: "#/components/schemas/AEError"
+            type: "array"
+            minItems: 1
+        required:
+          - "Errors"
+        additionalProperties: false
+    AEErrorResponseSigned:
+      description: |
+        Error Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEErrorResponse"
+          required: [message]
+    AEWebhookEvent:
+      type: "object"
+      description: "Webhook Event"
+      required:
+        - Data
+        - Meta
+      properties:
+        Data:
+          type: "object"
+          description: "Event Data. This Data Object will contain the same API resource and Schema that has triggered the Event."
+        Meta:
+          type: "object"
+          description: "Event Metadata"
+          required:
+            - "EventDateTime"
+            - "EventResource"
+            - "EventType"
+            - "ConsentId"
+          properties:
+            EventDateTime:
+              type: "string"
+              format: "date-time"
+              description: "Date Time of the first Event in the Message"
+            EventResource:
+              type: "string"
+              description: "The API resource to which the Event itself is associated"
+              example: ""
+            EventType:
+              type: "string"
+              enum:
+                [
+                  "Resource.Created",
+                  "Resource.Updated",
+                  "Resource.Deleted",
+                ]
+              description: "The Type of Event"
+            ConsentId:
+              description: "Unique identification as assigned to identify the consents resource."
+              type: "string"
+              minLength: 1
+              maxLength: 128
+          additionalProperties: false
+      additionalProperties: false
+    AEWebhookEventSigned:
+      description: |
+        Webhook Event Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEWebhookEvent"
+          required: [message]

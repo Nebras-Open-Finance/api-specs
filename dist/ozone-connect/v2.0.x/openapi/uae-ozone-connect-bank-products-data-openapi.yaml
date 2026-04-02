@@ -1,0 +1,2535 @@
+openapi: 3.0.1
+info:
+  title: Ozone Connect - Bank Products Data
+  contact:
+    name: Ozone Financial Technology Limited
+  description: >
+    This document provides an API description in [OpenAPI](https://spec.openapis.org/oas/v3.0.1.html)
+
+    for Bank Product Data APIs for Ozone Connect.
+
+
+    These APIs should be implemented by an financial institution so that Ozone
+
+    can expose the API operations to TPPs.
+
+
+    #### Implementer Notes
+
+
+    Implementers should note that this API prescribes a positive response for correctly executed
+
+    operations including those where no data is returned. This is consistent with the general principles
+
+    of REST.
+
+
+    Please refer to the API Hub documentation for details of test cases that are 
+
+    available for this API using the Ozone Connect test suite.
+
+
+    ### Versioning
+
+
+    The `version` property implements the following pattern
+    `{standards-major}.{standards-minor}.{ozone-connect-version}`, where:
+
+
+    * `standards-major` is the major version of the latest UAE standard that the API description implements.
+
+    * `standards-minor` is the minor version of the latest UAE standard that the API description implements.
+
+    * `ozone-connect-version` is the version of the Ozone Connect API description.
+
+
+    So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
+    standard version 2.0.
+
+    ### v2.0.4
+
+    * Changed `Floor` to include explicit string declaration.
+
+    ### v2.0.3
+
+    * Changed `ResidentialAddress` to match prescribed format.
+
+    ### v2.0.2
+
+    * Changed `o3-caller-interaction-id` to be an optional header field.
+
+    ### v2.0.1
+
+    * Added new error code structures supported from version 2.0 onwards.
+
+
+    * Changed requirement for `x-fapi-customer-ip-address` header field to `true`
+
+
+    * Removed version history prior to this version to prevent bloat of OpenAPI description.
+  version: v2.0.4
+servers:
+  - url: https://<your-ozone-connect-server>
+tags:
+  - name: Products
+    description: Product resource
+  - name: Leads
+    description: Lead resource
+security:
+  - {}
+  - OzoneConnectApiKey: []
+  - OzoneConnectClientCredentials:
+      - placeholder
+  - OzoneConnectJwtAuth: []
+paths:
+  /products:
+    get:
+      tags:
+        - Products
+      operationId: GetProducts
+      summary: Retrieve Products
+      description: Retrieve all Products
+      parameters:
+        - name: ProductCategory
+          in: query
+          description: Filter by product category
+          required: false
+          schema:
+            type: string
+            enum:
+              - SavingsAccount
+              - CurrentAccount
+              - CreditCard
+              - Loan
+              - Mortgage
+        - name: IsShariaCompliant
+          in: query
+          description: Filter by Sharia compliance
+          required: false
+          schema:
+            type: boolean
+        - name: LastUpdatedDateTime
+          in: query
+          description: Filter by last updated date time
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: SortOrder
+          in: query
+          description: Order of sorting the results
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: SortField
+          in: query
+          description: Field to sort the results by
+          required: false
+          schema:
+            type: string
+            enum:
+              - LastUpdatedDateTime
+              - ProductId
+            default: LastUpdatedDateTime
+        - $ref: '#/components/parameters/providerId'
+        - $ref: '#/components/parameters/callerOrgId'
+        - $ref: '#/components/parameters/callerClientId'
+        - $ref: '#/components/parameters/callerSoftwareStatementId'
+        - $ref: '#/components/parameters/apiUri'
+        - $ref: '#/components/parameters/apiOperation'
+        - $ref: '#/components/parameters/callerInteractionId'
+        - $ref: '#/components/parameters/ozoneInteractionId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page-size'
+        - $ref: '#/components/parameters/x-fapi-customer-ip-address'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '401':
+          $ref: '#/components/responses/NotAuthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+        default:
+          $ref: '#/components/responses/errorResponse'
+  /leads:
+    post:
+      tags:
+        - Leads
+      summary: Create a Lead
+      description: |
+        Create a Lead
+      operationId: CreateLead
+      parameters:
+        - $ref: '#/components/parameters/providerId'
+        - $ref: '#/components/parameters/callerOrgId'
+        - $ref: '#/components/parameters/callerClientId'
+        - $ref: '#/components/parameters/callerSoftwareStatementId'
+        - $ref: '#/components/parameters/apiUri'
+        - $ref: '#/components/parameters/apiOperation'
+        - $ref: '#/components/parameters/callerInteractionId'
+        - $ref: '#/components/parameters/ozoneInteractionId'
+        - $ref: '#/components/parameters/x-fapi-customer-ip-address'
+      requestBody:
+        description: |
+          Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/201LeadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '401':
+          $ref: '#/components/responses/NotAuthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+        default:
+          $ref: '#/components/responses/errorResponse'
+components:
+  schemas:
+    ProductResponse:
+      type: object
+      description: |
+        Product Response
+      properties:
+        data:
+          description: |
+            Products response
+          type: array
+          items:
+            type: object
+            required:
+              - LFIId
+              - LFIBrandId
+              - Products
+            properties:
+              LFIId:
+                type: string
+                description: The unique identifier for the LFI within the CBUAE ecosystem
+              LFIBrandId:
+                type: string
+                description: The unique identifier for the LFI Brand within the CBUAE ecosystem
+              Products:
+                type: array
+                description: The Product array can contain one or more products associated to a single LFI
+                items:
+                  $ref: '#/components/schemas/Product'
+    Product:
+      type: object
+      description: The Product information
+      required:
+        - ProductId
+        - ProductName
+        - ProductCategory
+      properties:
+        ProductId:
+          type: string
+          description: >-
+            A data holder specific unique identifier for this product. This identifier must be unique to a product but
+            does not otherwise need to adhere to ID permanence guidelines.
+        ProductName:
+          type: string
+          description: The display name of the product.
+          example: Savings Account
+        ProductCategory:
+          type: string
+          description: The type of Banking product
+          enum:
+            - SavingsAccount
+            - CurrentAccount
+            - CreditCard
+            - Loan
+            - Mortgage
+        Description:
+          description: >-
+            A human-readable description of the product that can be displayed to the User for marketing and information
+            purposes.
+          type: string
+        EffectiveFromDateTime:
+          description: >-
+            The date and time from which this product is effective (i.e. is available for origination). Used to enable
+            the articulation of products to the regime before they are available for customers to originate.
+          type: string
+          format: date-time
+        EffectiveToDateTime:
+          description: >-
+            The date and time at which this product will be retired and will no longer be offered. Used to enable the
+            managed deprecation of products.
+          type: string
+          format: date-time
+        LastUpdatedDateTime:
+          description: >-
+            The last date and time that the information for this product was changed (or the creation date for the
+            product if it has never been altered).
+          type: string
+          format: date-time
+        IsShariaCompliant:
+          type: boolean
+          description: Indicates whether the product is Sharia-compliant.
+        ShariaInformation:
+          type: string
+          description: The description of the Sharia compliance information.
+        IsSalaryTransferRequired:
+          type: boolean
+          description: >-
+            Does the Consumer need to pay their salary into a current account provided by the LFI to be able to open
+            this product.
+        Links:
+          $ref: '#/components/schemas/Links'
+        Eligibility:
+          $ref: '#/components/schemas/Eligibility'
+        Channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Channel'
+        Product:
+          $ref: '#/components/schemas/ProductDetails'
+    Links:
+      description: Links to the Product details
+      type: object
+      properties:
+        ApplicationUri:
+          description: A link to apply for the product.
+          type: string
+          format: uri
+        ApplicationPhoneNumber:
+          description: A phone number to apply for the product.
+          type: string
+        ApplicationEmail:
+          description: An email address to apply for the product.
+          type: string
+        ApplicationDescription:
+          description: >-
+            A free text description of the application process for the product, with ways to contact the LFI if
+            applicable.
+          type: string
+        KfsUri:
+          description: A link to the Key Facts Statement for the product
+          type: string
+          format: uri
+        OverviewUri:
+          description: A link to a general overview of the product.
+          type: string
+          format: uri
+        TermsUri:
+          description: A link to the Terms and conditions for the product.
+          type: string
+          format: uri
+        FeesAndPricingUri:
+          description: A link to the Fees and Pricing for the product.
+          type: string
+          format: uri
+        ScheduleOfChargesUri:
+          description: A link to the Schedule of Charges for the product.
+          type: string
+          format: uri
+        EligibilityUri:
+          description: A link to the Eligibility for the product.
+          type: string
+          format: uri
+        CardImageUri:
+          description: A link to the Card Image for the product.
+          type: string
+          format: uri
+    Eligibility:
+      type: object
+      description: |
+        The eligibility criteria for the product.
+      properties:
+        ResidenceStatus:
+          description: |
+            The residence statuses of the User - that are eligible for the product.
+          type: array
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of residence status eligible for the product.
+                enum:
+                  - UaeResident
+                  - ExpatriatesResident
+                  - GCCNational
+                  - NonUaeResident
+              Description:
+                type: string
+                description: |
+                  The description of the residence status eligible for the product.
+          example:
+            - Type: UaeResident
+              Description: A person who is a resident of the United Arab Emirates.
+        EmploymentStatus:
+          description: |
+            The employment statuses of the User - that are eligible for the product.
+          type: array
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of employment status eligible for the product.
+                enum:
+                  - Salaried
+                  - NonSalaried
+                  - EligibleEmployer
+                  - SelfEmployed
+                  - Unemployed
+                  - MinimumSalary
+              Description:
+                type: string
+                description: |
+                  The description of the employment status eligible for the product.
+        CustomerType:
+          description: |
+            The customer types of the User - that are eligible for the product.
+          type: array
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of customer type eligible for the product.
+                enum:
+                  - Retail
+                  - SME
+                  - Corporate
+                  - New
+                  - Existing
+              Description:
+                type: string
+                description: |
+                  The description of the customer type eligible for the product.
+        AccountOwnership:
+          description: |
+            The account ownership types of the User - that are eligible for the product.
+          type: array
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of account ownership eligible for the product.
+                enum:
+                  - Individual
+                  - Joint
+                  - Multi
+              Description:
+                type: string
+                description: |
+                  The description of the account ownership eligible for the product.
+        Age:
+          description: |
+            The age of the User - that are eligible for the product.
+          type: array
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                description: The type of age eligibility criteria.
+                enum:
+                  - MinimumAge
+                  - MaximumAge
+              Description:
+                type: string
+                description: The description of the age eligibility criteria.
+              Value:
+                type: number
+                description: The value of the age eligibility criteria.
+        AdditionalEligibility:
+          description: |
+            Additional eligibility criteria for the product.
+          type: array
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                enum:
+                  - Student
+                  - UaeArmedForces
+                  - TimeInCountry
+                  - Other
+                description: The type of eligibility criteria.
+              Description:
+                type: string
+                description: The description of the eligibility criteria.
+    Channel:
+      type: object
+      description: |
+        The channels through which the User can use the product.
+      properties:
+        Type:
+          type: string
+          description: |
+            The type of channel through which the User can use the product.
+          enum:
+            - Phone
+            - Internet
+            - MobileApp
+            - Branch
+            - RelationshipManager
+            - Other
+        Description:
+          type: string
+          description: |
+            The description of the channel through which the User can use the product.
+    ProductDetails:
+      type: object
+      description: |
+        The product type specific details for the product.
+      properties:
+        CurrentAccount:
+          $ref: '#/components/schemas/CurrentAccountDetails'
+        SavingsAccount:
+          $ref: '#/components/schemas/SavingsDetails'
+        CreditCard:
+          $ref: '#/components/schemas/CreditCardDetails'
+        PersonalLoan:
+          $ref: '#/components/schemas/PersonalLoanDetails'
+        Mortgage:
+          $ref: '#/components/schemas/MortgageDetails'
+        ProfitSharingRate:
+          $ref: '#/components/schemas/ProfitSharingRateDetails'
+        FinanceProfitRate:
+          $ref: '#/components/schemas/FinanceProfitRateDetails'
+    CurrentAccountDetails:
+      type: object
+      description: >
+        The details specific to a current account product. When ProductCategory is "CurrentAccount" the CurrentAccount
+        object must also be returned
+      properties:
+        Type:
+          description: |
+            The type of current account product.
+          type: string
+          enum:
+            - Basic
+            - Premium
+            - Advanced
+            - Other
+        Description:
+          type: string
+          description: |
+            The description of the current account product.
+        IsOverdraftAvailable:
+          type: boolean
+          description: |
+            Indicates whether the current account product has an overdraft facility.
+        Documentation:
+          type: array
+          description: |
+            A list of documents that are required by the LFI when applying for the current account product.
+          items:
+            type: object
+            description: |
+              A document that is required by the LFI when applying for the current account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of document required by the LFI when applying for the current account product.
+                enum:
+                  - ApplicationForm
+                  - IDCard
+                  - Passport
+                  - ResidenceVisa
+                  - ProofofAddress
+                  - UtilityBill
+                  - SalaryCertificate
+                  - SalarySlip
+                  - TradeLicence
+                  - BusinessOwnership
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the document required by the LFI when applying for the current account product.
+        Features:
+          type: array
+          description: |
+            A list of features of the current account product.
+          items:
+            type: object
+            description: |
+              A feature of the current account product.
+            properties:
+              Type:
+                description: |
+                  The type of additional current account feature.
+                type: string
+                enum:
+                  - IslamicBanking
+                  - IslamicFinance
+                  - DebitCard
+                  - MultipleCurrencies
+                  - DigitalWallet
+                  - ChequeBook
+                  - Cashback
+                  - ATMTransfers
+                  - FreeCashWithdrawal
+                  - FreeInternationalPayments
+                  - Contactless
+                  - CardlessATMWithdrawal
+                  - TellerTransactions
+                  - SMSNotifications
+                  - BillPayments
+                  - FundsTransfer
+                  - SalaryAdvance
+                  - WorldWideSupport
+                  - Other
+              Description:
+                description: |
+                  The description of the additional current account feature.
+                type: string
+        Fees:
+          type: array
+          description: |
+            A list of fees associated with the current account product.
+          items:
+            type: object
+            description: |
+              A fee associated with the current account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of fee.
+                enum:
+                  - MonthlyFees
+                  - AnnualFees
+                  - BalanceFallBelow
+                  - Overdraft
+                  - DomesticTransaction
+                  - ForeignTransaction
+                  - ATMWithdrawal
+                  - ChequeBook
+                  - ReplacementChequeBook
+                  - ReturnCheque
+                  - CardReplacement
+                  - AccountStatement
+                  - LetterIssued
+                  - Other
+              Period:
+                type: string
+                description: |
+                  The period of the fee.
+                enum:
+                  - Daily
+                  - Monthly
+                  - Yearly
+                  - OneOff
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the fee.
+              Description:
+                type: string
+                description: |
+                  The description of the fee.
+              Unit:
+                type: string
+                description: |
+                  The unit of the fee.
+                enum:
+                  - Amount
+                  - Percentage
+              Amount:
+                $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+              Percentage:
+                type: number
+                description: |
+                  The percentage of the fee.
+              UnitValue:
+                type: number
+                description: |
+                  The value of the fee in the unit of the fee.
+              MaximumUnitValue:
+                type: number
+                description: |
+                  The maximum value of the fee in the unit of the fee.
+        Limits:
+          type: array
+          description: |
+            A list of limits associated with the current account product.
+          items:
+            type: object
+            description: |
+              A limit of the current account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of limit.
+                enum:
+                  - MinimumDeposit
+                  - MinimumBalance
+                  - MaximiumWithdrawal
+                  - MaximumCashATMWithdrawal
+                  - MaximumInternationalATMWithdrawal
+                  - RetailDomesticPurchase
+                  - RetailInternationalPurchase
+                  - TellerTransactions
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the limit.
+              Value:
+                type: number
+                description: |
+                  The value of the limit.
+        Benefits:
+          type: array
+          description: |
+            A list of benefits associated with the current account product.
+          items:
+            type: object
+            description: |
+              A benefit associated with the current account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of benefit.
+                enum:
+                  - Cashback
+                  - RewardPoints
+                  - AirMiles
+                  - AirportLounge
+                  - RoadSideAssistance
+                  - Parking
+                  - WelcomeGifts
+                  - Discounts
+                  - InsuranceProtection
+                  - PurchaseProtection
+                  - Dining
+                  - Cinema
+                  - Golf
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the benefit.
+              Description:
+                type: string
+                description: |
+                  The description of the benefit.
+              Value:
+                type: number
+                description: |
+                  The value of the benefit.
+    SavingsDetails:
+      type: object
+      description: >
+        The details specific to a savings account product. When ProductCategory is "SavingsAccount" the SavingsAccount
+        object must also be returned
+      properties:
+        Type:
+          description: |
+            The type of savings account product.
+          type: string
+          enum:
+            - Savings
+            - OnlineSaver
+            - TermDeposit
+            - Notice
+            - Other
+        Description:
+          description: |
+            The description of the savings account product.
+          type: string
+        MinimumBalance:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        AnnualReturn:
+          description: |
+            The annual return of the savings account product expressed as a percentage.
+          type: number
+        Documentation:
+          type: array
+          description: |
+            A list of documents that are required by the LFI when applying for the savings account product.
+          items:
+            type: object
+            description: |
+              A document that is required by the LFI when applying for the savings account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of document required by the LFI when applying for the savings account product.
+                enum:
+                  - ApplicationForm
+                  - IDCard
+                  - Passport
+                  - ResidenceVisa
+                  - ProofofAddress
+                  - UtilityBill
+                  - SalaryCertificate
+                  - SalarySlip
+                  - TradeLicence
+                  - BusinessOwnership
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the document required by the LFI when applying for the product.
+        Features:
+          type: array
+          description: |
+            A list of features of the savings account product.
+          items:
+            type: object
+            description: |
+              A feature of the savings account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of feature.
+                enum:
+                  - IslamicBanking
+                  - IslamicFinance
+                  - DebitCard
+                  - MultipleCurrencies
+                  - ATMCard
+                  - FreeATMAccess
+                  - ChequeBook
+                  - CardlessChequeDeposit
+                  - CounterTransactions
+                  - MoneyTransfer
+                  - NoLockIn
+                  - SMSNotifications
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the feature.
+        Fees:
+          type: array
+          description: |
+            A list of fees associated with the savings account product.
+          items:
+            type: object
+            description: |
+              A fee associated with the savings account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of fee.
+                enum:
+                  - MonthlyFees
+                  - AnnualFees
+                  - BalanceFallBelow
+                  - DomesticTransaction
+                  - ForeignTransaction
+                  - ATMWithdrawal
+                  - ChequeBook
+                  - ReplacementChequeBook
+                  - ReturnCheque
+                  - CardReplacement
+                  - AccountStatement
+                  - LetterIssued
+                  - AccountClosure
+                  - Other
+              Period:
+                type: string
+                description: |
+                  The period of the fee.
+                enum:
+                  - Daily
+                  - Monthly
+                  - Yearly
+                  - OneOff
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the fee.
+              Description:
+                type: string
+                description: |
+                  The description of the fee.
+              Unit:
+                type: string
+                description: |
+                  The unit of the fee.
+                enum:
+                  - Amount
+                  - Percentage
+              Amount:
+                $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+              Percentage:
+                type: number
+                description: |
+                  The percentage of the fee.
+              UnitValue:
+                type: number
+                description: |
+                  The value of the fee in the unit of the fee.
+              MaximumUnitValue:
+                type: number
+                description: |
+                  The maximum value of the fee in the unit of the fee.
+        Limits:
+          type: array
+          description: |
+            A list of limits associated with the savings account product.
+          items:
+            type: object
+            description: |
+              A limit of the savings account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of limit.
+                enum:
+                  - MinimumOpeningBalance
+                  - MaximumBalance
+                  - MaximiumWithdrawal
+                  - MaximumCashATMWithdrawal
+                  - MaximumInternationalATMWithdrawal
+                  - MaximumTellerTransactions
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the limit.
+              Value:
+                type: number
+                description: |
+                  The value of the limit.
+        Benefits:
+          type: array
+          description: |
+            A list of benefits associated with the savings account product.
+          items:
+            type: object
+            description: |
+              A benefit associated with the savings account product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of benefit.
+                enum:
+                  - Cashback
+                  - DiscountOffers
+                  - RewardPoints
+                  - InsuranceProtection
+                  - LoyaltyMembership
+                  - ComplementaryServices
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the benefit.
+              Description:
+                type: string
+                description: |
+                  The description of the benefit.
+              Value:
+                type: number
+                description: |
+                  The value of the benefit.
+    CreditCardDetails:
+      type: object
+      description: >
+        The details specific to a credit card product. When ProductCategory is "CreditCard" the CreditCard object must
+        also be returned
+      properties:
+        Type:
+          description: |
+            The type of the credit card product.
+          enum:
+            - Visa
+            - Mastercard
+            - AmericanExpress
+            - Diners
+            - Other
+          type: string
+        Description:
+          description: |
+            The description of the credit card product.
+          type: string
+        Rate:
+          description: |
+            The Annual Percentage Rate (APR) that is displayed as the main rate.
+          type: number
+        Documentation:
+          type: array
+          description: |
+            A list of documents that are required by the LFI when applying for the credit card product.
+          items:
+            type: object
+            description: |
+              A document that is required by the LFI when applying for the credit card product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of document required by the LFI when applying for the product.
+                enum:
+                  - ApplicationForm
+                  - IDCard
+                  - Passport
+                  - ResidenceVisa
+                  - ProofofAddress
+                  - UtilityBill
+                  - BankStatement
+                  - SalaryCertificate
+                  - SalarySlip
+                  - TradeLicence
+                  - UndatedSecurityCheque
+                  - BusinessOwnership
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the document required by the LFI when applying for the product.
+        Features:
+          type: array
+          description: |
+            A list of features of the credit card product.
+          items:
+            type: object
+            description: |
+              A feature of the credit card product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of feature.
+                enum:
+                  - IslamicBanking
+                  - IslamicFinance
+                  - AdditionalCards
+                  - CoBrandedCard
+                  - BalanceTransfer
+                  - CashWithdrawal
+                  - InternationalPayments
+                  - FlexiblePaymentTerm
+                  - InstalmentPaymentPlans
+                  - InsuranceProtection
+                  - CreditShield
+                  - CardControl
+                  - PersonalisedCardDesign
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the feature.
+        Fees:
+          type: array
+          description: |
+            A list of fees associated with the credit card product.
+          items:
+            type: object
+            description: |
+              A fee associated with the credit card product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of fee.
+                enum:
+                  - AnnualFee
+                  - CashAdvance
+                  - LatePayment
+                  - BalanceTransfer
+                  - ForeignTransaction
+                  - OverLimit
+                  - CardReplacement
+                  - CardStatement
+                  - SalesVoucherCopy
+                  - LetterIssued
+                  - Other
+              Period:
+                type: string
+                description: |
+                  The period of the fee.
+                enum:
+                  - Daily
+                  - Monthly
+                  - Yearly
+                  - OneOff
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the fee.
+              Description:
+                type: string
+                description: |
+                  The description of the fee.
+              Unit:
+                type: string
+                description: |
+                  The unit of the fee.
+                enum:
+                  - Amount
+                  - Percentage
+              Amount:
+                $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+              Percentage:
+                type: number
+                description: |
+                  The percentage of the fee.
+              UnitValue:
+                type: number
+                description: |
+                  The value of the fee in the unit of the fee.
+              MaximumUnitValue:
+                type: number
+                description: |
+                  The maximum value of the fee in the unit of the fee.
+        Limits:
+          type: array
+          description: |
+            A list of limits associated with the credit card product.
+          items:
+            type: object
+            description: |
+              A limit of the credit card product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of limit.
+                enum:
+                  - MinimumCreditLimit
+                  - MaximumCreditLimit
+                  - MinimumRequiredCreditScore
+                  - MinimumSpend
+                  - MaximumCashATMWithdrawal
+                  - MaximumInternationalATMWithdrawal
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the limit.
+              Value:
+                type: number
+                description: |
+                  The value of the limit.
+        Benefits:
+          type: array
+          description: |
+            A list of benefits associated with the credit card product.
+          items:
+            type: object
+            description: |
+              A benefit associated with the credit card product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of benefit.
+                enum:
+                  - Cashback
+                  - RewardPoints
+                  - AirMiles
+                  - AirportLounge
+                  - AirportPickUps
+                  - RoadSideAssistance
+                  - WelcomeGifts
+                  - ShoppingDiscounts
+                  - DiningDiscounts
+                  - LoyaltyMembership
+                  - InsuranceProtection
+                  - PurchaseProtection
+                  - ConciergeServices
+                  - ValetParking
+                  - Cinema
+                  - Golf
+                  - Gym
+                  - Spa
+                  - BeachPoolAccess
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the benefit.
+              Description:
+                type: string
+                description: |
+                  The description of the benefit.
+              Value:
+                type: number
+                description: |
+                  The value of the benefit.
+    PersonalLoanDetails:
+      type: object
+      properties:
+        Type:
+          description: >
+            The type of the personal loan product. When ProductCategory is "PersonalLoan" the PersonalLoan object must
+            also be returned
+          type: string
+          enum:
+            - PersonalFinance
+            - DebtSettlement
+            - EducationFinance
+            - TravelFinance
+            - BoatFinance
+            - Other
+        Description:
+          description: |
+            The description of the personal loan product.
+          type: string
+        MinimumLoanAmount:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        MaximumLoanAmount:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        Tenure:
+          type: object
+          description: |
+            The tenure of the personal loan product.
+          properties:
+            MinimumLoanTenure:
+              description: |
+                The minimum loan tenure in months.
+              type: number
+            MaximumLoanTenure:
+              description: |
+                The maximum loan tenure in months.
+              type: number
+        CalculationMethod:
+          type: string
+          enum:
+            - FlatRate
+            - ReducingRate
+            - Profit
+            - Lease
+          description: >
+            For conventional home loans confirmation of the method to calculate payments and how interest is charged. 
+            The options are:
+
+            FlatRate - Interest is calculated on the full principal amount for the entire loan tenure. 
+
+            ReducingRate - Interest is calculated only on the outstanding principal balance after each repayment.
+
+            For Shariah compliant home loans confirmation of the method to calculate payments.  The options are:
+
+            Profit 
+
+            Lease 
+        Rate:
+          type: object
+          description: |
+            Confirmation of the rates range that will be applied to the home finance.
+          properties:
+            Type:
+              type: string
+              enum:
+                - Fixed
+                - Variable
+                - Hybrid
+              description: >
+                Confirmation whether the rate is a Fixed rate, Variable rate or a Hybrid rate that is fixed for initial
+                years and variable thereafter.
+            Description:
+              type: string
+              description: |
+                The description of the rate.
+            ReviewFrequency:
+              type: string
+              description: |
+                When the rate is Variable the frequency the rate is reviewed against base index.
+            IndicativeRate:
+              type: object
+              description: >
+                For conventional personal loans confirmation of the indicative rate covering the minimum (From) and
+                maximum (To) rate range.
+              properties:
+                From:
+                  type: number
+                  description: |
+                    The minimum rate.
+                To:
+                  type: number
+                  description: |
+                    The maximum rate.
+            ProfitRate:
+              type: object
+              description: >
+                the Profit Rate covering the starting rate from up to the maximum Profit Rate that could apply depending
+                upon the Product type, the type of the property and the amount of Finance availed in relation to the
+                market price of the property.
+              properties:
+                From:
+                  type: number
+                  description: |
+                    The minimum rate.
+                To:
+                  type: number
+                  description: |
+                    The maximum rate.
+        AnnualPercentageRateRange:
+          type: object
+          description: >
+            Annual Percentage Rate (APR) covering the minimum and maximum APR range. The indicative APR range includes
+            applicable interest, fees and charges of the product, expressed as an annualised rate.
+          properties:
+            From:
+              type: number
+              description: |
+                The minimum APR.
+            To:
+              type: number
+              description: |
+                The maximum APR.
+        FixedRatePeriod:
+          description: Must be populated when the Rate Type is Fixed to confirm the period the rate will be fixed for.
+          type: string
+        DebtBurdenRatio:
+          type: string
+          description: >
+            If applicable, the maximum percentage DBR value based on the total debt / total income calculation.
+
+            DBR is the ratio of the Customer’s total monthly outgoing payments (including instalments towards their
+            loans and credit cards), to their total income.
+        Documentation:
+          type: array
+          description: |
+            A list of documents that are required by the LFI when applying for the personal loan product.
+          items:
+            type: object
+            description: |
+              A document that is required by the LFI when applying for the personal loan product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of document required by the LFI when applying for the product.
+                enum:
+                  - ApplicationForm
+                  - IDCard
+                  - Passport
+                  - ResidenceVisa
+                  - ProofofAddress
+                  - UtilityBill
+                  - BankStatement
+                  - SalaryCertificate
+                  - SalarySlip
+                  - UndatedSecurityCheque
+                  - ProofofBusinessOwnership
+                  - TradeLicence
+                  - MemorandumofAssociation
+                  - BusinessOwnership
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the document required by the LFI when applying for the product.
+        Features:
+          type: array
+          description: |
+            A list of features of the personal loan product.
+          items:
+            type: object
+            description: |
+              A feature of the personal loan product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of feature.
+                enum:
+                  - IslamicBanking
+                  - IslamicFinance
+                  - QuickApproval
+                  - FreeDebitCard
+                  - FreeCreditCard
+                  - FlexibleRepaymentPeriods
+                  - BuyOut
+                  - TransferPersonalLoan
+                  - LoanConsolidation
+                  - LoanTopUp
+                  - RevolvingOverdraft
+                  - DefermentFacility
+                  - LifeInsurance
+                  - Guarantor
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the feature.
+        Limits:
+          type: array
+          description: |
+            A list of limits associated with the personal loan product.
+          items:
+            type: object
+            description: |
+              A limit of the personal loan product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of limit.
+                enum:
+                  - MinimumRequiredCreditScore
+                  - MaximumOverpayment
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the limit.
+              Value:
+                type: number
+                description: |
+                  The value of the limit.
+        Fees:
+          type: array
+          description: |
+            A list of fees associated with the personal loan product.
+          items:
+            type: object
+            description: |
+              A fee associated with the personal loan product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of fee.
+                enum:
+                  - Processing
+                  - LoanCancellation
+                  - PartialPayment
+                  - LatePayment
+                  - EarlySettlement
+                  - FinalSettlement
+                  - Other
+              Period:
+                type: string
+                description: |
+                  The period of the fee.
+                enum:
+                  - Daily
+                  - Monthly
+                  - Yearly
+                  - OneOff
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the fee.
+              Description:
+                type: string
+                description: |
+                  The description of the fee.
+              Unit:
+                type: string
+                description: |
+                  The unit of the fee.
+                enum:
+                  - Amount
+                  - Percentage
+              Amount:
+                $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+              Percentage:
+                type: number
+                description: |
+                  The percentage of the fee.
+              UnitValue:
+                type: number
+                description: |
+                  The value of the fee in the unit of the fee.
+              MaximumUnitValue:
+                type: number
+                description: |
+                  The maximum value of the fee in the unit of the fee.
+        Benefits:
+          type: array
+          description: |
+            A list of benefits associated with the personal loan product.
+          items:
+            type: object
+            description: |
+              A benefit associated with the personal loan product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of benefit.
+                enum:
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the benefit.
+              Description:
+                type: string
+                description: |
+                  The description of the benefit.
+              Value:
+                type: number
+                description: |
+                  The value of the benefit.
+        AdditionalInformation:
+          type: array
+          description: |
+            A list of additional information about the personal loan product.
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                enum:
+                  - Other
+                description: |
+                  The type of personal loan additional information.
+              Description:
+                type: string
+                description: |
+                  The description of the personal loan additional information.
+    MortgageDetails:
+      type: object
+      description: >
+        The details specific to a mortgage product. When ProductCategory is "Mortgage" the Mortgage object must also be
+        returned
+      properties:
+        Type:
+          type: string
+          enum:
+            - FixedRate
+            - VariableRate
+            - HybridRate
+            - IslamicHomeLoan
+            - Offset
+            - Other
+          description: |
+            The type of mortgage product.
+        Description:
+          type: string
+          description: |
+            The description of the mortgage product.
+        CalculationMethod:
+          type: string
+          enum:
+            - FlatRate
+            - ReducingRate
+            - Profit
+            - Lease
+          description: >
+            For conventional home loans confirmation of the method to calculate payments and how interest is charged. 
+            The options are:
+
+            FlatRate - Interest is calculated on the full principal amount for the entire loan tenure. 
+
+            ReducingRate - Interest is calculated only on the outstanding principal balance after each repayment.
+
+            For Shariah compliant home loans confirmation of the method to calculate payments.  The options are:
+
+            Profit 
+
+            Lease 
+        Structure:
+          type: string
+          description: >
+            When the home loan is Shariah compliant, confirmation of the Islamic finance model that is used for the
+            housing finance.
+        Rate:
+          type: object
+          description: |
+            Rate information for the mortgage product.
+          properties:
+            Type:
+              type: string
+              enum:
+                - Fixed
+                - Variable
+                - Hybrid
+              description: >
+                Confirmation whether the rate is a Fixed rate, Variable rate or a Hybrid rate that is fixed for initial
+                years and variable thereafter.
+            Description:
+              type: string
+              description: |
+                The description of the rate.
+            ReviewFrequency:
+              description: When the rate is Variable the frequency the rate is reviewed against base index.
+              type: string
+            IndicativeRate:
+              type: object
+              description: The indicative rate covering the minimum (From) and maximum (To) rate range.
+              properties:
+                From:
+                  description: The minimum rate.
+                  type: number
+                To:
+                  description: The maximum rate.
+                  type: number
+            ProfitRate:
+              type: object
+              description: >
+                the Profit Rate covering the starting rate from up to the maximum Profit Rate that could apply depending
+                upon the Product type, the type of the property and the amount of Finance availed in relation to the
+                market price of the property.
+              properties:
+                From:
+                  type: number
+                  description: |
+                    The minimum rate.
+                To:
+                  type: number
+                  description: |
+                    The maximum rate.
+        IndicativeAPR:
+          type: object
+          description: |
+            The indicative APR covering the minimum (From) and maximum (To) rate range.
+          properties:
+            From:
+              type: number
+              description: |
+                The minimum rate.
+            To:
+              type: number
+              description: |
+                The maximum rate.
+        FixedRatePeriod:
+          type: string
+          description: |
+            Must be populated when the Rate Type is Fixed to confirm the period the rate will be fixed for.
+        MinimumLoanAmount:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        MaximumLoanAmount:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        MaximumLTV:
+          type: number
+          description: >-
+            The maximum Loan-to-Value (LTV) allowed.  Where a different LTV applies for each residency type the
+            individual value must be provided.
+        DownPayment:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        RepaymentTenure:
+          type: object
+          description: |
+            The maximum repayment tenure for the mortgage product.
+          properties:
+            MinimumLoanTenure:
+              type: number
+              description: |
+                The minimum loan tenure in months.
+            MaximumLoanTenure:
+              type: number
+              description: |
+                The maximum loan tenure in months.
+        Documentation:
+          type: array
+          description: |
+            A list of documents that are required by the LFI when applying for the mortgage product.
+          items:
+            type: object
+            description: |
+              A document that is required by the LFI when applying for the mortgage product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of document required by the LFI when applying for the product.
+                enum:
+                  - ApplicationForm
+                  - IDCard
+                  - Passport
+                  - ResidenceVisa
+                  - EmploymentProof
+                  - ProofofAddress
+                  - UtilityBill
+                  - BankStatement
+                  - SalaryCertificate
+                  - SalarySlip
+                  - TradeLicence
+                  - BusinessOwnership
+                  - PropertyOwnership
+                  - SalesandPurchaseAgreement
+                  - DeveloperLicense
+                  - TitleDeed
+                  - NoObjectionCertificate
+                  - ValuationReport
+                  - MortgageStatement
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the document required by the LFI when applying for the product.
+        Features:
+          type: array
+          description: |
+            A list of features of the mortgage product.
+          items:
+            type: object
+            description: |
+              A feature of the mortgage product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of feature.
+                enum:
+                  - IslamicBanking
+                  - IslamicFinance
+                  - OnlineApplication
+                  - PreApproval
+                  - LifeInsurance
+                  - PropertyInsurance
+                  - GracePeriod
+                  - Overpayments
+                  - Redraw
+                  - FreeCreditCard
+                  - FreePropertyValuation
+                  - BuyOut
+                  - TopUp
+                  - InstalmentDeferment
+                  - EquityRelease
+                  - NoDeveloperRestriction
+                  - Guarantor
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the feature.
+        Fees:
+          type: array
+          description: |
+            A list of fees associated with the mortgage product.
+          items:
+            type: object
+            description: |
+              A fee associated with the mortgage product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of fee.
+                enum:
+                  - Processing
+                  - LatePayment
+                  - EarlySettlement
+                  - FinalSettlement
+                  - LetterIssued
+                  - Other
+              Period:
+                type: string
+                description: |
+                  The period of the fee.
+                enum:
+                  - Daily
+                  - Monthly
+                  - Yearly
+                  - OneOff
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the fee.
+              Description:
+                type: string
+                description: |
+                  The description of the fee.
+              Unit:
+                type: string
+                description: |
+                  The unit of the fee.
+                enum:
+                  - Amount
+                  - Percentage
+              Amount:
+                $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+              Percentage:
+                type: number
+                description: |
+                  The percentage of the fee.
+              UnitValue:
+                type: number
+                description: |
+                  The value of the fee in the unit of the fee.
+              MaximumUnitValue:
+                type: number
+                description: |
+                  The maximum value of the fee in the unit of the fee.
+        Limits:
+          type: array
+          description: |
+            A list of limits associated with the mortgage product.
+          items:
+            type: object
+            description: |
+              A limit associated with the mortgage product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of limit.
+                enum:
+                  - MinimumRequiredCreditScore
+                  - MaximumOverpayment
+                  - Other
+              Description:
+                type: string
+                description: |
+                  The description of the limit.
+              Value:
+                type: number
+                description: |
+                  The value of the limit.
+              Percentage:
+                type: number
+                description: |
+                  The percentage of the limit.
+        Benefits:
+          type: array
+          description: |
+            A list of benefits associated with the mortgage product.
+          items:
+            type: object
+            description: |
+              A benefit associated with the mortgage product.
+            properties:
+              Type:
+                type: string
+                description: |
+                  The type of benefit.
+                enum:
+                  - Other
+              Name:
+                type: string
+                description: |
+                  The name of the benefit.
+              Description:
+                type: string
+                description: |
+                  The description of the benefit.
+              Value:
+                type: number
+                description: |
+                  The value of the benefit.
+    ProfitSharingRateDetails:
+      type: object
+      properties:
+        Name:
+          type: string
+          description: |
+            The name of the profit sharing rate.
+        Description:
+          type: string
+          description: |
+            The description of the profit sharing rate.
+        MinimumDepositAmount:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        AnnualReturn:
+          type: number
+          description: |
+            The annual return of the profit sharing rate.
+        AnnualReturnOptions:
+          type: array
+          description: |
+            The annual return options of the profit sharing rate.
+          items:
+            type: object
+            properties:
+              Name:
+                type: string
+                description: |
+                  The name of the annual return option.
+              Description:
+                type: string
+                description: |
+                  The description of the annual return option.
+        InvestmentPeriod:
+          type: object
+          description: |
+            The investment period of the profit sharing rate.
+          properties:
+            Name:
+              type: string
+              description: |
+                The type of investment period.
+            Description:
+              type: string
+              description: |
+                The description of the investment period.
+        AdditionalInformation:
+          type: array
+          description: |
+            The additional information of the profit sharing rate.
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                enum:
+                  - Other
+                description: |
+                  The type of additional information.
+              Description:
+                type: string
+                description: |
+                  The description of the additional information.
+    FinanceProfitRateDetails:
+      type: object
+      description: |
+        The details specific to a finance profit rate.
+      properties:
+        Name:
+          type: string
+          description: |
+            The name of the finance profit rate.
+        Description:
+          type: string
+          description: |
+            The description of the finance profit rate.
+        CalculationMethod:
+          type: string
+          enum:
+            - FlatRate
+            - ReducingRate
+            - Profit
+            - Lease
+          description: >
+            For conventional home loans confirmation of the method to calculate payments and how interest is charged. 
+            The options are:
+
+            FlatRate - Interest is calculated on the full principal amount for the entire loan tenure. 
+
+            ReducingRate - Interest is calculated only on the outstanding principal balance after each repayment.
+
+            For Shariah compliant home loans confirmation of the method to calculate payments.  The options are:
+
+            Profit 
+
+            Lease 
+        Rate:
+          type: number
+          description: |
+            The rate of the finance profit rate product.
+        Frequency:
+          type: string
+          description: |
+            The frequency of the finance profit rate product.
+        Tiers:
+          type: array
+          description: |
+            The tiers of the finance profit rate product.
+          items:
+            $ref: '#/components/schemas/RateTier'
+        AdditionalInformation:
+          type: array
+          description: |
+            The additional information of the finance profit rate product.
+          items:
+            type: object
+            properties:
+              Type:
+                type: string
+                enum:
+                  - Other
+                description: |
+                  The type of additional information.
+              Description:
+                type: string
+                description: |
+                  The description of the additional information.
+    RateTier:
+      type: object
+      description: |
+        The tier of the finance profit rate product.
+      properties:
+        Type:
+          description: |
+            The type of the tier.
+          type: string
+        Description:
+          type: string
+          description: |
+            The description of the tier.
+        Name:
+          type: string
+          description: |
+            The name of the tier.
+        Unit:
+          type: string
+          enum:
+            - Balance
+            - LTV
+            - TimePeriod
+          description: |
+            The unit of the tier.
+        MinimumTierValue:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        MaximumTierValue:
+          $ref: '#/components/schemas/AEActiveOrHistoricCurrencyAndAmount_0'
+        MinimumTierRate:
+          type: number
+          description: |
+            The minimum rate of the tier.
+        MaximumTierRate:
+          type: number
+          description: |
+            The maximum rate of the tier.
+        Condition:
+          type: string
+          description: |
+            The conditions of the tier.
+    AEActiveOrHistoricCurrencyAndAmount_0:
+      type: object
+      required:
+        - Amount
+        - Currency
+      description: This is the value of the amount in the currency
+      properties:
+        Amount:
+          $ref: '#/components/schemas/AEActiveCurrencyAndAmount_SimpleType'
+        Currency:
+          $ref: '#/components/schemas/ActiveOrHistoricCurrencyCode_0'
+      additionalProperties: false
+    AEActiveCurrencyAndAmount_SimpleType:
+      description: >-
+        A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
+        with ISO 4217.
+      type: string
+      pattern: ^\d{1,13}$|^\d{1,13}\.\d{1,5}$
+    ActiveOrHistoricCurrencyCode_0:
+      description: >-
+        Identification of the currency in which the account is held. A code allocated to a currency under an
+        international currency identification scheme, as described in the latest edition of the international standard
+        ISO 4217 'Codes for the representation of currencies and funds'.
+      type: string
+      pattern: ^[A-Z]{3,3}$
+      example: AED
+    LeadRequest:
+      type: object
+      additionalProperties: false
+      description: |
+        The request to create a lead.
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+          description: |
+            The data for the lead request.
+          required:
+            - Name
+            - Email
+            - EmiratesId
+            - MarketingOptOut
+          properties:
+            Email:
+              type: string
+              format: email
+              description: Email address of the account holder
+            PhoneNumber:
+              type: string
+              pattern: ^\+[1-9]\d{1,14}$
+              description: Phone number in E.164 format
+            Name:
+              $ref: '#/components/schemas/AEUserName'
+            EmiratesId:
+              type: string
+              description: Emirates ID number of the Party
+            Nationality:
+              type: string
+              description: Nationality of the Party
+            ResidentialAddress:
+              $ref: '#/components/schemas/AEResidentialAddress'
+            LeadInformation:
+              type: string
+              description: |
+                Free text information about the lead.
+            MarketingOptOut:
+              type: boolean
+              description: Whether the lead has opted out of marketing communications.
+            ProductCategories:
+              type: array
+              description: |
+                The categories of products that the lead is interested in.
+              items:
+                type: object
+                properties:
+                  Type:
+                    type: string
+                    enum:
+                      - SavingsAccount
+                      - CurrentAccount
+                      - CreditCard
+                      - Loan
+                      - Mortgage
+    LeadResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: object
+          description: |
+            The data for the lead response.
+          additionalProperties: false
+          required:
+            - LeadId
+            - Name
+            - Email
+            - EmiratesId
+            - MarketingOptOut
+          properties:
+            LeadId:
+              type: string
+              description: Unique identifier for the lead
+            Email:
+              type: string
+              format: email
+              description: Email address of the account holder
+            PhoneNumber:
+              type: string
+              pattern: ^\+[1-9]\d{1,14}$
+              description: Phone number in E.164 format
+            Name:
+              $ref: '#/components/schemas/AEUserName'
+            EmiratesId:
+              type: string
+              description: Emirates ID number of the Party
+            Nationality:
+              type: string
+            ResidentialAddress:
+              $ref: '#/components/schemas/AEResidentialAddress'
+            LeadInformation:
+              type: string
+            MarketingOptOut:
+              type: boolean
+              description: Whether the lead has opted out of marketing communications.
+            ProductCategories:
+              type: array
+              items:
+                type: object
+                properties:
+                  Type:
+                    type: string
+                    enum:
+                      - SavingsAccount
+                      - CurrentAccount
+                      - CreditCard
+                      - Loan
+                      - Mortgage
+    AEUserName:
+      oneOf:
+        - $ref: '#/components/schemas/AEPersonalAccountName'
+        - $ref: '#/components/schemas/AEPersonalAccountFullName'
+        - $ref: '#/components/schemas/AEBusinessAccountName'
+      description: |
+        The name of the account holder.
+    AEPersonalAccountName:
+      type: object
+      required:
+        - GivenName
+        - LastName
+      properties:
+        GivenName:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: The given or first name of the lead
+        LastName:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: The family or surname of the lead
+      description: The name of a personal account
+      additionalProperties: false
+    AEPersonalAccountFullName:
+      type: object
+      required:
+        - FullName
+      properties:
+        FullName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The full name of the lead
+      description: The full name of a personal account
+      additionalProperties: false
+    AEBusinessAccountName:
+      type: object
+      required:
+        - BusinessName
+      properties:
+        BusinessName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The business name of the lead
+      description: The name of a business account
+      additionalProperties: false
+    AEResidentialAddress:
+      description: Address properties based on ISO 20022 `PostalAddress27` definition
+      type: object
+      required:
+        - StreetName
+        - DistrictName
+        - TownName
+        - CountrySubDivision
+      properties:
+        AddressType:
+          description: The type of address. Defaults to `Residential`. Omitted if not held.
+          type: string
+          enum:
+            - Residential
+        AddressLine:
+          description: >-
+            Information that locates and identifies a specific address for a transaction entry, that is presented in
+            free format text.
+          type: array
+          minItems: 1
+          maxItems: 7
+          items:
+            type: string
+            minLength: 1
+            maxLength: 70
+        BuildingNumber:
+          description: The unit, apartment, or villa number within a building or community
+          type: string
+          minLength: 1
+          maxLength: 16
+        BuildingName:
+          description: Name of the building or house.
+          type: string
+          minLength: 1
+          maxLength: 140
+        Floor:
+          description: Floor or storey within a building.
+          type: string
+          minLength: 1
+          maxLength: 70
+        StreetName:
+          description: The name of the street or road where the property is located.
+          type: string
+          minLength: 1
+          maxLength: 140
+        DistrictName:
+          description: The district, community, or neighbourhood where the property is located.
+          type: string
+          minLength: 1
+          maxLength: 140
+        PostBox:
+          description: The P.O. Box number assigned to the recipient for mail delivery.
+          type: string
+          minLength: 1
+          maxLength: 16
+        TownName:
+          description: Name of a built-up area, such as a town or city.
+          type: string
+          minLength: 1
+          maxLength: 140
+        CountrySubDivision:
+          description: Country subdivision, such as state or province. This is the Emirate where the address is registered.
+          type: string
+          enum:
+            - AbuDhabi
+            - Ajman
+            - Dubai
+            - Fujairah
+            - RasAlKhaimah
+            - Sharjah
+            - UmmAlQuwain
+        Country:
+          description: The country associated with the address, represented using the ISO 3166-1 alpha-2 country code.
+          type: string
+          pattern: ^[A-Z]{2}$
+      additionalProperties: false
+    ErrorMessage:
+      description: Message describing what problem has occurred
+      type: string
+    Error400:
+      description: Default error response payload structure for Ozone Connect
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          description: >-
+            Error code identifying the problem that occurred. This may either be one of the prescribed Error Code(s) or
+            a namespaced Error Code where the namespace is the system or organisation that has responded with the error,
+            and the code is the code specific to the system or organisation. organisation or system.
+
+            LFIs should implement error codes based on the prescribed codes or guidance in the standards, with
+            non-specific codes maintained for backward compatibility with version 1.2.
+          anyOf:
+            - type: string
+              enum:
+                - Consent.Invalid
+                - Consent.BusinessRuleViolation
+                - Consent.FailsControlParameters
+                - Consent.InvalidUserIdentifier
+                - JWS.InvalidSignature
+                - JWS.Malformed
+                - JWS.InvalidClaim
+                - JWS.InvalidHeader
+                - JWE.DecryptionError
+                - JWE.InvalidHeader
+                - GenericRecoverableError
+                - GenericError
+                - Event.UnexpectedEvent
+                - Body.InvalidFormat
+                - Resource.InvalidFormat
+            - type: string
+              pattern: ^[A-Za-z]+\.[A-Za-z0-9]+$
+            - type: string
+        errorMessage:
+          $ref: '#/components/schemas/ErrorMessage'
+    Error403:
+      description: >-
+        Error code identifying the problem that occurred. The first part of the code is the namespace, which is the name
+        of the organisation or system that is rejecting the payment, and the second part is the specific rejection
+        reason code for the originating organisation or system.
+
+        LFIs should implement error codes based on the prescribed codes or guidance in the standards, with non-specific
+        codes maintained for backward compatibility with version 1.2.
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          description: >-
+            Error code identifying the problem that occurred. This may either be one of the prescribed Error Code(s) or
+            a namespaced Error Code where the namespace is the system or organisation that has responded with the error,
+            and the code is the code specific to the system or organisation.
+          anyOf:
+            - type: string
+              enum:
+                - AccessToken.InvalidScope
+                - Consent.TransientAccountAccessFailure
+                - Consent.AccountTemporarilyBlocked
+                - Consent.PermanentAccountAccessFailure
+                - GenericRecoverableError
+                - GenericError
+            - type: string
+              pattern: ^[A-Za-z]+\.[A-Za-z0-9]+$
+            - type: string
+        errorMessage:
+          $ref: '#/components/schemas/ErrorMessage'
+    Error500:
+      description: >-
+        Error code identifying the problem that occurred. The first part of the code is the namespace, which is the name
+        of the organisation or system that is rejecting the payment, and the second part is the specific rejection
+        reason code for the originating organisation or system.
+
+        LFIs should implement error codes based on the prescribed codes or guidance in the standards, with non-specific
+        codes maintained for backward compatibility with version 1.2.
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          description: >-
+            Error code identifying the problem that occurred. This may either be one of the prescribed Error Code(s) or
+            a namespaced Error Code where the namespace is the system or organisation that has responded with the error,
+            and the code is the code specific to the system or organisation.
+          anyOf:
+            - type: string
+              enum:
+                - GenericRecoverableError
+                - GenericError
+            - type: string
+              pattern: ^[A-Za-z]+\.[A-Za-z0-9]+$
+            - type: string
+        errorMessage:
+          $ref: '#/components/schemas/ErrorMessage'
+  responses:
+    201LeadResponse:
+      description: Lead Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LeadResponse'
+    BadRequestResponse:
+      description: Operation failed due to a invalid request parameter
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error400'
+    NotAuthorizedResponse:
+      description: The operation failed due to an invalid credential being presented
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                description: >-
+                  Error code identifying the problem that occurred. Should be implemented based on guidance in standards
+                  and API Hub documentation, but custom error code lists maintained for backwards compatibility with
+                  v1.2.
+                type: string
+              errorMessage:
+                $ref: '#/components/schemas/ErrorMessage'
+    ForbiddenResponse:
+      description: Operation failed as access to the requested resource is forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error403'
+    InternalServerErrorResponse:
+      description: Operation failed due to an internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error500'
+    errorResponse:
+      description: Default error response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                description: >-
+                  Error code identifying the problem that occurred. Should be implemented based on guidance in standards
+                  and API Hub documentation, but custom error code lists maintained for backwards compatibility with
+                  v1.2.
+                type: string
+              errorMessage:
+                $ref: '#/components/schemas/ErrorMessage'
+  parameters:
+    providerId:
+      name: o3-provider-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: Identifier for the financial institution that the request is targeted to
+    callerOrgId:
+      name: o3-caller-org-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the organization calling the API
+    callerClientId:
+      name: o3-caller-client-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the OIDC clientId calling the API
+    callerSoftwareStatementId:
+      name: o3-caller-software-statement-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the software statement calling the API
+    apiUri:
+      name: o3-api-uri
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The parameterised URL of the API being called by the caller
+    apiOperation:
+      name: o3-api-operation
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The API operation carried out by the caller (e.g. GET, POST, PUT, DELETE, PATCH)
+    callerInteractionId:
+      name: o3-caller-interaction-id
+      in: header
+      schema:
+        type: string
+      required: false
+      description: The interaction ID passed in by the caller, if any
+    ozoneInteractionId:
+      name: o3-ozone-interaction-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: >-
+        An interaction ID generated by Ozone if the caller did not send in one. If the callerInteractionId is specified,
+        this takes the same value.
+    x-fapi-customer-ip-address:
+      in: header
+      name: x-fapi-customer-ip-address
+      required: true
+      description: The User's IP address if the User is currently logged in with the TPP.
+      schema:
+        type: string
+    page:
+      name: page
+      in: query
+      description: Page of results to request (standard pagination)
+      required: true
+      schema:
+        default: 1
+        type: integer
+      style: form
+    page-size:
+      name: page-size
+      in: query
+      description: Page size to request. Default is 25 (standard pagination)
+      required: true
+      schema:
+        default: 100
+        type: integer
+      style: form
+  securitySchemes:
+    OzoneConnectApiKey:
+      description: >-
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using an API Key, which
+        is a secret shared between the API Hub and the LFI.
+      type: apiKey
+      in: header
+      name: Authorization
+    OzoneConnectClientCredentials:
+      type: oauth2
+      description: >
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using a Client
+        Credentials grant type.
+
+
+        LFIs must host an OAuth 2.0 Authorization Server to utilise this security pattern. Scope values are set during
+        the onboarding process, and represented by a placeholder in this API description.
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.lfi.ae/token
+          scopes:
+            placeholder: Placeholder for scopes, which are set by the LFI during onboarding
+    OzoneConnectJwtAuth:
+      description: >
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using the "JWT Auth"
+        mechanism, where the Client presents a signed JSON Web Token as a credential.
+
+
+        The Server MUST verify the signature in order to authenticate the Client.
+
+
+        Please note that the value of the `scheme` parameter is not a registered HTTP Authentication Scheme, to indicate
+        it is specific to Ozone Connect. Please refer to API Hub documentation for further details.
+      type: http
+      scheme: Ozone-Connect-JWT-Auth
