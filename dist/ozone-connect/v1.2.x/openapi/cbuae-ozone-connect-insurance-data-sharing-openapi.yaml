@@ -1,0 +1,1461 @@
+openapi: 3.0.1
+info:
+  title: Ozone Connect - Insurance APIs
+
+  contact:
+    name: Ozone Financial Technology Limited
+
+  description: |
+    This document provides the OAS3 specification for Insurance APIs for Ozone Connect.
+
+    These APIs should be implemented by a Financial Institution so that Ozone
+    can expose these end-points to TPPs.
+
+    Please refer to the API Hub documentation for details of test cases that are 
+    available for this API using the Ozone Connect test suite.
+
+    ### Changes in Version 2024.06.0
+
+    * Removed test case guidance and references from the API description as now 
+      maintained on a API Hub documentation page.
+
+    ### Changes in Version 2025.03.0
+
+    * Changed `Customer` to optional in AEMotorInsurancePolicy as not required for all data clusters
+
+    * Removed `PolicyType` from AEMotorInsurancePolicy as no longer required
+
+    ### Changes in Version 2024.48.0
+
+    * Changed API Paths Get /motor-insurance-policies
+
+    * Changed API Paths Get /motor-insurance-policies/{InsurancePolicyId}
+
+    * Changed API Paths Get /motor-insurance-policies/{InsurancePolicyId}/customer-payment-details endpoint.
+
+    ### Changes in Version 2024.46.0
+
+    * Changed `default` value of `page-size` to 100 to match OFP SLA
+
+    #### Changes in Release 2024.37.0
+
+    * Added `default` response to each operation to aid understanding of error handling requirements.
+
+    * Add codes specified to drive integration testing in all 3 endpoints.
+
+    #### Changes in Release 2024.34.1
+
+    * Introduced new Get /insurance-policies/{InsurancePolicyId}/customer-payment-details endpoint.
+
+    * Marked page and page-size query parameters as mandatory for Get /insurance-policies
+
+    * Removed propagateError field from the Error object.
+
+    * Refactored Security Scheme Objects to use common definitions across all API Hub APIs
+
+    * Implemented the correct Security Requirements for this API description, reflecting security patterns available in API Hub
+
+    #### Changes in Release 2024.34
+
+    * Marked o3-caller-org-id, o3-caller-client-id, o3-caller-software-statement-id, o3-consent-id, o3-caller-interaction-id and o3-psu-identifier headers mandatory.
+
+  version: 2025.06.0
+
+tags:
+  - name: Insurance Policies
+    description: |
+      APIs that should be implemented by Financial Institutions to expose `Insurance` information to TPPs.
+  - name: Insurance Customer Payment Details
+    description: Retrieve customer payment details for insurance policies
+servers:
+  - url: https://<your-ozone-connect-server>
+
+security:
+  - {}
+  - OzoneConnectApiKey: []
+  - OzoneConnectClientCredentials: [
+      "placeholder"
+    ]
+  - OzoneConnectJwtAuth: []
+
+paths:
+  /motor-insurance-policies:
+    get:
+      tags:
+        - Insurance Policies
+      operationId: InsurancePolicies_list
+      summary: Get insurance policies
+      description: |
+        This operation retrieves a list of insurance policies for a given consent
+
+      parameters:
+        # common header parameters that set context
+        - $ref: "#/components/parameters/providerId"
+        - $ref: "#/components/parameters/aspspId"
+        - $ref: "#/components/parameters/callerOrgId"
+        - $ref: "#/components/parameters/callerClientId"
+        - $ref: "#/components/parameters/callerSoftwareStatementId"
+        - $ref: "#/components/parameters/apiUri"
+        - $ref: "#/components/parameters/apiOperation"
+        - $ref: "#/components/parameters/consentId"
+        - $ref: "#/components/parameters/callerInteractionId"
+        - $ref: "#/components/parameters/ozoneInteractionId"
+        - $ref: "#/components/parameters/psuIdentifier"
+
+        # Query params
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/page-size"
+
+      responses:
+        '200':
+          $ref: "#/components/responses/InsurancePoliciesGetResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        default:
+          $ref: "#/components/responses/Error"
+  /motor-insurance-policies/{InsurancePolicyId}:
+    get:
+      tags:
+        - Insurance Policies
+      operationId: InsurancePoliciesById_read
+      summary: Get insurance policy
+      description: This operation retrieves a single insurance policy for a given consent
+
+      parameters:
+        # common header parameters that set context
+        - $ref: "#/components/parameters/providerId"
+        - $ref: "#/components/parameters/aspspId"
+        - $ref: "#/components/parameters/callerOrgId"
+        - $ref: "#/components/parameters/callerClientId"
+        - $ref: "#/components/parameters/callerSoftwareStatementId"
+        - $ref: "#/components/parameters/apiUri"
+        - $ref: "#/components/parameters/apiOperation"
+        - $ref: "#/components/parameters/consentId"
+        - $ref: "#/components/parameters/callerInteractionId"
+        - $ref: "#/components/parameters/ozoneInteractionId"
+        - $ref: "#/components/parameters/psuIdentifier"
+        - $ref: '#/components/parameters/InsurancePolicyId'
+
+      responses:
+        '200':
+          $ref: "#/components/responses/InsurancePolicyGetResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        default:
+          $ref: "#/components/responses/Error"
+  /motor-insurance-policies/{InsurancePolicyId}/customer-payment-details:
+    get:
+      tags:
+        - Insurance Customer Payment Details
+      operationId: InsurancePolicyByIdBankAccountDetails_read
+      summary: Retrieve customer payment details
+      description: |
+        Retrieve customer payment details for a given insurance policy, based on
+        data clusters granted by the customer.
+
+      parameters:
+        # common header parameters that set context
+        - $ref: "#/components/parameters/providerId"
+        - $ref: "#/components/parameters/aspspId"
+        - $ref: "#/components/parameters/callerOrgId"
+        - $ref: "#/components/parameters/callerClientId"
+        - $ref: "#/components/parameters/callerSoftwareStatementId"
+        - $ref: "#/components/parameters/apiUri"
+        - $ref: "#/components/parameters/apiOperation"
+        - $ref: "#/components/parameters/consentId"
+        - $ref: "#/components/parameters/callerInteractionId"
+        - $ref: "#/components/parameters/ozoneInteractionId"
+        - $ref: "#/components/parameters/psuIdentifier"
+        - $ref: '#/components/parameters/InsurancePolicyId'
+
+      responses:
+        '200':
+          $ref: "#/components/responses/InsuranceCustomerPaymentGetResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        default:
+          $ref: "#/components/responses/Error"
+components:
+  schemas:
+
+    InsurancePolicyGetResponseBody:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AEInsurancePolicyTypes'
+        meta:
+          $ref: "#/components/schemas/Meta"
+
+    InsurancePoliciesGetResponseBody:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePolicyTypes'
+        meta:
+          $ref: "#/components/schemas/Meta"
+
+    InsuranceCustomerPaymentGetResponseBody:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AEInsuranceCustomerPaymentDetails'
+        meta:
+          $ref: "#/components/schemas/Meta"
+
+    AEInsuranceCustomerPaymentDetails:
+      type: object
+      required:
+        - SchemeName
+        - Identification
+        - Name
+      properties:
+        SchemeName:
+          $ref: '#/components/schemas/AEInsuranceAccountSchemeName'
+        Identification:
+          type: string
+          minLength: 1
+          maxLength: 34
+          description: Account identification
+        Name:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Account Name
+        Bic:
+          type: string
+          pattern: '[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}'
+          description: >-
+            Bank Identification Code (BIC), when recorded with bank account
+            information
+        BankName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Bank Name
+        BranchName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Branch Name
+        AccountType:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Account Type
+      additionalProperties: false
+
+    AEInsuranceAccountSchemeName:
+      type: string
+      enum:
+        - AccountNumber
+        - IBAN
+        - Other
+      description: Bank account scheme name
+
+    AEInsurancePolicyTypes:
+      $ref: '#/components/schemas/AEMotorInsurancePolicy'
+
+    AEMotorInsurancePolicy:
+      type: object
+      required:
+        - InsurancePolicyId
+      properties:
+        InsurancePolicyId:
+          allOf:
+            - $ref: '#/components/schemas/uuid'
+          description: Unique identifier for a given insurance policy
+        Customer:
+          $ref: '#/components/schemas/AEMotorInsuranceCustomer'
+        Product:
+          $ref: '#/components/schemas/AEMotorInsuranceProduct'
+        Transactions:
+          $ref: '#/components/schemas/AEMotorInsuranceTransactions'
+      additionalProperties: false
+
+    AEMotorInsuranceCustomer:
+      type: object
+      required:
+        - CustomerId
+        - FullName
+        - PrimaryLanguage
+      properties:
+        CustomerId:
+          type: string
+          description: >-
+            Identifier that uniquely and consistently identifies the insurance
+            policy customer
+        FullName:
+          type: string
+          description: Full name of the insurance policy customer
+        ShortName:
+          type: string
+          description: Short name of the insurance policy customer
+        CategorySegment:
+          type: string
+          description: Customer category or segment, as defined by the insurance company
+        LocalBranch:
+          type: string
+          description: Local branch, as defined by the insurance company
+        PrimaryLanguage:
+          $ref: '#/components/schemas/AECustomerPrimaryLanguage'
+        BillingAddress:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceAddress'
+          description: Customer billing address
+        PermanentAddress:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceAddress'
+          description: Customer permanent address
+        ResidentialAddress:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceAddress'
+          description: Customer residential address
+        CommunicationPreferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceCommunicationPreferences'
+          minItems: 1
+          maxItems: 3
+          description: Customer phone communication preferences, in prefer order
+        BackgroundInformation:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCustomerBackgroundInformation'
+          description: Customer background information
+        EmploymentInformation:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCustomerEmploymentDetails'
+          description: Customer employment details
+        IdentityInformation:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceIdentificationDetails'
+          description: Customer identification information
+        EmergencyContacts:
+          type: array
+          items:
+            type: string
+          description: Customer emergency contacts, in prefer order
+      additionalProperties: false
+
+    AEMotorInsuranceProduct:
+      type: object
+      required:
+        - InsuredVehicle
+        - Policy
+      properties:
+        InsuredVehicle:
+          $ref: '#/components/schemas/AEMotorInsuranceVehicle'
+        Policy:
+          $ref: '#/components/schemas/AEMotorInsurancePolicyProperties'
+      additionalProperties: false
+
+    AEMotorInsuranceTransactions:
+      type: object
+      required:
+        - PolicyPremiumValue
+        - PolicyPremiumPaymentPeriod
+        - OutstandingPremiumBalance
+      properties:
+        PolicyPremiumValue:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Policy premium value
+        PolicyPremiumPaymentPeriod:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Policy premium payment period as defined by the insurer
+        OutstandingPremiumBalance:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Outstanding premium balance
+        TwelveMonthClaimSummary:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceClaimSummary'
+          description: Summary of claims in last twelve months
+        ThirtySixMonthClaimSummary:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceClaimSummary'
+          description: Summary of claims in last thirty-six months
+        Loan:
+          allOf:
+            - $ref: '#/components/schemas/AEMotorInsuranceLoanDetails'
+          description: Loan details
+        BenefitPayouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEMotorInsuranceBenefitPayout'
+          description: Benefit payout details
+        Claims:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceClaimDetails'
+          minItems: 1
+          maxItems: 3
+          description: >-
+            Indivdual claim details, maximim of three claims returned in
+            response. Omit if no claims made
+        PreviousPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEMotorInsurancePreviousPolicyDetails'
+          minItems: 1
+          maxItems: 2
+          description: Previous policy details
+      description: Insurance transaction information
+      additionalProperties: false
+
+    AEMotorInsuranceVehicle:
+      type: object
+      properties:
+        Make:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Vehicle make
+        Model:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Vehicle model
+        ModelYear:
+          type: string
+          pattern: ^[0-9]{4}$
+          description: Vehicle model year
+        PurchaseDate:
+          type: string
+          format: date
+          description: Vehicle purchase date
+        Specification:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Vehicle specification
+        EstimatedValue:
+          type: integer
+          description: Vehicle estimated value
+        RegistrationDate:
+          type: string
+          format: date
+          description: Vehicle registration date
+        VehicleIdentificationNumber:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Vehicle Identification Number (VIN or chassis number)
+        EngineNumber:
+          type: string
+          description: Vehicle engine number
+        CountryofOrigin:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCountryCode'
+          description: Vehicle registration country based on ISO 3166-1 alpha-2 code
+        Color:
+          type: string
+          description: Vehicle color
+        PlateNumber:
+          type: string
+          minLength: 1
+          maxLength: 16
+          description: Vehicle plate number
+        PlateCode:
+          type: string
+          minLength: 1
+          maxLength: 16
+          description: Vehicle plate code
+        VehicleMileage:
+          type: integer
+          minimum: 0
+          description: Vehicle mileage to nearest kilometer
+        VehicleWeight:
+          type: integer
+          minimum: 0
+          description: Vehicle weight to nearest kilograms
+        TrafficCodeIssuingEmirate:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceEmirate'
+          description: Emirate that issued the traffic code for the vehicle
+        TrafficIdentificationNumber:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Traffic identification number
+        VehicleHistory:
+          allOf:
+            - $ref: '#/components/schemas/VehicleHistory'
+          description: Indicator of vehicle history
+        FirstTimeRegistration:
+          type: boolean
+          description: First time vehicle was registered
+        VehicleFinance:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Vehicle finance amount and currency
+      additionalProperties: false
+
+    AEMotorInsurancePolicyProperties:
+      type: object
+      required:
+        - PolicyReference
+        - IssueDateTime
+        - ExpiryDateTime
+        - CoverageType
+        - PolicyLimits
+        - PolicyExclusions
+        - CoverageAmount
+        - CoverageStartDate
+        - CoverageEndDate
+      properties:
+        PolicyReference:
+          $ref: '#/components/schemas/PolicyReference'
+        IssueDateTime:
+          type: string
+          format: date
+          description: Date when the policy was issued
+        ExpiryDateTime:
+          type: string
+          format: date
+          description: Date when the policy expires
+        CoverageType:
+          type: string
+          minLength: 1
+          maxLength: 170
+          description: Freeform text that describes coverage as specified by the insurer
+        PolicyLimits:
+          type: string
+          minLength: 1
+          maxLength: 350
+          description: Policy limits as free form text
+        PolicyExclusions:
+          type: string
+          minLength: 1
+          maxLength: 350
+          description: Policy exclusions as free form text
+        CoverageAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Coverage amount and currency
+        CoverageStartDate:
+          type: string
+          format: date
+          description: Date when the coverage starts
+        CoverageEndDate:
+          type: string
+          format: date
+          description: Date when the coverage ends
+        PreviousPolicyInformation:
+          allOf:
+            - $ref: '#/components/schemas/AEMotorInsurancePreviousPolicy'
+          description: Details of previous policy held by the insurer
+        DriversPersonalAccidentIncluded:
+          type: boolean
+          description: >-
+            Indicates whether the policy includes personal accident coverage for
+            the driver
+        PassengersPersonalAccidentIncluded:
+          type: boolean
+          description: >-
+            Indicates whether the policy includes personal accident coverage for
+            the passengers
+      additionalProperties: false
+
+    AEAmountAndCurrency:
+      type: object
+      required:
+        - Currency
+        - Amount
+      properties:
+        Currency:
+          $ref: '#/components/schemas/CurrencyCode'
+        Amount:
+          $ref: '#/components/schemas/Amount'
+      description: >-
+        The Currency and Amount relating to the Payment, Refund or Request to
+        Pay
+      additionalProperties: false
+
+    AEInsuranceClaimSummary:
+      type: object
+      required:
+        - NumberClaims
+      properties:
+        NumberClaims:
+          type: integer
+          minimum: 0
+          description: Number of claims in period
+        NumberApprovedClaims:
+          type: integer
+          minimum: 0
+          description: Number of approved claims in period
+        TotalClaimsAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Total amount of claims in period
+        TotalApprovedClaimsAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Total amount of approved claims in period
+      additionalProperties: false
+
+    AEMotorInsuranceLoanDetails:
+      type: object
+      required:
+        - LoanAmount
+        - LoanStartDate
+        - LoanInterestRate
+        - RepaymentSchedule
+        - OutstandingLoanBalance
+      properties:
+        LoanAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Loan amount and currency
+        LoanStartDate:
+          type: string
+          format: date
+          description: Loan start date
+        LoanInterestRate:
+          type: number
+          description: Loan interest rate
+        RepaymentSchedule:
+          type: string
+          minLength: 1
+          maxLength: 16
+          description: Repayment frequency
+        OutstandingLoanBalance:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Outstanding loan balance
+      description: Loan details
+      additionalProperties: false
+
+    AEMotorInsuranceBenefitPayout:
+      type: object
+      required:
+        - Amount
+        - Date
+      properties:
+        Amount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Benefit payout amount and currency
+        Date:
+          type: string
+          format: date
+          description: Benefit payout date
+      description: Benefit payout
+      additionalProperties: false
+
+    AEInsuranceClaimDetails:
+      type: object
+      required:
+        - ClaimDate
+        - Description
+        - Status
+        - ClaimAmount
+      properties:
+        ClaimDate:
+          type: string
+          format: date
+          description: Date on which claim submitted
+        Description:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Claim description
+        Status:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceClaimStatus'
+          description: Claim status
+        ClaimAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Claim amount and currency
+        DeductibleAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Deductible amount and currency
+      description: Individual claim detail
+      additionalProperties: false
+
+    AEMotorInsurancePreviousPolicyDetails:
+      type: object
+      required:
+        - InsuranceCompanyName
+        - PolicyReference
+        - PurchaseDate
+        - minItems
+        - maxItems
+        - CoverageType
+      properties:
+        InsuranceCompanyName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Previous insurer
+        PolicyReference:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Previous policy reference
+        PurchaseDate:
+          type: string
+          format: date
+          description: Previous policy start date
+        minItems:
+          type: number
+          enum:
+            - 1
+          description: Previous policy renewal dates, up to two renewals
+        maxItems:
+          type: number
+          enum:
+            - 2
+        RenewalDate:
+          type: array
+          items:
+            type: string
+            format: date
+        DeductibleAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Deductible amount and currency
+        CoverageType:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Policy coverage type
+        Adjustments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEMotorInsurancePolicyAdjustments'
+          minItems: 1
+          maxItems: 2
+          description: >-
+            Policy adjustments recorded on the policy. Omit if no adjustments
+            made
+        Loan:
+          allOf:
+            - $ref: '#/components/schemas/AEMotorInsuranceLoanDetails'
+          description: Loan details
+        BenefitPayouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEMotorInsuranceBenefitPayout'
+          description: Benefit payout details
+        TerminationDate:
+          type: string
+          format: date
+          description: Policy termination date
+        ReasonforCancellation:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Reason for policy termination
+        RefundAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Refund amount and currency
+        SurrenderDate:
+          type: string
+          format: date
+          description: Surrender date
+        SurrenderAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Surrender amount and currency
+        ReasonforSurrender:
+          type: string
+          description: Reason for surrender
+        CashValueofPolicyPaidtoPolicyholder:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Cash value of policy paid to policyholder
+      description: Previous policy details
+      additionalProperties: false
+
+    AEInsuranceCountryCode:
+      type: string
+      pattern: '[A-Z]{2}'
+
+    AEInsuranceEmirate:
+      type: string
+      enum:
+        - AbuDhabi
+        - Ajman
+        - Dubai
+        - Fujairah
+        - RasAlKhaimah
+        - Sharjah
+        - UmmAlQuwain
+
+    VehicleHistory:
+      type: string
+      enum:
+        - Imported
+        - Modified
+        - DeclaredTotalLoss
+        - Other
+
+    PolicyReference:
+      type: string
+      description: Insurance policy identifier issued by the insurer
+
+    AEMotorInsurancePreviousPolicy:
+      type: object
+      required:
+        - Insurer
+        - PolicyStartDate
+        - PolicyExpiryDate
+      properties:
+        Insurer:
+          type: string
+          description: Previous issuer
+        PolicyStartDate:
+          type: string
+          format: date
+          description: Previous policy start date
+        PolicyExpiryDate:
+          type: string
+          format: date
+          description: Previous policy expiry date
+        PreviousClaims:
+          type: array
+          items:
+            $ref: '#/components/schemas/PreviousClaims'
+          description: >-
+            Claims on previous policy. If there are no claims on the policy then
+            this property is not required
+      additionalProperties: false
+
+    AEInsuranceAddress:
+      type: object
+      required:
+        - AddressLine
+        - PostCode
+        - TownName
+        - CountrySubDivision
+        - Country
+      properties:
+        AddressLine:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceAddressLine'
+          minItems: 1
+          maxItems: 3
+          description: Address line in free format text
+        PostCode:
+          type: string
+          minLength: 1
+          maxLength: 16
+          description: Postal code
+        TownName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Name of a built-up area, such as a town or city
+        CountrySubDivision:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Country subdivision, such as state or province
+        Country:
+          type: string
+          pattern: '[A-Z]{2}'
+          description: Country based on ISO 3166-1 alpha-2 code
+      description: Address information based on ISO 20022
+      additionalProperties: false
+
+    AEInsuranceCommunicationPreferences:
+      type: object
+      required:
+        - Type
+        - PhoneNumber
+      properties:
+        Type:
+          $ref: '#/components/schemas/AEInsuranceCommunicationPreferenceTypes'
+        PhoneNumber:
+          $ref: '#/components/schemas/AEInsuranceMobileNumber'
+      additionalProperties: false
+
+    AEInsuranceCommunicationPreferenceTypes:
+      type: string
+      enum:
+        - Home
+        - Mobile
+        - Other
+      description: Phone communication preference types
+
+    AEInsuranceMobileNumber:
+      type: string
+
+
+    AEInsuranceAddressLine:
+      type: string
+      minLength: 1
+      maxLength: 70
+
+    AECustomerPrimaryLanguage:
+      type: string
+      enum:
+        - English
+        - Arabic
+        - Other
+      description: Primary language spoken by the insurance policy customer
+
+    AEInsuranceCustomerBackgroundInformation:
+      type: object
+      required:
+        - Gender
+        - DateOfBirth
+        - MaritalStatus
+        - Nationality
+        - Salutation
+      properties:
+        Gender:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceGender'
+          description: Gender
+        DateOfBirth:
+          type: string
+          format: date
+          description: Date of birth
+        MaritalStatus:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceMartitalStatus'
+          description: Martial status
+        EducationBackground:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceEducationBackground'
+          description: Education background
+        Nationality:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCountryCode'
+          description: Nationality, based on ISO 3166-1 alpha-2 code
+        SecondNationality:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCountryCode'
+          description: >-
+            Second nationality, based on ISO 3166-1 alpha-2 code. Presence of
+            second nationality indicates customer is dual national
+        Salutation:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceSalutation'
+          description: Customer salutation
+        CountryOfBirth:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCountryCode'
+          description: Country of birth
+        PlaceOfBirth:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Place of birth
+        Religion:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceReligion'
+          description: Religion
+        MotherMaidenName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Mother's maiden name
+        SpouseName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Spouse name
+        SpouseDateOfBirth:
+          type: string
+          format: date
+          description: Spouse date of birth
+        SpouseEmploymentDetails:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceEmploymentStatus'
+          description: Spouse employment details
+        SpousePhoneNumber:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceMobileNumber'
+          description: Spouse phone number
+        NumberOfDependents:
+          type: integer
+          minimum: 0
+          description: Number of dependents
+      additionalProperties: false
+
+    AEInsuranceCustomerEmploymentDetails:
+      type: object
+      properties:
+        Profession:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Profession
+        ProfessionDescription:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Profession description
+        EmployerName:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Employer name
+        EmployerAddress:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceAddress'
+          description: Employer address
+        EmploymentStatus:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceEmploymentStatus'
+          description: Employment status
+        EmploymentStartDate:
+          type: string
+          format: date
+          description: Employment start date
+        EmploymentLocation:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Employment location
+        NatureOfEmployerBusiness:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Nature of employer business
+        Designation:
+          type: string
+        SourceOfIncome:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Source of income as a free form description
+        IncomeCurrency:
+          type: string
+          pattern: '[A-Z]{3}'
+          description: Income currency
+        MonthlyIncome:
+          type: number
+          format: decimal
+          description: Monthly income in AED
+        AnnualIncome:
+          type: number
+          format: decimal
+          description: Annual income in AED
+      additionalProperties: false
+
+    AEInsuranceIdentificationDetails:
+      type: object
+      properties:
+        EidNumber:
+          type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+          description: Emirates identification number
+        EidExpiryDate:
+          type: string
+          format: date
+          description: Emirates ID expiry date
+        PassportIssueCountry:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCountryCode'
+          pattern: ^[A-Z]{2,2}$
+          description: Passport issuing country code
+        PassportNumber:
+          type: string
+          pattern: ^[A-Z0-9]+$
+          description: Passport number
+        PassportIssueDate:
+          type: string
+          format: date
+          description: Passport issue date
+        PassportExpiryDate:
+          type: string
+          format: date
+          description: Passport expiry date
+        VisaNumber:
+          type: string
+          pattern: ^[0-9]+$
+          description: Visa number
+        VisaIssueCountry:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCountryCode'
+          pattern: ^[A-Z]{2,2}$
+          description: Visa issuing country code
+        VisaIssueDate:
+          type: string
+          format: date
+          description: Visa issue date
+        VisaExpiryDate:
+          type: string
+          format: date
+          description: Visa expiry date
+        UaeDrivingLicenseNumber:
+          type: string
+          description: UAE driving license number
+        UaeDrivingLicenseIssueDate:
+          type: string
+          format: date
+          description: UAE driving license issue date
+        UAEDrivingLicenseIssuingEmirate:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceEmirate'
+          description: Emirate where driving license was issued
+        MulkiyaCard:
+          type: string
+          format: base64
+          description: Mulkiya card as a Base64-encoded PDF document
+        HomeCountryDrivingLicenseNumber:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Home driving license number
+      additionalProperties: false
+
+    PreviousClaims:
+      type: object
+      required:
+        - ClaimDescription
+      properties:
+        ClaimAmount:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Claim amount and currency
+        ClaimDescription:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Description of claim using free form text
+      additionalProperties: false
+
+    AEInsuranceEducationBackground:
+      type: string
+      enum:
+        - HighSchool
+        - Undergraduate
+        - Postgraduate
+        - Doctorate
+        - Other
+
+    AEInsuranceReligion:
+      type: string
+      enum:
+        - Christian
+        - Muslim
+        - Jewish
+        - Hindu
+        - Buddhist
+        - Other
+
+    AEInsuranceSalutation:
+      type: string
+      enum:
+        - Mr
+        - Mrs
+        - Ms
+        - Miss
+        - Dr
+        - Prof
+        - Other
+
+    AEInsuranceEmploymentStatus:
+      type: string
+      enum:
+        - Employed
+        - SelfEmployed
+        - Unemployed
+        - Retired
+        - Other
+
+    Amount:
+      type: number
+
+    CurrencyCode:
+      type: string
+      pattern: ^[A-Z]{3}$
+
+    AEInsuranceClaimStatus:
+      type: string
+      enum:
+        - Submitted
+        - Authorized
+        - Rejected
+        - Pending
+        - Completed
+
+    AEMotorInsurancePolicyAdjustments:
+      type: object
+      required:
+        - Date
+      properties:
+        Date:
+          type: string
+          format: date
+          description: Date of adjustment
+        PremiumAdjustment:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Premium adjustment amount and currency
+        CoverageAdjustment:
+          allOf:
+            - $ref: '#/components/schemas/AEAmountAndCurrency'
+          description: Coverage adjustment amount and currency
+        Reason:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Reason for adjustment
+      description: Policy adjustments
+      additionalProperties: false
+
+    AEInsuranceGender:
+      type: string
+      enum:
+        - Male
+        - Female
+        - Other
+
+    AEInsuranceMartitalStatus:
+      type: string
+      enum:
+        - Single
+        - Married
+        - Divorced
+        - Widowed
+        - Separated
+        - Other
+
+    uuid:
+      type: string
+      minLength: 1
+      maxLength: 128
+
+    Meta:
+      type: object
+      required:
+        - totalPages
+      properties:
+        totalPages:
+          type: integer
+          description: Total number of pages where a result set is paginated
+          example: 1
+      additionalProperties: false
+
+    Error:
+      description: Default error response payload structure for Ozone Connect
+      type: object
+      properties:
+        errorCode:
+          type: string
+          description: Error code identifying the problem that occurred
+        errorMessage:
+          type: string
+          description: Message describing what problem has occurred
+
+  parameters:
+    providerId:
+      name: o3-provider-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: Identifier for the ASPSP that the request is targetted to
+
+    callerOrgId:
+      name: o3-caller-org-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the organization calling the API
+
+    callerClientId:
+      name: o3-caller-client-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the OIDC clientId calling the API
+
+    callerSoftwareStatementId:
+      name: o3-caller-software-statement-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the software statement calling the API
+
+    apiUri:
+      name: o3-api-uri
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The parameterised URL of the API being called by the caller
+
+    apiOperation:
+      name: o3-api-operation
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The API operation carried out by the caller (e.g. GET, POST, PUT, DELETE, PATCH)
+
+    consentId:
+      name: o3-consent-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The consentId for which this call is being made
+
+    callerInteractionId:
+      name: o3-caller-interaction-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The interaction ID passed in by the caller, if any
+
+    ozoneInteractionId:
+      name: o3-ozone-interaction-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An interaction ID generated by Ozone if the caller did not send in one. If the callerInteractionId is specified, this takes the same value.
+
+    psuIdentifier:
+      name: o3-psu-identifier
+      in: header
+      schema:
+        type: string
+      required: true
+      description: A Base64 encoded representation of the psuIdentifier JSON object.
+
+    aspspId:
+      name: o3-aspsp-id
+      in: header
+      schema:
+        type: string
+      required: true
+      deprecated: true
+      description:
+        Identifier for the financial institution that the request is targetted to.
+        This header is deprecated and will be removed in a future version of Ozone Connect. Use `o3-provider-id` instead.
+
+    page:
+      name: page
+      in: query
+      description: Page of results to request (standard pagination)
+      required: true
+      schema:
+        default: 1
+        type: integer
+      style: form
+
+    page-size:
+      name: page-size
+      in: query
+      description: Page size to request. Default is 25 (standard pagination)
+      required: true
+      schema:
+        default: 100
+        type: integer
+      style: form
+
+    InsurancePolicyId:
+      name: InsurancePolicyId
+      in: path
+      required: true
+      description: Unique identifier for a given insurance policy
+      schema:
+        $ref: '#/components/schemas/uuid'
+
+  responses:
+    BadRequestError:
+      description: Operation failed due to a invalid request parameter
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+            
+    UnauthorizedError:
+      description: Operation failed due to an invalid credential or missing token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Error:
+      description: Default error response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    InsurancePoliciesGetResponse:
+      description: The request has succeeded.
+      headers:
+        x-fapi-interaction-id:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InsurancePoliciesGetResponseBody"
+
+    InsurancePolicyGetResponse:
+      description: The request has succeeded.
+      headers:
+        x-fapi-interaction-id:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InsurancePolicyGetResponseBody"
+
+    InsuranceCustomerPaymentGetResponse:
+      description: The request has succeeded.
+      headers:
+        x-fapi-interaction-id:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InsuranceCustomerPaymentGetResponseBody"
+
+  securitySchemes:
+    OzoneConnectApiKey:
+      description: Communications between the API Hub and the LFI Ozone Connect implementation are secured using an API Key, which is a secret shared between the API Hub and the LFI.
+      type: apiKey
+      in: header
+      name: Authorization
+    OzoneConnectClientCredentials:
+      type: oauth2
+      description: |
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using a Client Credentials grant type.
+
+        LFIs must host an OAuth 2.0 Authorization Server to utilise this security pattern. Scope values are set during the onboarding process, and represented by a placeholder in this API description.
+      flows:
+        clientCredentials:
+          tokenUrl: "https://example.lfi.ae/token"
+          scopes:
+            placeholder: Placeholder for scopes, which are set by the LFI during onboarding
+    OzoneConnectJwtAuth:
+      description: |
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using the "JWT Auth" mechanism, where the Client presents a signed JSON Web Token as a credential.
+
+        The Server MUST verify the signature in order to authenticate the Client.
+
+        Please note that the value of the `scheme` parameter is not a registered HTTP Authentication Scheme, to indicate it is specific to Ozone Connect. Please refer to API Hub documentation for further details.
+      type: http
+      scheme: Ozone-Connect-JWT-Auth

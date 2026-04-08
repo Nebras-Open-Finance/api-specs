@@ -1,0 +1,3300 @@
+openapi: "3.0.0"
+info:
+  title: "UAE Payment API"
+  description: "## UAE Open Finance Payment API Specification"
+  version: v1.2
+servers:
+  - url: /open-finance/payment/v1.2
+tags:
+  - name: Payment Initiation
+    description: Initiate a Payment Consent
+  - name: Payment Instruction
+    description: Instruct the Payment
+  - name: Payment Instruction File
+    description: Instruct the File Payment
+  - name: Payment Instruction File Report
+    description: Retrieve the Payment Instruction File Report
+paths:
+  /payment-consents:
+    get:
+      tags:
+        - "Payment Initiation"
+      summary: "Retrieve Payment Consents by BaseConsentId"
+      description: |
+        Retrieve all Payment Consents for an BaseConsentId
+      operationId: "RetrievePaymentConsentsByBaseConsentId"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/baseConsentId"
+      responses:
+        "200":
+          $ref: "#/components/responses/200BaseConsentIdConsentsRetrieve"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "404":
+          $ref: "#/components/responses/404Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+  /payment-consents/{ConsentId}:
+    get:
+      tags:
+        - "Payment Initiation"
+      summary: "Retrieve a Payment Consent"
+      description: |
+        Retrieve a Payment Consent
+      operationId: "RetrievePaymentConsent"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/ConsentId"
+      responses:
+        "200":
+          $ref: "#/components/responses/200PaymentConsentRetrieve"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "404":
+          $ref: "#/components/responses/404Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+    patch:
+      tags:
+        - "Payment Initiation"
+      summary: "Modify a Payment Consent"
+      description: |
+        Modify a Payment Consent
+      operationId: "PatchPaymentConsent"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/ConsentId"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+      requestBody:
+        description: |
+          Request Body
+        content:
+          application/jwt:
+            schema:
+              $ref: "#/components/schemas/AEPatchPaymentConsentSigned"
+      responses:
+        "204":
+          $ref: "#/components/responses/204NoContent"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+  /payment-consents/{ConsentId}/refund:
+    get:
+      tags:
+        - "Payment Initiation"
+      summary: "Retrieve the Refund Details for a Payment Consent"
+      description: |
+        Retrieve a Payment Consent
+      operationId: "RetrievePaymentConsentRefund"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/ConsentId"
+      responses:
+        "200":
+          $ref: "#/components/responses/200PaymentConsentRefundRetrieve"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "404":
+          $ref: "#/components/responses/404Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+  /payment-consents/{ConsentId}/file:
+    post:
+      tags:
+        - "Payment Initiation"
+      summary: "Upload File for Payment Consent"
+      description: |
+        Upload File for Payment Consent
+      operationId: "UploadFilePaymentConsent"
+      parameters:
+        - $ref: "#/components/parameters/ConsentId"
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/x-idempotency-key"
+      requestBody:
+        description: |
+          Request Body
+        content:
+          '*/*':
+            schema:
+              type: string
+              description: Accepts any content type.
+      responses:
+        "200":
+          $ref: "#/components/responses/200NoContent"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - UserOAuth2Security:
+            - openid
+            - payments
+  /payments:
+    post:
+      tags:
+        - "Payment Instruction"
+      summary: "Create a Payment"
+      description: |
+        Create a Payment
+      operationId: "CreatePayment"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/x-idempotency-key"
+      requestBody:
+        description: |
+          Request Body
+        content:
+          application/jwt:
+            schema:
+              $ref: "#/components/schemas/AEPaymentRequestSigned"
+      responses:
+        "201":
+          $ref: "#/components/responses/201PaymentId"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - UserOAuth2Security:
+            - openid
+            - payments
+    get:
+      tags:
+        - "Payment Instruction"
+      summary: "Query for a PaymentId"
+      description: |
+        Lookup the Payments Resource using the x-idempotency-key. If an idempotency key is matched the `Links` object will be returned with the `Self` value populated. This will provide a pointer to the correct resource.
+
+        This is an alternative way for TPPs to obtain the response to a payment initiation operation where they did not receive any response body from the LFI (due to network error or timeout).
+      operationId: "QueryPaymentResource"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/x-idempotency-key"
+      responses:
+        "200":
+          $ref: "#/components/responses/200IdempotencyKeyQuery"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+  /payments/{PaymentId}:
+    get:
+      tags:
+        - "Payment Instruction"
+      summary: "Retrieve a Payment"
+      description: |
+        Retrieve a Payment
+      operationId: "RetrievePayment"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/PaymentId"
+      responses:
+        "200":
+          $ref: "#/components/responses/200PaymentId"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "404":
+          $ref: "#/components/responses/404Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+  /file-payments:
+    post:
+      tags:
+        - "Payment Instruction File"
+      summary: "Create a File Payment"
+      description: |
+        Create a File Payment
+      operationId: "CreateFilePayment"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/x-idempotency-key"
+      requestBody:
+        description: |
+          Request Body
+        content:
+          application/jwt:
+            schema:
+              $ref: "#/components/schemas/AEFilePaymentRequestSigned"
+      responses:
+        "201":
+          $ref: "#/components/responses/201FilePaymentId"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - UserOAuth2Security:
+            - openid
+            - payments
+    get:
+      tags:
+        - "Payment Instruction File"
+      summary: "Query for a File PaymentId"
+      description: |
+        Lookup the Payments Resource using the x-idempotency-key. If an idempotency key is matched the `Links` object will be returned with the `Self` value populated. This will provide a pointer to the correct resource.
+
+        This is an alternative way for TPPs to obtain the response to a payment initiation operation where they did not receive any response body from the LFI (due to network error or timeout).
+      operationId: "QueryFilePaymentResource"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/x-idempotency-key"
+      responses:
+        "200":
+          $ref: "#/components/responses/200IdempotencyKeyQuery"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+  /file-payments/{PaymentId}:
+    get:
+      tags:
+        - "Payment Instruction File"
+      summary: "Retrieve a File Payment"
+      description: |
+        Retrieve a File Payment
+      operationId: "RetrieveFilePayment"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/PaymentId"
+      responses:
+        "200":
+          $ref: "#/components/responses/200FilePaymentId"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "404":
+          $ref: "#/components/responses/404Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+  /file-payments/{PaymentId}/report:
+    get:
+      tags:
+        - Payment Instruction File Report
+      summary: Retrieve a File Payment Report
+      description: Retrieve a File Payment Report
+      operationId: "RetrieveFilePaymentReport"
+      parameters:
+        - $ref: "#/components/parameters/authorization"
+        - $ref: "#/components/parameters/x-fapi-auth-date"
+        - $ref: "#/components/parameters/x-fapi-customer-ip-address"
+        - $ref: "#/components/parameters/x-fapi-interaction-id-request"
+        - $ref: "#/components/parameters/x-customer-user-agent"
+        - $ref: "#/components/parameters/PaymentId"
+      responses:
+        "200":
+          $ref: "#/components/responses/200FilePaymentsFilePaymentIdReportFile"
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "404":
+          $ref: "#/components/responses/404Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+      security:
+        - TPPOAuth2Security:
+            - openid
+            - payments
+components:
+  headers:
+    Location:
+      description: "URI location to the created resource"
+      required: true
+      schema:
+        type: "string"
+        maxLength: 40
+    x-fapi-interaction-id:
+      required: true
+      description: "An RFC4122 UID used as a correlation id."
+      schema:
+        type: "string"
+      example: 49df2c2c-6b80-40ee-96a1-71910a248048
+    x-idempotency-key-consent:
+      description: "Ensures the LFI processes the resource successfully only once per x-idempotency-key"
+      schema:
+        type: "string"
+        maxLength: 40
+        pattern: "^(\\S*)$"
+      example: 78dae4513b8847f98e2d4173b4ed0eb6
+
+  ############################################
+  # RESPONSES
+  ############################################
+  responses:
+    TPPWebhookResponse:
+      description: "Response Status Code"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    403Error:
+      description: "Forbidden"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEErrorResponseSigned"
+          examples:
+            Forbidden:
+              $ref: "#/components/examples/Error403ForbiddenSigned"
+    404Error:
+      description: "Not found"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    405Error:
+      description: "Method Not Allowed"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    406Error:
+      description: "Not Acceptable"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    415Error:
+      description: "Unsupported Media Type"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    429Error:
+      description: "Too Many Requests"
+      headers:
+        Retry-After:
+          description: "Number in seconds to wait"
+          schema:
+            type: "integer"
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    500Error:
+      description: "Internal Server Error"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEErrorResponseSigned"
+          examples:
+            Internal Server Error:
+              $ref: "#/components/examples/Error500InternalServerErrorSigned"
+    401Error:
+      description: "Unauthorized"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    400Error:
+      description: "Bad request"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEErrorResponseSigned"
+          examples:
+            Bad Request:
+              $ref: "#/components/examples/Error400BadRequestSigned"
+    200PaymentConsentRetrieve:
+      description: "Payment Consent Retrieve"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEPaymentConsentResponseSigned"
+    200PaymentConsentRefundRetrieve:
+      description: "Payment Consent Retrieve"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEPaymentConsentRefundResponseSigned"
+    200BaseConsentIdConsentsRetrieve:
+      description: "Retrieve Payment Consents by BaseConsentId"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEPaymentConsentsByBaseConsentIdResponseSigned"
+    201PaymentId:
+      description: "Payment Id"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+        x-idempotency-key:
+          $ref: "#/components/headers/x-idempotency-key-consent"
+        Location:
+          $ref: "#/components/headers/Location"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEPaymentIdResponseSigned"
+    201FilePaymentId:
+      description: "File Payment Id"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+        x-idempotency-key:
+          $ref: "#/components/headers/x-idempotency-key-consent"
+        Location:
+          $ref: "#/components/headers/Location"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEFilePaymentIdResponseSigned"
+    200PaymentId:
+      description: "Payment Id"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEPaymentIdResponseSigned"
+    200FilePaymentId:
+      description: "File Payment Id"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema:
+            $ref: "#/components/schemas/AEFilePaymentIdResponseSigned"
+    204NoContent:
+      description: "No Content"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    200IdempotencyKeyQuery:
+      description: "Provides a link to the resource created with the matching `x-idempotency-key` value"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+      content:
+        application/jwt:
+          schema: 
+            $ref: "#/components/schemas/AEIdempotencyKeyQuery"
+    200NoContent:
+      description: "200 OK No Content"
+      headers:
+        x-fapi-interaction-id:
+          $ref: "#/components/headers/x-fapi-interaction-id"
+    200FilePaymentsFilePaymentIdReportFile:
+      description: "File Payments Read"
+      headers:
+        x-fapi-interaction-id:
+          description: "An RFC4122 UID used as a correlation id."
+          required: true
+          schema:
+            type: "string"
+      content:
+        '*/*':
+          schema:
+            type: string
+            description: Any content type.
+  ############################################
+  # SCHEMAS
+  ############################################
+  schemas:
+    AEJwt:
+      description: |
+        [https://www.rfc-editor.org/rfc/rfc7519](https://www.rfc-editor.org/rfc/rfc7519)
+      type: "object"
+      properties:
+        iss:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)
+          type: string
+        exp:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)
+          type: number
+        nbf:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
+          type: number
+        aud:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+          type: array
+          items:
+            type: string
+        iat:
+          description: |
+            [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)
+          type: number
+      required: [iss, exp, nbf]
+    AEPaymentConsentResponseSigned:
+      description: |
+        Payment Consent Response Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEPaymentConsentResponse"
+          required: [message]
+    AEPaymentConsentRefundResponseSigned:
+      description: |
+        Payment Consent Response Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEPaymentConsentRefundResponse"
+          required: [message]
+    AEPaymentConsentsByBaseConsentIdResponseSigned:
+      description: |
+        Payment Consents By BaseConsentId Response Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              type: "array"
+              items:
+                $ref: "#/components/schemas/AEPaymentConsentResponse"
+          required: [message]
+    AEPaymentIdResponseSigned:
+      description: |
+        Payment Response Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEPaymentIdResponse"
+          required: [message]
+    AEFilePaymentIdResponseSigned:
+      description: |
+        Payment Response Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEFilePaymentIdResponse"
+          required: [message]
+    AEPaymentRequestSigned:
+      description: |
+        Payment Request Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEPaymentRequest"
+          required: [message]
+    AEFilePaymentRequestSigned:
+      description: |
+        Payment Request Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEFilePaymentRequest"
+          required: [message]
+    AEErrorResponseSigned:
+      description: |
+        Error Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEErrorResponse"
+          required: [message]
+    AEWebhookEventSigned:
+      description: |
+        Webhook Event Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEWebhookEvent"
+          required: [message]
+    AEEventNotification:
+      type: "object"
+      description: |
+        A Webhook Subscription Schema
+      required:
+        - "Webhook"
+      properties:
+        Webhook:
+          description: |
+            A Webhook Schema
+          type: "object"
+          properties:
+            Url:
+              description: |
+                The TPP Callback URL being registered with the LFI
+              type: "string"
+              example: "https://api.tpp.com/webhook/callbackUrl"
+            IsActive:
+              description: |
+                The TPP specifying whether the LFI should send (IsActive true) or not send (IsActive false) Webhook Notifications to the TPP's Webhook URL
+              type: "boolean"
+              example: false
+          additionalProperties: false
+      additionalProperties: false
+    AEWebhookEvent:
+      type: "object"
+      description: "Webhook Event"
+      required:
+        - "Data"
+        - "EventMeta"
+      properties:
+        Data:
+          type: "object"
+          description: "Event Data. This Data Object will contain the same API resource and Schema that has triggered the Event."
+        Links:
+          $ref: "#/components/schemas/AELinksSelf"
+        EventMeta:
+          type: "object"
+          description: "Event Metadata"
+          required:
+            - "EventDateTime"
+            - "EventResource"
+            - "EventType"
+            - "ConsentId"
+          properties:
+            EventDateTime:
+              type: "string"
+              format: "date-time"
+              description: "Date Time of the first Event in the Message"
+            EventResource:
+              type: "string"
+              description: "The API resource to which the Event itself is associated"
+              example: ""
+            EventType:
+              type: "string"
+              enum:
+                [
+                  "Resource.Created",
+                  "Resource.Updated",
+                  "Resource.Deleted",
+                ]
+              description: "The Type of Event"
+            ConsentId:
+              description: "Unique identification as assigned to identify the consents resource."
+              type: "string"
+              minLength: 1
+              maxLength: 128
+          additionalProperties: false
+      additionalProperties: false
+    AESingleInstantPayment:
+      type: "object"
+      description: |
+        A single immediate payment consent that MUST be used for a single payment which will be initiated immediately after User authorization at the LFI.
+      required:
+        - "Type"
+        - "Amount"
+      properties:
+        Type:
+          type: "string"
+          description: "The Payment Type"
+          enum:
+            - SingleInstantPayment
+        Amount:
+          $ref: "#/components/schemas/AEActiveCurrencyAmount"
+      additionalProperties: false
+    AESingleFutureDatedPayment:
+      type: "object"
+      description: |
+        A single payment consent that MUST be used for a single payment executed by the LFI on a future date. This payment consent will be authorized by the User during the payment journey, and the payment will be exectued by the TPP immediately.
+      required:
+        - "Type"
+        - "Amount"
+        - "RequestedExecutionDate"
+      properties:
+        Type:
+          type: "string"
+          description: "The Payment Type"
+          enum:
+            - SingleFutureDatedPayment
+        Amount:
+          $ref: "#/components/schemas/AEActiveCurrencyAmount"
+        RequestedExecutionDate:
+          $ref: "#/components/schemas/AERequestedExecutionDate"
+      additionalProperties: false
+    AELongLivedPaymentConsent:
+      type: "object"
+      description: |
+        A long-lived payment consent.
+      required:
+        - "PeriodicSchedule"
+      properties:
+        MaximumCumulativeValueOfPayments:
+          $ref: "#/components/schemas/AEMaximumCumulativeValueOfPayments"
+        MaximumCumulativeNumberOfPayments:
+          $ref: "#/components/schemas/AEMaximumCumulativeNumberOfPayments"
+        PeriodicSchedule:
+          description: |
+            The definition for a schedule
+          oneOf:
+            - $ref: "#/components/schemas/AEFixedDefinedSchedule"
+            - $ref: "#/components/schemas/AEVariableDefinedSchedule"
+            - $ref: "#/components/schemas/AEFixedPeriodicSchedule"
+            - $ref: "#/components/schemas/AEVariablePeriodicSchedule"
+            - $ref: "#/components/schemas/AEFixedOnDemand"
+            - $ref: "#/components/schemas/AEVariableOnDemand"
+          discriminator:
+            propertyName: Type
+      additionalProperties: false
+    AEFilePaymentConsent:
+      type: "object"
+      description: |
+        A file based payment consent.
+      required:
+        - "FileType"
+        - "FileHash"
+        - "NumberOfTransactions"
+        - "ControlSum"
+      properties:
+        FileType:
+          $ref: "#/components/schemas/AEFileType"
+        FileHash:
+          $ref: "#/components/schemas/AEFileHash"
+        FileReference:
+          $ref: "#/components/schemas/AEReference"
+        NumberOfTransactions:
+          $ref: "#/components/schemas/AEFileNumberOfTransactions"
+        ControlSum:
+          $ref: "#/components/schemas/AEControlSum"
+        RequestedExecutionDate:
+          $ref: "#/components/schemas/AERequestedExecutionDate"
+      additionalProperties: false
+    AEMaximumCumulativeValueOfPayments:
+      description: |
+        The maximum cumulative value of all successful payment rails executions under the Consent. 
+        Each successful payment rails execution amount (related to the Consent) is added to the total cumulative value of the Consent which cannot exceed the maximum value agreed with the User at the point of consent.
+      type: "object"
+      required:
+        - "Amount"
+        - "Currency"
+      properties:
+        Amount:
+          $ref: "#/components/schemas/AEActiveOrHistoricAmount"
+        Currency:
+          $ref: "#/components/schemas/AEActiveOrHistoricCurrencyCode"
+    AEMaximumCumulativeNumberOfPayments:
+      type: "integer"
+      description: |
+        The maximum cumulative number of all successful payment rails executions under the Consent. 
+        Each successful payment rails execution (related to the Consent) is added to the total cumulative number of payments for the Consent which cannot exceed the maximum value agreed with the User at the point of consent.
+    AEPeriodTypeMaximumCumulativeValueOfPayments:
+      description: |
+        The maximum cumulative payment value of all payment initiations per Period Type.
+      type: "object"
+      required:
+        - "Amount"
+        - "Currency"
+      properties:
+        Amount:
+          $ref: "#/components/schemas/AEActiveOrHistoricAmount"
+        Currency:
+          $ref: "#/components/schemas/AEActiveOrHistoricCurrencyCode"
+    AEPeriodTypeMaximumCumulativeNumberOfPayments:
+      type: "integer"
+      description: |
+        The maximum frequency of payment initiations per Period Type.
+    AEMaximumIndividualAmount:
+      description: |
+        This is the Maximum amount a variable payment can take per period.
+      type: "object"
+      required:
+        - "Amount"
+        - "Currency"
+      properties:
+        Amount:
+          $ref: "#/components/schemas/AEActiveOrHistoricAmount"
+        Currency:
+          $ref: "#/components/schemas/AEActiveOrHistoricCurrencyCode"
+    AEPeriodType:
+      type: "string"
+      description: |
+        |Period Type|Description| 
+        |-----------|-----------| 
+        |Day|A continuous period of time, consisting of 24 consecutive hours, starting from midnight (00:00:00) and finishing at 23:59:59 of the same day. |
+        |Week|A continuous period of time, consisting of seven consecutive days, starting from midnight (00:00:00) and finishing at 23:59:59 of the 7th day. |
+        |Month|A continuous period of time starting from midnight (00:00:00) of the first day of a month and finishing at 23:59:59 of the last day of that month.|
+        |Year|A continuous period of time, consisting of 12 months.|
+      enum:
+        - Day
+        - Week
+        - Month
+        - Year
+    AEPeriodStartDate:
+      type: "string"
+      description: |
+        Specifies the start date of when a payment schedule begins.
+      format: "date"
+    AEVariablePeriodicSchedule:
+      description: |
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+        The payments for this consent must be executed only on the PeriodStartDate, and
+        dates recurring based on the PeriodType.
+      type: "object"
+      additionalProperties: false
+      required:
+        - "PeriodType"
+        - "PeriodStartDate"
+        - "Type"
+        - "MaximumIndividualAmount"
+      properties:
+        Type:
+          type: "string"
+          description: "The Periodic Schedule Type"
+          enum:
+            - VariablePeriodicSchedule
+        PeriodType:
+          $ref: "#/components/schemas/AEPeriodType"
+        PeriodStartDate:
+          $ref: "#/components/schemas/AEPeriodStartDate"
+        MaximumIndividualAmount:
+          $ref: "#/components/schemas/AEMaximumIndividualAmount"
+    AEVariableOnDemand:
+      description: |
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+        The payments for this consent may be executed on any date, as long as they are within the Controls for a PeriodType
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Type"
+        - "PeriodType"
+        - "PeriodStartDate"
+        - "Controls"
+      properties:
+        Type:
+          type: "string"
+          description: "The Periodic Schedule Type"
+          enum:
+            - VariableOnDemand
+        PeriodType:
+          $ref: "#/components/schemas/AEPeriodType"
+        PeriodStartDate:
+          $ref: "#/components/schemas/AEPeriodStartDate"
+        Controls:
+          type: "object"
+          minProperties: 1
+          additionalProperties: false
+          properties:
+            MaximumIndividualAmount:
+              $ref: "#/components/schemas/AEMaximumIndividualAmount"
+            MaximumCumulativeValueOfPaymentsPerPeriod:
+              $ref: "#/components/schemas/AEPeriodTypeMaximumCumulativeValueOfPayments"
+            MaximumCumulativeNumberOfPaymentsPerPeriod:
+              $ref: "#/components/schemas/AEPeriodTypeMaximumCumulativeNumberOfPayments"
+    AEFixedPeriodicSchedule:
+      description: |
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+        The payments for this consent must be executed only on the PeriodStartDate, and
+        dates recurring based on the PeriodType.
+      type: "object"
+      additionalProperties: false
+      required:
+        - "PeriodType"
+        - "PeriodStartDate"
+        - "Amount"
+        - "Type"
+      properties:
+        Type:
+          type: "string"
+          description: "The Periodic Schedule Type"
+          enum:
+            - FixedPeriodicSchedule
+        PeriodType:
+          $ref: "#/components/schemas/AEPeriodType"
+        PeriodStartDate:
+          $ref: "#/components/schemas/AEPeriodStartDate"
+        Amount:
+          $ref: "#/components/schemas/AEActiveCurrencyAmount"
+    AEFixedOnDemand:
+      description: |
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+        The payments for this consent may be executed on any date, as long as they are within the Controls for a PeriodType
+      type: "object"
+      additionalProperties: false
+      required:
+        - "PeriodType"
+        - "PeriodStartDate"
+        - "Amount"
+        - "Type"
+        - "Controls"
+      properties:
+        Type:
+          type: "string"
+          description: "The Periodic Schedule Type"
+          enum:
+            - FixedOnDemand
+        PeriodType:
+          $ref: "#/components/schemas/AEPeriodType"
+        PeriodStartDate:
+          $ref: "#/components/schemas/AEPeriodStartDate"
+        Amount:
+          $ref: "#/components/schemas/AEActiveCurrencyAmount"
+        Controls:
+          type: "object"
+          minProperties: 1
+          additionalProperties: false
+          properties:
+            MaximumCumulativeValueOfPaymentsPerPeriod:
+              $ref: "#/components/schemas/AEPeriodTypeMaximumCumulativeValueOfPayments"
+            MaximumCumulativeNumberOfPaymentsPerPeriod:
+              $ref: "#/components/schemas/AEPeriodTypeMaximumCumulativeNumberOfPayments"
+    AEFixedDefinedSchedule:
+      type: "object"
+      description: |
+        Payment Schedule denoting a list of pre-defined future dated payments all with fixed amounts and dates.
+      additionalProperties: false
+      required:
+        - "Schedule"
+        - "Type"
+      properties:
+        Type:
+          type: "string"
+          description: "The Periodic Schedule Type"
+          enum:
+            - FixedDefinedSchedule
+        Schedule:
+          type: "array"
+          minItems: 1
+          maxItems: 53
+          uniqueItems: false
+          items:
+            type: "object"
+            additionalProperties: false
+            required:
+              - "PaymentExecutionDate"
+              - "Amount"
+            properties:
+              PaymentExecutionDate:
+                $ref: "#/components/schemas/AEPaymentExecutionDate"
+              Amount:
+                $ref: "#/components/schemas/AEActiveCurrencyAmount"
+    AEVariableDefinedSchedule:
+      type: "object"
+      description: |
+        Payment Schedule denoting a list of pre-defined future dated payments all with variable amounts and dates.
+      additionalProperties: false
+      required:
+        - "Schedule"
+        - "Type"
+      properties:
+        Type:
+          type: "string"
+          description: "The Periodic Schedule Type"
+          enum:
+            - VariableDefinedSchedule
+        Schedule:
+          type: "array"
+          minItems: 1
+          maxItems: 53
+          uniqueItems: false
+          items:
+            type: "object"
+            additionalProperties: false
+            required:
+              - "PaymentExecutionDate"
+              - "MaximumIndividualAmount"
+            properties:
+              PaymentExecutionDate:
+                $ref: "#/components/schemas/AEPaymentExecutionDate"
+              MaximumIndividualAmount:
+                $ref: "#/components/schemas/AEMaximumIndividualAmount"
+    AEErrorResponse:
+      description: "An array of detail error codes, and messages, and URLs to documentation to help remediation."
+      type: "object"
+      properties:
+        Errors:
+          items:
+            $ref: "#/components/schemas/AEError"
+          type: "array"
+          minItems: 1
+      required:
+        - "Errors"
+      additionalProperties: false
+    AEMessage:
+      description: "A description of the error that occurred. e.g., 'A mandatory field isn't supplied' or 'RequestedExecutionDate must be in future'\nUAEOF doesn't standardise this field"
+      type: "object"
+      required:
+        - "en"
+      properties:
+        en:
+          type: "string"
+          description: "English value of the string"
+          minLength: 1
+          maxLength: 500
+        ar:
+          type: "string"
+          description: "Arabic value of the string"
+          minLength: 1
+          maxLength: 500
+      additionalProperties: false
+    AEError:
+      description: "Error"
+      type: "object"
+      required:
+        - "Code"
+        - "Message"
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        Code:
+          description: "Low level textual error code"
+          type: "string"
+          enum:
+            - "AccessToken.Unauthorized"
+            - "AccessToken.InvalidScope"
+            - "Consent.TransientAccountAccessFailure"
+            - "Consent.AccountTemporarilyBlocked"
+            - "Consent.PermanentAccountAccessFailure"
+            - "Consent.Invalid"
+            - "Consent.BusinessRuleViolation"
+            - "Consent.FailsControlParameters"
+            - "Consent.InvalidUserIdentifier"
+            - "JWS.InvalidSignature"
+            - "JWS.Malformed"
+            - "JWS.InvalidClaim"
+            - "JWS.InvalidHeader"
+            - "JWE.DecryptionError"
+            - "JWE.InvalidHeader"
+            - "GenericRecoverableError"
+            - "GenericError"
+            - "Event.UnexpectedEvent"
+            - "Body.InvalidFormat"
+            - "Resource.InvalidResourceId"
+            - "Resource.InvalidFormat"
+        Message:
+          $ref: "#/components/schemas/AEMessage"
+        Path:
+          description: "Recommended but optional reference to the JSON Path of the field with error, e.g., Data.Initiation.InstructedAmount.Currency"
+          type: "string"
+          minLength: 1
+          maxLength: 500
+        Url:
+          description: "URL to help remediate the problem, or provide more information, or to API Reference, or help etc"
+          type: "string"
+    AELinksSelf:
+      type: "object"
+      description: "Links relevant to the resource"
+      required:
+        - "Self"
+      properties:
+        Self:
+          $ref: "#/components/schemas/AESelf"
+      additionalProperties: false
+    AELinksRelatedConsent:
+      type: "object"
+      description: "Links relevant to the resource"
+      required:
+        - "Self"
+        - "Related"
+      properties:
+        Self:
+          $ref: "#/components/schemas/AERelatedSinglePayment"
+        Related:
+          $ref: "#/components/schemas/AESelfConsent"
+      additionalProperties: false
+    AELinksRelatedPayment:
+      type: "object"
+      description: "Links relevant to the resource"
+      required:
+        - "Self"
+        - "Related"
+      properties:
+        Self:
+          $ref: "#/components/schemas/AESelfConsent"
+        Related:
+          $ref: "#/components/schemas/AERelatedPayment"
+      additionalProperties: false
+    AEPaymentConsumption:
+      type: "object"
+      description: |
+        Data to track the consumption of Payments in relation to an authorized Consent Schedule
+      required:
+        - "CumulativeNumberOfPayments"
+        - "CumulativeValueOfPayments"
+      properties:
+        CumulativeNumberOfPayments:
+          type: "number"
+          description: |
+            The cumulative number of payment instructions initiated under the consent schedule, excluding instructions in a Rejected state.
+          minLength: 1
+          example: 4
+        CumulativeValueOfPayments:
+          description: |
+            The cumulative value of payment instructions initiated under the consent schedule, excluding instructions in a Rejected state.
+            A number of monetary units specified in an active currency where the unit of currency is explicit and compliant with ISO 4217."
+          type: "object"
+          required:
+            - "Amount"
+            - "Currency"
+          properties:
+            Amount:
+              $ref: "#/components/schemas/AEActiveOrHistoricAmount"
+            Currency:
+              $ref: "#/components/schemas/AEActiveOrHistoricCurrencyCode"
+        CumulativeNumberOfPaymentsInCurrentPeriod:
+          type: "number"
+          description: |
+            The cumulative number of payment instructions in the current period initiated under the consent schedule, excluding instructions in a Rejected state.
+          minLength: 1
+          example: 1
+        CumulativeValueOfPaymentsInCurrentPeriod:
+          description: |
+            The cumulative value of payment instructions in the current period initiated under the consent schedule, excluding instructions in a Rejected state.
+            A number of monetary units specified in an active currency where the unit of currency is explicit and compliant with ISO 4217."
+          type: "object"
+          required:
+            - "Amount"
+            - "Currency"
+          properties:
+            Amount:
+              $ref: "#/components/schemas/AEActiveOrHistoricAmount"
+            Currency:
+              $ref: "#/components/schemas/AEActiveOrHistoricCurrencyCode"
+      additionalProperties: false
+    AEMeta:
+      type: "object"
+      description: "Meta Data relevant to the resource"
+      additionalProperties: false
+    AEMetaMultiAuthorization:
+      type: "object"
+      description: |
+        Meta Data with Multi-Authorization relevant to the payload. 
+        For a payment, it represents any Authorizers within the LFI domain that are involved in approving the payment request.
+      properties:
+        MultipleAuthorizers:
+          type: "object"
+          description: "Multiple Authorizers Schema"
+          properties:
+            TotalRequired:
+              description: |
+                The total number of Authorizers required to process the request
+              type: "number"
+            Authorizations:
+              type: "array"
+              items:
+                description: |
+                  Authorizer
+                type: "object"
+                properties:
+                  AuthorizerId:
+                    description: |
+                      The Authorizer's Identifier
+                    type: "string"
+                  AuthorizerType:
+                    description: |
+                      The Type of Authorizer. For example, Financial, Management, etc.
+                    type: "string"
+                  AuthorizationDate:
+                    description: |
+                      The DateTime of when the Authorization occurred. All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2023-04-05T10:43:07+00:00
+                    type: "string"
+                    format: "date-time"
+                  AuthorizationStatus:
+                    description: |
+                      The Status reflecting the Authorizer's final decision regarding the request
+                    type: "string"
+                    enum:
+                      - "Pending"
+                      - "Approved"
+                      - "Rejected"
+                additionalProperties: false
+          additionalProperties: false
+      additionalProperties: false
+    AESelf:
+      description: "A link to the current resource"
+      type: "string"
+      format: "uri"
+    AESelfConsent:
+      description: "A link to the related payment consents resource"
+      type: "string"
+      format: "uri"
+      example: "https://api.lfi.sa/open-banking/payment/2023.11.01-final/payment-consents/aac-69255d98-ab0e-4758-92a7-cacbf3073efa"
+    AERelatedSinglePayment:
+      type: string
+      format: "uri"
+      description: "A link to the current payment resource"
+      example: "https://api.lfi.sa/open-banking/payment/2023.11.01-final/payments/83b47199-90c2-4c05-9ef1-aeae68b0fc7c"
+    AERelatedPayment:
+      description: |
+        A link to the related payments resource. 
+
+        * For a Single Payment, this Array must have have 1 entry, associated with the Single Payment resource created against this consent. 
+        * For Multi-Payment, this Array will have 1 or more entries of all the Payment resources created against this Consent
+      type: "array"
+      items:
+        type: "string"
+      example: []
+    AEPaymentId:
+      description: "An API specific unique identification as assigned by the LFI to identify the domestic Payment resource."
+      type: "string"
+      minLength: 1
+      maxLength: 40
+      example: 83b47199-90c2-4c05-9ef1-aeae68b0fc7c
+    AEConsentId:
+      description: |
+        Unique identification assigned by the TPP to identify the consent resource.
+      type: "string"
+      minLength: 1
+      maxLength: 128
+      example: aac-69255d98-ab0e-4758-92a7-cacbf3073efa
+    AEBaseConsentId:
+      description: |
+        The original ConsentId assigned by the TPP.
+        It is used by the TPP for updating/renewing parameters associated with long-lived consents.
+        It must be provided when long-lived consent parameters are updated/renewed for a current consent that has not yet finished.
+      type: "string"
+      minLength: 1
+      maxLength: 128
+      example: abc-19877d98-ab0e-4758-92a7-vvffr1234abv
+    AECreationDateTime:
+      description: "Date and time at which the message was created. All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2023-04-05T10:43:07+00:00"
+      type: "string"
+      format: "date-time"
+    AEPaymentStatus:
+      description: |
+        Specifies the status of the payment information group
+        * Pending: Payment initiation or individual transaction included in the payment initiation is pending. Further checks and status update will be performed.
+        * Rejected: The payment initiation has been rejected
+        * AcceptedSettlementCompleted: Settlement of the Debtor's account has been completed
+        * AcceptedCreditSettlementCompleted: When the Creditor account has been credited with the funds of the payment initiated via the TPP
+        * AcceptedWithoutPosting:  When the Recipient Bank has accepted the payment but has not applied the credit to the Creditor account yet.
+      type: "string"
+      enum:
+        - "Pending"
+        - "AcceptedSettlementCompleted"
+        - "AcceptedCreditSettlementCompleted"
+        - "AcceptedWithoutPosting"
+        - "Rejected"
+      example: Pending
+    AEFilePaymentStatus:
+      description: |
+        Specifies the status of the payment information group
+        * Received: The file payment has been received.
+        * Rejected: The file payment has been rejected.
+      type: "string"
+      enum:
+        - "Received"
+        - "Rejected"
+      example: Received
+    AEStatusUpdateDateTime:
+      description: "Date and time at which the resource status was updated.All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2023-04-05T10:43:07+00:00"
+      type: "string"
+      format: "date-time"
+    AERequestedExecutionDate:
+      description: |
+        The date when the TPP expects the LFI to execute the payment.
+        The date must be in the future and cannot be on the same day or a day in the past. 
+        The maximum date in the future that can be specified is 1 year from the day of the consent of the User to the TPP. 
+        All dates in the JSON payloads are represented in ISO 8601 date format.
+      type: "string"
+      format: "date"
+    AEConsentStatus:
+      description: |
+        Specifies the status of a consent.
+
+        | Consent Status| State Type| Description|
+        |---------------|-----------|------|
+        | AwaitingAuthorization | Pending | The consent is awaiting authorization.|
+        | Authorized | In Use | The consent has been successfully authorized.|
+        | Rejected | Terminal | The unauthorized consent has been rejected at the LFI.|
+        | Revoked | Terminal | The consent has been revoked at the TPP or LFI.|
+        | Expired | Terminal | The consent is now expired.|
+        | Consumed | Terminal | The consented action(s) have either been completed successfully.|
+        | Suspended | In Use | The consent has been suspended, pending further enquiries.|
+      type: "string"
+      enum:
+        - "AwaitingAuthorization"
+        - "Authorized"
+        - "Rejected"
+        - "Revoked"
+        - "Expired"
+        - "Consumed"
+        - "Suspended"
+    AEPatchConsentStatus:
+      description: |
+        Specifies the authorization statuses of a consent.
+
+        | Consent Status| State Type| Description|
+        |---------------|-----------|------|
+        | Revoked | Terminal | The consent has been revoked at the TPP.|
+        | Suspended | In Use | The consent has been suspended by the TPP.|
+        | Authorized | In Use | The consent has been successfully re-authorized by the TPP.|
+      type: "string"
+      enum:
+        - "Revoked"
+        - "Suspended"
+        - "Authorized"
+    IsSingleAuthorization:
+      description: |
+        Specifies to the LFI that the consent authorization must be completed in a single authorization Step 
+        with the LFI
+      type: "boolean"
+    AuthorizationExpirationDateTime:
+      description: The date and time by which a Consent (in AwaitingAuthorization status) must be Authorized by the User.
+      type: string
+      format: date-time
+    AEPaymentRequest:
+      description: |
+        Payment Request Schema
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Data"
+      properties:
+        Data:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "ConsentId"
+            - "Instruction"
+            - "PaymentPurposeCode"
+            - "OpenFinanceBilling"
+          properties:
+            ConsentId:
+              $ref: "#/components/schemas/AEConsentId"
+            Instruction:
+              $ref: "#/components/schemas/AEPaymentInstruction"
+            CurrencyRequest:
+              $ref: "#/components/schemas/AECurrencyRequest"
+            PersonalIdentifiableInformation:            
+              description: Personal Identifiable Information, represented in both encoded and decoded form 
+                using a `oneOf`, to help implementers readily understand both the structure and 
+                serialized form of the property.
+
+                **Implementations MUST reflect the AEJWEPaymentPII Schema Object**
+                **structure and the notes provided on implementing a JWS and JWE**
+                **The decoded form AEPaymentPII is for guidance on content only**
+              oneOf:
+               - $ref: "#/components/schemas/AEJWEPaymentPII"
+               - $ref: "#/components/schemas/AEPaymentPII"
+            PaymentPurposeCode:
+              $ref: "#/components/schemas/AEPaymentPurposeCode"
+            DebtorReference:
+              $ref: "#/components/schemas/AEStructuredDebtorReference"
+            CreditorReference:
+              $ref: "#/components/schemas/AEStructuredCreditorReference"
+            OpenFinanceBilling:
+              $ref: "#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling"
+    AEFilePaymentRequest:
+      description: |
+        File Payment Request Schema
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Data"
+      properties:
+        Data:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "ConsentId"
+            - "PaymentPurposeCode"
+          properties:
+            ConsentId:
+              $ref: "#/components/schemas/AEConsentId"
+            Instruction:
+              $ref: "#/components/schemas/AEFilePaymentConsent"
+            PaymentPurposeCode:
+              $ref: "#/components/schemas/AEPaymentPurposeCode"
+            DebtorReference:
+              $ref: "#/components/schemas/AEStructuredDebtorReference" 
+    AECreditorAgent:
+      description: |
+        Refers to the Financial Institution.
+      type: "object"
+      required:
+        - "SchemeName"
+        - "Identification"
+      properties:
+        SchemeName:
+          type: "string"
+          description: |
+            Refers to the Identification scheme for uniquely identifying the Agent.
+
+            * BICFI: The BIC/SWIFT Code
+            * Other: The ID; A Country Code followed by a Bank Code (4 character code). The full list of LFI names and 6 digits IDs are as follows:
+          enum:
+            - "BICFI"
+            - "Other"
+        Identification:
+          description: |
+            The Agent is the Country Code followed by a Bank Code"
+          type: "string"
+        Name:
+          description: "Name by which an agent is known and which is usually used to identify that agent."
+          type: "string"
+          minLength: 1
+          maxLength: 140
+        PostalAddress:
+          $ref: "#/components/schemas/AEAddress"
+    AEPaymentConsentResponse:
+      description: |
+        Payment Consent Response Schema
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Data"
+        - "Links"
+      properties:
+        Data:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "ConsentId"
+            - "BaseConsentId"
+            - "Status"
+            - "StatusUpdateDateTime"
+            - "CreationDateTime"
+            - "ExpirationDateTime"
+            - "ControlParameters"
+            - "PaymentPurposeCode"
+            - "PaymentConsumption"
+          properties:
+            ConsentId:
+              $ref: "#/components/schemas/AEConsentId"
+            BaseConsentId:
+              $ref: "#/components/schemas/AEBaseConsentId"
+            IsSingleAuthorization:
+              $ref: "#/components/schemas/IsSingleAuthorization"
+            AuthorizationExpirationDateTime:
+              $ref: "#/components/schemas/AuthorizationExpirationDateTime"
+            Permissions:
+              $ref: "#/components/schemas/AEConsentPermissions"
+            ExpirationDateTime:
+              $ref: "#/components/schemas/AEConsentExpirationDateTime"
+            Status:
+              $ref: "#/components/schemas/AEConsentStatus"
+            RevokedBy:
+              $ref: "#/components/schemas/AERevokedBy"
+            CreationDateTime:
+              $ref: "#/components/schemas/AECreationDateTime"
+            StatusUpdateDateTime:
+              $ref: "#/components/schemas/AEStatusUpdateDateTime"
+            Charges:
+              $ref: "#/components/schemas/AECharges"
+            ExchangeRate:
+              $ref: "#/components/schemas/AEExchangeRateInformation"
+            CurrencyRequest:
+              $ref: "#/components/schemas/AECurrencyRequest"
+            ControlParameters:
+              description: |
+                Control Parameters set the overall rules for the Payment Schedule
+              type: "object"
+              additionalProperties: false
+              properties:
+                IsDelegatedAuthentication:
+                  type: boolean
+                  description: Indicates whether the all payment controls will be defined and managed by the TPP under the Payment with Delegated Authentication capability
+                ConsentSchedule:
+                  type: "object"
+                  description: |
+                    The various payment types that can be initiated:
+                    * A Single Payment
+                    * A Multi-Payment
+                    * A Combined Payment (one SinglePayment and one MultiPayment)
+                  properties:
+                    SinglePayment:
+                      description: |
+                        A Consent definition for defining Single Payments
+                      oneOf:
+                        - $ref: "#/components/schemas/AESingleInstantPayment"
+                        - $ref: "#/components/schemas/AESingleFutureDatedPayment"
+                      discriminator:
+                        propertyName: Type
+                    MultiPayment:
+                      $ref: "#/components/schemas/AELongLivedPaymentConsent"
+                    FilePayment:
+                      $ref: "#/components/schemas/AEFilePaymentConsent"
+                  additionalProperties: false
+            DebtorReference:
+              $ref: "#/components/schemas/AEStructuredDebtorReference"
+            CreditorReference:
+              $ref: "#/components/schemas/AEStructuredCreditorReference"
+            PaymentPurposeCode:
+              $ref: "#/components/schemas/AEPaymentPurposeCode"
+            SponsoredTPPInformation:
+              $ref: "#/components/schemas/AESponsoredTPPInformation"
+            PaymentConsumption:
+              $ref: "#/components/schemas/AEPaymentConsumption"
+            OpenFinanceBilling:
+              $ref: "#/components/schemas/AEServiceInitiationOpenFinanceBilling"
+        Subscription:
+          $ref: "#/components/schemas/AEEventNotification"
+        Links:
+          $ref: "#/components/schemas/AELinksRelatedPayment"
+        Meta:
+          $ref: "#/components/schemas/AEMetaMultiAuthorization"
+    AEPaymentConsentRefundResponse:
+      description: |
+        Payment Consent Refund Response Schema
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Data"
+        - "Links"
+      properties:
+        Data:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "ConsentId"
+            - "BaseConsentId"
+            - "RefundAccount"
+          properties:
+            ConsentId:
+              $ref: "#/components/schemas/AEConsentId"
+            BaseConsentId:
+              $ref: "#/components/schemas/AEBaseConsentId"
+            RefundAccount:
+              $ref: "#/components/schemas/AEDebtorAccount"
+        Links:
+          $ref: "#/components/schemas/AELinksRelatedPayment"
+    AEPaymentIdResponse:
+      description: |
+        Payment Id Response Schema
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Data"
+        - "Links"
+      properties:
+        Data:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "PaymentId"
+            - "ConsentId"
+            - "Status"
+            - "StatusUpdateDateTime"
+            - "Instruction"
+            - "CreationDateTime"
+            - "PaymentPurposeCode"
+            - "OpenFinanceBilling"
+          properties:
+            PaymentId:
+              $ref: "#/components/schemas/AEPaymentId"
+            ConsentId:
+              $ref: "#/components/schemas/AEConsentId"
+            PaymentTransactionId:
+              $ref: "#/components/schemas/AEPaymentTransactionId"
+            Status:
+              $ref: "#/components/schemas/AEPaymentStatus"
+            StatusUpdateDateTime:
+              $ref: "#/components/schemas/AEStatusUpdateDateTime"
+            CreationDateTime:
+              $ref: "#/components/schemas/AECreationDateTime"
+            Charges:
+              $ref: "#/components/schemas/AECharges"
+            ExchangeRate:
+              $ref: "#/components/schemas/AEExchangeRateInformation"
+            CurrencyRequest:
+              $ref: "#/components/schemas/AECurrencyRequest"
+            Instruction:
+              $ref: "#/components/schemas/AEPaymentInstruction"
+            PaymentPurposeCode:
+              $ref: "#/components/schemas/AEPaymentPurposeCode"
+            DebtorReference:
+              $ref: "#/components/schemas/AEStructuredDebtorReference"
+            OpenFinanceBilling:
+              $ref: "#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling"
+        Links:
+          $ref: "#/components/schemas/AELinksRelatedConsent"
+        Meta:
+          $ref: "#/components/schemas/AEMeta"
+    AEFilePaymentIdResponse:
+      description: |
+        Payment Id Response Schema
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Data"
+        - "Links"
+      properties:
+        Data:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "PaymentId"
+            - "ConsentId"
+            - "Status"
+            - "StatusUpdateDateTime"
+            - "CreationDateTime"
+            - "Instruction"
+            - "PaymentPurposeCode"
+          properties:
+            PaymentId:
+              $ref: "#/components/schemas/AEPaymentId"
+            ConsentId:
+              $ref: "#/components/schemas/AEConsentId"
+            Status:
+              $ref: "#/components/schemas/AEFilePaymentStatus"
+            StatusUpdateDateTime:
+              $ref: "#/components/schemas/AEStatusUpdateDateTime"
+            CreationDateTime:
+              $ref: "#/components/schemas/AECreationDateTime"
+            Charges:
+              $ref: "#/components/schemas/AECharges"
+            Instruction:
+              $ref: "#/components/schemas/AEFilePaymentConsent"
+            PaymentPurposeCode:
+              $ref: "#/components/schemas/AEPaymentPurposeCode"
+            OpenFinanceBilling:
+              $ref: "#/components/schemas/AEServiceInitiationOpenFinanceFilePaymentBilling"
+        Links:
+          $ref: "#/components/schemas/AELinksRelatedConsent"
+        Meta:
+          $ref: "#/components/schemas/AEMeta"
+    AEPaymentInstruction:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "Amount"
+      description: "The Initiation payload is sent by the initiating party to the LFI. It is used to request movement of funds from the debtor account to a creditor for a single payment."
+      properties:
+        Amount:
+          $ref: "#/components/schemas/AEActiveCurrencyAmount"
+    AEPaymentExecutionDate:
+      description: |
+        Used to specify the expected payment execution date/time.
+        All dates in the JSON payloads are represented in ISO 8601 date format.
+        An example is: 2023-04-05
+      type: "string"
+      format: "date"
+    AEActiveCurrencyAmount:
+      description: |
+        The Currency and Amount relating to the Payment
+      type: "object"
+      required:
+        - "Amount"
+        - "Currency"
+      properties:
+        Amount:
+          $ref: "#/components/schemas/AEActiveOrHistoricAmount"
+        Currency:
+          $ref: "#/components/schemas/AEActiveOrHistoricCurrencyCode"
+    AEActiveOrHistoricAmount:
+      description: "A number of monetary units specified in an active currency where the unit of currency is explicit and compliant with ISO 4217."
+      type: "string"
+      pattern: "^\\d{1,16}\\.\\d{2}$"
+      example: "100.00"
+    AEActiveOrHistoricCurrencyCode:
+      description: "A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as described in the latest edition of the international standard ISO 4217 'Codes for the representation of currencies and funds'."
+      type: "string"
+      pattern: "^[A-Z]{3,3}$"
+      example: "AED"
+    AEExternalAccountIdentificationCode:
+      description: "Name of the identification scheme, in a coded form as published in an external list."
+      type: "string"
+      enum:
+        - "IBAN"
+    AECreditorExternalAccountIdentificationCode:
+      description: "Name of the identification scheme, in a coded form as published in an external list."
+      type: "string"
+      enum:
+        - "IBAN"
+        - "AccountNumber"
+    AEIdentification:
+      description: |
+        Identification for the account assigned by the LFI based on the Account Scheme Name. 
+        This identification is known by the User account owner.
+      type: "string"
+      minLength: 1
+    AEName:
+      type: "object"
+      description: |
+        The Account Holder Name is the name or names of the Account owner(s) represented at the account level
+      properties:
+        en:
+          type: "string"
+          description: "English value of the string"
+          maxLength: 70
+        ar:
+          type: "string"
+          description: "Arabic value of the string"
+          maxLength: 70
+      additionalProperties: false
+    AETradingName:
+      type: "object"
+      description: |
+        The Trading Brand Name (if applicable) for the Creditor. 
+        Applicable to Payments.
+      properties:
+        en:
+          type: "string"
+          description: "English value of the string"
+          maxLength: 70
+        ar:
+          type: "string"
+          description: "Arabic value of the string"
+          maxLength: 70
+      additionalProperties: false
+    AEReference:
+      description: |
+        A reason or reference in relation to a payment. 
+      type: "string"
+      minLength: 1
+      maxLength: 120
+    AEStructuredCreditorReference:
+      description: |
+        A reason or reference in relation to a payment, set to facilitate a structured Creditor reference consisting of:
+
+        * TPP ID and BIC for the Debtor Account, followed by freeform text to a maximum of 120 characters.
+
+        The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4 UUID.
+
+        A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11 characters in length.
+
+        If the value of the concatenated string exceeds 120 characters, the TPP must first omit or truncate the freeform element of the reference.
+      type: "string"
+      minLength: 1
+      maxLength: 120
+      pattern: "^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)"
+    AEStructuredDebtorReference:
+      description: |
+        A reason or reference in relation to a payment, set to facilitate a structured Debtor reference consisting of:
+
+        * For payments to Merchants: TPP ID, Merchant ID, BIC for the Creditor Account, followed by freeform text to a maximum of 120 characters.
+
+        * For other payments: TPP ID and BIC for the Creditor Account, followed by freeform text to a maximum of 120 characters.
+
+        The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4 UUID.
+
+        The Merchant ID wil be as per the existing Aani Core rules for the Merchant identification, and will incorporate the Trade License number for the Merchant.
+
+        A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11 characters in length.
+
+        If the value of the concatenated string exceeds 120 characters, the TPP must omit or truncate the freeform element of the reference.
+      type: "string"
+      minLength: 1
+      maxLength: 120
+      pattern: "^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},(Merchant=[A-Z0-9]{3}-[A-Z]{4}-TL.+-[0-9]{4},|)BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)"
+    AEExternalPaymentChargeTypeCode:
+      description: "Charge type, in a coded form."
+      type: "string"
+      enum:
+        - "VAT"
+        - "Fees"
+    AECharges:
+      type: "array"
+      items:
+        type: "object"
+        additionalProperties: false
+        description: |
+          Set of elements used to provide details of a charge for the payment initiation.
+          * For Payments, these Charges are on the Debtor.
+        required:
+          - "ChargeBearer"
+          - "Type"
+          - "Amount"
+        properties:
+          ChargeBearer:
+            $ref: "#/components/schemas/AEChargeBearerType1Code"
+          Type:
+            $ref: "#/components/schemas/AEExternalPaymentChargeTypeCode"
+          Amount:
+            $ref: "#/components/schemas/AEActiveCurrencyAmount"
+    AEPatchPaymentConsentSigned:
+      description: |
+        Payment Patch Consent Signed Schema
+      allOf:
+        - $ref: "#/components/schemas/AEJwt"
+        - type: "object"
+          properties:
+            message:
+              $ref: "#/components/schemas/AEPatchPaymentConsent"
+          required: [message]
+    AEPatchPaymentConsent:
+      description: "Patch Payment Consent"
+      type: "object"
+      properties:
+        Data:
+          type: "object"
+          description: "Primary data for the resource"
+          required:
+            - "Status"
+          properties:
+            Status:
+              $ref: "#/components/schemas/AEPatchConsentStatus"
+            RevokedBy:
+              $ref: "#/components/schemas/AERevokedByPatchConsent"
+          additionalProperties: false
+        Subscription:
+          $ref: "#/components/schemas/AEEventNotification"
+    AERisk:
+      additionalProperties: false
+      description: |
+        The Risk section is sent by the TPP to the LFI. It is used to specify additional details for risk/fraud scoring regarding Payments.
+      type: "object"
+      properties:
+        DebtorIndicators:
+          $ref: "#/components/schemas/AEDebtorIndicators"
+        DestinationDeliveryAddress:
+          type: "object"
+          description: |
+            Destination Delivery Address
+          properties:
+            RecipientType:
+              type: "string"
+              description: "The recipient of the goods whether an individual or a corporation."
+              enum:
+                - "Individual"
+                - "Corporate"
+            RecipientName:
+              type: "object"
+              description: "The name of the recipient of the goods, whether an individual or a corporation."
+              properties:
+                en:
+                  type: "string"
+                  description: "English value of the string"
+                ar:
+                  type: "string"
+                  description: "Arabic value of the string"
+            NationalAddress:
+              $ref: "#/components/schemas/AEAddress"
+        TransactionIndicators:
+          $ref: "#/components/schemas/AETransactionIndicators"
+        CreditorIndicators:
+          $ref: "#/components/schemas/AECreditorIndicators"
+    AEPaymentPurposeCode:
+      description:  A category code that relates to the type of services or goods that corresponds to 
+        the underlying purpose of the payment. The code must conform to the published 
+        Aani payment purpose code list.
+      type: "string"
+      minLength: 1
+      maxLength: 3
+      pattern: "^[A-Z]{3}$"
+    AEPaymentTransactionId:
+      type: "string"
+      description: |
+        This is an end to end TransactionId that is generated by the underlying payment rails when it is sent from an Originating LFI to a Receiving LFI.
+        For Aani Core transactions, this is the Aani Core generated TransactionId.
+
+        This is not the same as the TransactionID in the Account Information Transactions API.
+
+        The PaymentTransactionId must be populated if the payment is processed by the LFI.
+      minimum: 1
+      maximum: 40
+    AESponsoredTPPInformation:
+      type: "object"
+      description: |
+        The Sponsored TPP is:
+        * A TPP that itself has no direct Open Banking API integrations. 
+        * A TPP that is using the integration of another TPP that does have direct Open Banking API integrations.
+      properties:
+        Name:
+          type: "string"
+          minLength: 1
+          maxLength: 50
+          description: |
+            The Sponsored TPP Name
+        Identification:
+          type: "string"
+          minLength: 1
+          maxLength: 50
+          description: |
+            The Sponsored TPP Identification
+      additionalProperties: false
+    AECreditorAccount:
+      description: "Unambiguous identification of the account of the creditor to which a credit entry will be posted."
+      type: "object"
+      additionalProperties: false
+      required:
+        - "SchemeName"
+        - "Identification"
+        - "Name"
+      properties:
+        SchemeName:
+          $ref: "#/components/schemas/AECreditorExternalAccountIdentificationCode"
+        Identification:
+          $ref: "#/components/schemas/AEIdentification"
+        Name:
+          $ref: "#/components/schemas/AEName"
+        TradingName:
+          $ref: "#/components/schemas/AETradingName"
+    AEDebtorAccount:
+      description: "Unambiguous identification of the account of the debtor to which a debit entry will be made."
+      type: "object"
+      required:
+        - "SchemeName"
+        - "Identification"
+        - "Name"
+      properties:
+        SchemeName:
+          $ref: "#/components/schemas/AEExternalAccountIdentificationCode"
+        Identification:
+          $ref: "#/components/schemas/AEIdentification"
+        Name:
+          $ref: "#/components/schemas/AEName"
+    AERevokedBy:
+      description: |
+        Denotes the Identifier of the revocation.
+
+        | Identifier| Description|
+        |-----------|------------|
+        | LFI | Revoked by LFI without User initiation|
+        | TPP | Revoked by TPP without User initiation|
+        | LFI.InitiatedByUser | Initiated by User via the LFI|
+        | TPP.InitiatedByUser | Initiated by User via the TPP|
+      type: "string"
+      enum:
+        - "LFI"
+        - "TPP"
+        - "LFI.InitiatedByUser"
+        - "TPP.InitiatedByUser"
+    AERevokedByPatchConsent:
+      description: |
+        Denotes the Identifier of the revocation.
+
+        | Identifier| Description|
+        |-----------|------------|
+        | TPP | Revoked by TPP without User initiation|
+        | TPP.InitiatedByUser | Initiated by User via the TPP|
+      type: "string"
+      enum:
+        - "TPP"
+        - "TPP.InitiatedByUser"
+    AEConsentExpirationDateTime:
+      description: |
+        Specified date and time the consent will expire.
+        All dates in the JSON payloads are represented in ISO 8601 date-time format.
+        All date-time fields in responses must include the timezone. An example is :2023-04-05T10:43:07+00:00
+      type: "string"
+      format: "date-time"
+    AEAddress:
+      description: |
+        (Array) Address information that locates and identifes a specific address, as defined by a national or international postal service."
+      type: "array"
+      minItems: 1
+      items:
+        type: "object"
+        required:
+          - "AddressType"
+          - "Country"
+        properties:
+          AddressType:
+            $ref: "#/components/schemas/AEAddressTypeCode"
+          ShortAddress:
+            $ref: "#/components/schemas/AEShortAddress"
+          UnitNumber:
+            $ref: "#/components/schemas/AEUnitNumber"
+          FloorNumber:
+            $ref: "#/components/schemas/AEFloorNumber"
+          BuildingNumber:
+            $ref: "#/components/schemas/AEBuildingNumber"
+          StreetName:
+            $ref: "#/components/schemas/AEStreetName"
+          SecondaryNumber:
+            $ref: "#/components/schemas/AESecondaryNumber"
+          District:
+            $ref: "#/components/schemas/AEDistrict"
+          PostalCode:
+            $ref: "#/components/schemas/AEPostalCode"
+          POBox:
+            $ref: "#/components/schemas/AEPOBox"
+          ZipCode:
+            $ref: "#/components/schemas/AEZipCode"
+          City:
+            $ref: "#/components/schemas/AECity"
+          Region:
+            $ref: "#/components/schemas/AERegion"
+          Country:
+            $ref: "#/components/schemas/AECountryCode"
+        additionalProperties: false
+    AEAddressTypeCode:
+      description: "Specifies the nature of the Address."
+      type: "string"
+      enum:
+        - "Business"
+        - "Correspondence"
+        - "Residential"
+      example: "Residential"
+    AEShortAddress:
+      description: "A short address consists of four letters: region code, branch code, division code, unique code and a four-digit number for the building."
+      type: "string"
+      minLength: 1
+      maxLength: 8
+      example: "ABCD1234"
+    AEUnitNumber:
+      description: "Identifies the unit or apartment number."
+      type: "string"
+      minLength: 1
+      maxLength: 10
+      example: "6"
+    AEFloorNumber:
+      description: "Identifies the building floor number."
+      type: "string"
+      minLength: 1
+      maxLength: 10
+      example: "2"
+    AEBuildingNumber:
+      description: "Identifies the building number."
+      type: "string"
+      minLength: 1
+      maxLength: 10
+      example: "34"
+    AEStreetName:
+      description: "Identifies the street name or road."
+      type: "string"
+      minLength: 1
+      maxLength: 70
+      example: "Omar Bin Hassan Street"
+    AEDistrict:
+      description: "Identifies the district of a city."
+      type: "string"
+      minLength: 1
+      maxLength: 35
+      example: "Olaya Dist."
+    AECountryCode:
+      description: "Indicates the country code in which the address is located (References ISO 3166-1 alpha-2)."
+      type: "string"
+      pattern: "^[A-Z]{2,2}$"
+      example: "SA"
+    AEPostalCode:
+      description: " Identifies the postal code; a unique code assigned to a specific geographic area for efficient mail sorting and delivery purposes."
+      type: "string"
+      minLength: 1
+      maxLength: 10
+      example: "12345"
+    AEPOBox:
+      description: " Identifies the POBox."
+      type: "string"
+      minLength: 1
+      maxLength: 10
+      example: "11562"
+    AEZipCode:
+      description: "Identifies the ZIP code; a unique code assigned to a specific geographic area for efficient mail sorting and delivery purposes."
+      type: "string"
+      minLength: 1
+      maxLength: 10
+      example: "12366"
+    AESecondaryNumber:
+      description: "4 numbers representing the accurate location coordinates of the address"
+      type: "string"
+      minLength: 4
+      maxLength: 4
+      example: "1233"
+    AECity:
+      description: "Identifies the name of the city or town where the address is situated."
+      type: "string"
+      minLength: 1
+      maxLength: 35
+      example: "Riyadh"
+    AERegion:
+      description: "Identifies the region."
+      type: "string"
+      minLength: 1
+      maxLength: 35
+      example: "North"
+    AEDebtorIndicators:
+      type: "object"
+      description: |
+        Debtor (User) Indicators
+      properties:
+        Authentication:
+          type: "object"
+          description: "The authentication method used by the User to access their account with the TPP"
+          properties:
+            AuthenticationChannel:
+              description: Channel on which the User was authenticated
+              type: string
+              enum:
+                - App
+                - Web
+            PossessionFactor:
+              type: "object"
+              description: "The User's possession, that only the User possesses"
+              properties:
+                IsUsed:
+                  type: "boolean"
+                Type:
+                  type: "string"
+                  enum:
+                    - FIDO2SecurityKey
+                    - Passkey
+                    - OTPDevice
+                    - OTPApp
+                    - SMSOTP
+                    - EmailOTP
+                    - PushNotification
+                    - WebauthnToken
+                    - SecureEnclaveKey
+                    - HardwareOTPKey
+                    - TrustedDevice
+                    - Other
+            KnowledgeFactor:
+              type: "object"
+              description: "The User's knowledge, that only the User knows"
+              properties:
+                IsUsed:
+                  type: "boolean"
+                Type:
+                  type: "string"
+                  enum:
+                    - PIN
+                    - Password
+                    - SecurityQuestion
+                    - SMSOTP
+                    - EmailOTP
+                    - OTPPush
+                    - Other
+            InherenceFactor:
+              type: "object"
+              description: "The User's inherance, that is unique to the User's physical characteristics"
+              properties:
+                IsUsed:
+                  type: "boolean"
+                Type:
+                  type: "string"
+                  enum:
+                    - Biometric
+                    - Fingerprint
+                    - FaceRecognition
+                    - IrisScan
+                    - VoiceRecognition
+                    - FIDOBiometric
+                    - DeviceBiometrics
+                    - Other
+            ChallengeOutcome:
+              type: "string"
+              description: "The result of multi-factor authentication performed by the TPP, with NotPerformed indication the User was not required to authenticate before consenting to the requested payment"
+              enum:
+                - Pass
+                - Fail
+                - NotPerformed
+            AuthenticationFlow:
+              type: "string"
+              enum:
+                - MFA
+                - Other
+            AuthenticationValue:
+              type: "string"
+              description: "Cryptographic proof of authentication where supported by the device and protocol."
+            ChallengeDateTime:
+              type: "string"
+              format: "date-time"
+        UserName:
+          type: "object"
+          description: "The Name of the User initiating the Payment"
+          properties:
+            en:
+              type: "string"
+              description: "English value of the string"
+            ar:
+              type: "string"
+              description: "Arabic value of the string"
+        GeoLocation:
+          type: "object"
+          description: "GPS to identify and track the whereabouts of the connected electronic device."
+          required:
+            - Latitude
+            - Longitude
+          properties:
+            Latitude:
+              type: "string"
+              description: "latitude"
+            Longitude:
+              type: "string"
+              description: "longitude"
+        DeviceInformation:
+          type: "object"
+          description: "Detailed device information"
+          properties:
+            DeviceId:
+              type: "string"
+              description: "IMEISV number of the connected electronic device"
+            AlternativeDeviceId:
+              type: "string"
+              description: "Alternative identifier for the connected electronic device"
+            DeviceOperatingSystem:
+              type: "string"
+              description: "Device operating system"
+            DeviceOperatingSystemVersion:
+              type: "string"
+              description: "Device operating system version"
+            DeviceBindingId:
+              type: "string"
+              description: "An identifier that associates a device uniquely with a specific application"
+            LastBindingDateTime:
+              type: "string"
+              format: "date-time"
+              description: "Date and time when the device was last bound to the application"
+            BindingDuration:
+              type: "string"
+              format: "duration"
+              description: "ISO 8601 duration since device was last bound (e.g., P30D for 30 days)"
+            BindingStatus:
+              type: "string"
+              description: "Current status of the device binding"
+              enum:
+                - Active
+                - Expired
+                - Revoked
+                - Suspended
+            DeviceType:
+              type: "string"
+              description: "Type of device used"
+              enum:
+                - Mobile
+                - Desktop
+                - Tablet
+                - Wearable
+                - Other
+            DeviceManufacturer:
+              type: "object"
+              properties:
+                Model:
+                  type: "string"
+                  description: "Device model name"
+                  maxLength: 50
+                Manufacturer:
+                  type: "string"
+                  description: "Device manufacturer"
+                  maxLength: 50
+            DeviceLanguage:
+              type: "string"
+              description: "Device language"
+            DeviceLocalDateTime:
+              type: "string"
+              description: "Device local time"
+            ConnectionType:
+              type: "string"
+              description: "Type of connection to the internet"
+              enum:
+                - WiFi
+                - Cellular
+                - Other
+            ScreenInformation:
+              type: "object"
+              properties:
+                PixelDensity:
+                  type: "number"
+                  description: "Screen pixel density"
+                Orientation:
+                  type: "string"
+                  enum:
+                    - Portrait
+                    - Landscape
+            BatteryStatus:
+              type: "object"
+              properties:
+                Level:
+                  type: "number"
+                  minimum: 0
+                  maximum: 100
+                IsCharging:
+                  type: "boolean"
+            TouchSupport:
+              type: "object"
+              properties:
+                Supported:
+                  type: "boolean"
+                MaxTouchPoints:
+                  type: "integer"
+                  minimum: 0
+            MotionSensors:
+              type: "object"
+              properties:
+                Status:
+                  type: "string"
+                  enum:
+                    - InMotion
+                    - Stationary
+                Accelerometer:
+                  type: "boolean"
+                Gyroscope:
+                  type: "boolean"
+            DeviceEnvironmentContext:
+              type: "array"
+              description: "List of device environment context"
+              items:
+                type: "string"
+                enum:
+                  - VPNDetected
+                  - EmulatorDetected
+        BiometricCapabilities:
+          type: "object"
+          description: "Device biometric capabilities"
+          properties:
+            SupportsBiometric:
+              type: "boolean"
+              description: "Whether device supports biometric authentication"
+            BiometricTypes:
+              type: "array"
+              description: "Types of biometric authentication supported"
+              items:
+                type: "string"
+                enum:
+                  - Fingerprint
+                  - FacialRecognition
+                  - Iris
+                  - VoicePrint
+                  - Other
+        AppInformation:
+          type: "object"
+          description: "Mobile application specific information"
+          properties:
+            AppVersion:
+              type: "string"
+              description: "Version of the mobile application"
+            PackageName:
+              type: "string"
+              description: "Application package identifier"
+            BuildNumber:
+              type: "string"
+              description: "Application build number"
+        BrowserInformation:
+          type: "object"
+          description: "Browser-specific information"
+          properties:
+            UserAgent:
+              type: "string"
+              description: "Complete browser user agent string"
+            IsCookiesEnabled:
+              type: "boolean"
+              description: "Whether cookies are enabled in the browser"
+            AvailableFonts:
+              type: "array"
+              description: "List of available fonts"
+              items:
+                type: "string"
+            Plugins:
+              type: "array"
+              description: "List of installed browser plugins"
+              items:
+                type: "string"
+            PixelRatio:
+              type: "number"
+              description: "Device pixel ratio for scaling"
+        UserBehavior:
+          type: "object"
+          description: "User behavior indicators"
+          properties:
+            ScrollBehavior:
+              type: "object"
+              properties:
+                Direction:
+                  type: "string"
+                  enum:
+                    - Up
+                    - Down
+                    - Both
+                Speed:
+                  type: "number"
+                  description: "Average scroll speed in pixels per second"
+                Frequency:
+                  type: "number"
+                  description: "Number of scroll events per minute"
+        AccountRiskIndicators:
+          type: "object"
+          description: "Risk indicators related to the account"
+          properties:
+            UserOnboardingDateTime:
+              type: "string"
+              format: "date-time"
+              description: "The exact date and time when the User account was activated with the TPP."
+            LastAccountChangeDate:
+              type: "string"
+              format: "date"
+              description: "Date that the User's account was last changed"
+            LastPasswordChangeDate:
+              type: "string"
+              format: "date"
+              description: "Date of the last password change by the User"
+            SuspiciousActivity:
+              type: "string"
+              description: "Indicates any suspicious activity associated with the account"
+              enum: 
+                - NoSuspiciousActivity
+                - SuspiciousActivityDetected
+            TransactionHistory:
+              type: "object"
+              properties:
+                LastDay:
+                  type: "integer"
+                  description: "Total transactions made by the account in the last 24 hours"
+                  minimum: 0
+                LastYear:
+                  type: "integer"
+                  description: "Total transactions made by the account in the past year"
+                  minimum: 0
+        SupplementaryData:
+          type: "object"
+          description: |
+            Additional information that cannot be captured in the structured fields and/or any other specific block
+            This may include information that is not available in the structured fields, such as a user's behavioural data
+            like their typing speed and typing patterns.
+          additionalProperties: true
+          properties: {}
+    AETransactionIndicators:
+      type: "object"
+      description: |
+        Transaction Indicators
+      properties:
+        IsCustomerPresent:
+          description: "This field differentiates between automatic and manual payment initiation."
+          type: boolean
+        IsContractPresent:
+          description: "Indicates if the Creditor has a contractual relationship with the TPP."
+          type: boolean
+        Channel:
+          description: "Where the payment has been initiated from."
+          type: "string"
+          enum:
+            - Web
+            - Mobile
+        ChannelType:
+          type: "string"
+          description: "The channel through which the transaction is being conducted"
+          enum:
+            - ECommerce
+            - InStore
+            - InApp
+            - Telephone
+            - Mail
+            - RecurringPayment
+            - Other
+        SubChannelType:
+          type: "string"
+          description: "More specific classification of the transaction channel"
+          enum:
+            - WebBrowser
+            - MobileApp
+            - SmartTV
+            - WearableDevice
+            - POSTerminal
+            - ATM
+            - KioskTerminal
+            - Other
+        PaymentProcess:
+          type: "object"
+          description: "Metrics related to the payment process duration and attempts"
+          properties:
+            TotalDuration:
+              type: "integer"
+              description: "Total time in seconds from payment initiation to completion"
+              minimum: 0
+            CurrentSessionAttempts:
+              type: "integer"
+              description: "Number of payment attempts in the current session"
+              minimum: 1
+            CurrentSessionFailedAttempts:
+              type: "integer"
+              description: "Number of failed payment attempts in the current session"
+              minimum: 0
+            Last24HourAttempts:
+              type: "integer"
+              description: "Number of payment attempts in the last 24 hours"
+              minimum: 0
+            Last24HourFailedAttempts:
+              type: "integer"
+              description: "Number of failed payment attempts in the last 24 hours"
+              minimum: 0
+        MerchantRisk:
+          type: "object"
+          description: "Risk indicator details provided by the merchant"
+          properties:
+            DeliveryTimeframe:
+              type: "string"
+              description: "Timeframe for the delivery of purchased items"
+              enum: 
+                - ElectronicDelivery
+                - SameDayShipping
+                - OvernightShipping
+                - MoreThan1DayShipping
+            ReorderItemsIndicator:
+              type: "string"
+              description: "Indicates if the transaction is a reorder"
+              enum: 
+                - FirstTimeOrder
+                - Reorder
+            PreOrderPurchaseIndicator:
+              type: "string"
+              description: "Indicates if this is a pre-ordered item"
+              enum: 
+                - MerchandiseAvailable
+                - FutureAvailability
+            IsGiftCardPurchase:
+              type: "boolean"
+              description: "Indicates if the transaction includes a gift card"
+            IsDeliveryAddressMatchesBilling:
+              type: "boolean"
+              description: "Indicates if delivery address matches billing address"
+            AddressMatchLevel:
+              type: "string"
+              description: "Level of match between delivery and billing addresses"
+              enum:
+                - FullMatch
+                - PartialMatch
+                - NoMatch
+                - NotApplicable
+        SupplementaryData:
+          type: "object"
+          description: |
+            Additional information that cannot be captured in the structured fields and/or any other specific block
+          additionalProperties: true
+          properties: {}
+    AECreditorIndicators:
+      type: "object"
+      description: |
+        Creditor Indicators
+      properties:
+        AccountType:
+          $ref: "#/components/schemas/AEAccountTypeCode"
+        IsCreditorPrePopulated:
+          $ref: "#/components/schemas/AEIsCreditorPrePopulated"
+        TradingName:
+          $ref: "#/components/schemas/AETradingName"
+        IsVerifiedByTPP:
+          $ref: "#/components/schemas/AEIsVerifiedbyTPP"
+        AdditionalAccountHolderIdentifiers:
+          $ref: "#/components/schemas/AEAdditionalAccountHolderIdentifiers"
+        MerchantDetails:
+          type: "object"
+          description: |
+            Details of the Merchant involved in the transaction.
+            Merchant Details are specified only for those merchant categories that are generally expected to originate retail financial transactions
+          properties:
+            MerchantId:
+              description: "MerchantId"
+              type: "string"
+              minLength: 8
+              maxLength: 20
+            MerchantName:
+              description: "Name by which the merchant is known."
+              type: "string"
+              minLength: 1
+              maxLength: 350
+            MerchantSICCode:
+              description: |
+                SIC code stands for standard industrial classification (SIC) code.
+                This four digit-number identifies a very specific short descriptor of the type of business a company is engaged in.
+                SIC can be obtained from the Chamber of Commerce.
+              type: "string"
+              minLength: 3
+              maxLength: 4
+            MerchantCategoryCode:
+              description: >
+                Category code values are used to enable the classification of
+                merchants into specific categories based on the type of business,
+                trade or services supplied. 
+
+                Category code conforms to ISO 18245, related to the type of services
+                or goods the merchant provides for the transaction."
+              type: string
+              minLength: 3
+              maxLength: 4
+          additionalProperties: false
+        IsCreditorConfirmed:
+          description: Creditor account details have been confirmed successfully using Confirmation of Payee
+          type: boolean
+        ConfirmationOfPayeeResponse:
+          $ref: "#/components/schemas/AEConfirmationOfPayeeResponse"
+        SupplementaryData:
+          type: "object"
+          description: |
+            Additional information that cannot be captured in the structured fields and/or any other specific block
+          additionalProperties: true
+          properties: {}
+    AEAccountTypeCode:
+      description: "Specifies the type of account (Retail or Corporate)."
+      type: "string"
+      enum:
+        - "Retail"
+        - "Corporate"
+    AEIsCreditorPrePopulated:
+      description: "Is Creditor populated"
+      type: "boolean"
+    AEIsVerifiedbyTPP:
+      description: "The TPP has onboarded the Creditor"
+      type: "boolean" 
+    AEAdditionalAccountHolderIdentifiers:
+      type: "array"
+      items:
+        type: "object"
+        description: "Provides the details to identify an account."
+        required:
+          - "SchemeName"
+          - "Identification"
+        properties:
+          SchemeName:
+            $ref: "#/components/schemas/AERiskExternalAccountIdentificationCode"
+          Identification:
+            $ref: "#/components/schemas/AEIdentification"
+          Name:
+            $ref: "#/components/schemas/AEName"
+        additionalProperties: false
+    AERiskExternalAccountIdentificationCode:
+      description: "Name of the identification scheme, in a coded form as published in an external list."
+      type: "string"
+      enum:
+        - "EmiratesID"
+        - "TradeLicenceNumber"
+    AEConsentPermissions:
+      type: "array"
+      description: | 
+        Specifies the permitted Account Access data types. 
+        This is a list of the data groups being consented by the User, and requested for authorization with the LFI.
+
+        This allows a TPP to request a balance check permission.
+      items:
+        type: "string"
+        enum:
+          - "ReadAccountsBasic" # Ability to read basic account information
+          - "ReadAccountsDetail" # Ability to read account identification details
+          - "ReadBalances" # Ability to read all balance information
+          - "ReadRefundAccount" # Allows the LFI to share the refund account details with TPP
+      minItems: 1
+    AECurrencyRequest:
+      description: | 
+        The details of the non-local currency or FX request that has been agreed between the User and the TPP.
+        The LFI may return different ChargeBearer and ExchangeRateInformation in the Consent object.
+      type: "object"
+      additionalProperties: false
+      required:
+        - "ExtendedPurpose"
+        - "CurrencyOfTransfer"
+      properties:
+        InstructionPriority:
+          description: "Indicator of the urgency or order of importance that the instructing party would like the instructed party to apply to the processing of the instruction."
+          type: "string"
+          enum:
+            - "Normal"
+            - "Urgent"
+        ExtendedPurpose:
+          description: "Specifies the purpose of an international payment, when there is no corresponding 4 character code available in the ISO20022 list of Purpose Codes."
+          type: "string"
+          minLength: 1
+          maxLength: 140
+        ChargeBearer:
+          $ref: "#/components/schemas/AEChargeBearerType1Code"
+        CurrencyOfTransfer:
+          description: "Specifies the currency of the to be transferred amount, which is different from the currency of the debtor's account."
+          type: "string"
+          pattern: "^[A-Z]{3,3}$"
+        DestinationCountryCode:
+          description: "Country in which Credit Account is domiciled. Code to identify a country, a dependency, or another area of particular geopolitical interest, on the basis of country names obtained from the United Nations (ISO 3166, Alpha-2 code)."
+          type: "string"
+          pattern: "[A-Z]{2,2}"
+        ExchangeRateInformation:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "UnitCurrency"
+            - "RateType"
+          description: "Provides details on the currency exchange rate and contract."
+          properties:
+            UnitCurrency:
+              description: "Currency in which the rate of exchange is expressed in a currency exchange. In the example 1GBP = xxxCUR, the unit currency is GBP."
+              type: "string"
+              pattern: "^[A-Z]{3,3}$"
+            ExchangeRate:
+              description: "The factor used for conversion of an amount from one currency to another. This reflects the price at which one currency was bought with another currency."
+              type: "number"
+            RateType:
+              description: "Specifies the type used to complete the currency exchange."
+              type: "string"
+              enum:
+                - "Actual"
+                - "Agreed"
+                - "Indicative"
+            ContractIdentification:
+              description: "Unique and unambiguous reference to the foreign exchange contract agreed between the initiating party/creditor and the debtor agent."
+              type: "string"
+              minLength: 1
+              maxLength: 256
+    AEChargeBearerType1Code:
+      description: "Specifies which party/parties will bear the charges associated with the processing of the payment transaction."
+      type: "string"
+      enum:
+        - "BorneByCreditor"
+        - "BorneByDebtor"
+        - "Shared"
+    AEExchangeRateInformation:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "UnitCurrency"
+        - "ExchangeRate"
+        - "RateType"
+      description: "Further detailed information on the exchange rate that has been used in the payment transaction - returned by the LFI."
+      properties:
+        UnitCurrency:
+          description: "Currency in which the rate of exchange is expressed in a currency exchange. In the example 1GBP = xxxCUR, the unit currency is GBP."
+          type: "string"
+          pattern: "^[A-Z]{3,3}$"
+        ExchangeRate:
+          description: "The factor used for conversion of an amount from one currency to another. This reflects the price at which one currency was bought with another currency."
+          type: "number"
+        RateType:
+          description: "Specifies the type used to complete the currency exchange."
+          type: "string"
+          enum:
+            - "Actual"
+            - "Agreed"
+            - "Indicative"
+        ContractIdentification:
+          description: "Unique and unambiguous reference to the foreign exchange contract agreed between the initiating party/creditor and the debtor agent."
+          type: "string"
+          minLength: 1
+          maxLength: 256
+        ExpirationDateTime:
+          description: "Specified date and time the exchange rate agreement will expire. All dates in the JSON payloads are represented in ISO 8601 date-time format. \nAll date-time fields in responses must include the timezone. An example is below:\n2017-04-05T10:43:07+00:00"
+          type: "string"
+          format: "date-time"
+    AEConfirmationOfPayeeResponse:
+      description: The JSON Web Signature returned by the Payee Confirmation operation at the Confirmation of Payee API. The value must be the full JWS string, including the header and signature, without decoding to an object. If Confirmation of Payee is not performed this property can be omitted
+      type: string
+      pattern: '^.+\..+\..+$'
+    AEPaymentPII:
+      type: "object"
+      additionalProperties: false
+      description: "Elements of Personal Identifiable Information data"
+      properties:
+        Initiation:
+          type: "object"
+          additionalProperties: false
+          description: "The Initiation payload is sent by the initiating party to the LFI. It is used to request movement of funds from the debtor account to a creditor."
+          properties:
+            CreditorAgent:
+              $ref: "#/components/schemas/AECreditorAgent"
+            Creditor:
+              type: "object"
+              additionalProperties: false
+              description: "Party to which an amount of money is due."
+              properties:
+                Name:
+                  description: | 
+                    Name by which a party is known and which is usually used to identify that party.
+                    This may be used to identify the Creditor for international payments.
+                  type: "string"
+                  minLength: 1
+                  maxLength: 140
+                PostalAddress:
+                  $ref: "#/components/schemas/AEAddress"
+            CreditorAccount:
+              $ref: "#/components/schemas/AECreditorAccount"
+            ConfirmationOfPayeeResponse:
+              $ref: "#/components/schemas/AEConfirmationOfPayeeResponse"
+        Risk:
+          $ref: "#/components/schemas/AERisk"
+    AEJWEPaymentPII:
+      type: string
+      description: |
+        A JSON Web Encryption (JWE) object, which encapsulates a JWS. The value is a 
+        compact serialization of a JWE, which is a string consisting of five 
+        base64url-encoded parts joined by dots. It encapsulates encrypted content 
+        using JSON data structures.
+
+        The decrypted JWS content has the structure of the AEPaymentPII schema.
+      example: "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkEyNTZHQ00ifQ...."
+    AEFileNumberOfTransactions:
+      type: "integer"
+      description: |
+        Number of individual transactions contained in the payment information group.	
+    AEControlSum:
+      description: |
+        Total of all individual amounts included in the group, irrespective of currencies.
+      type: "string"
+      pattern: "^\\d{1,16}\\.\\d{2}$"
+      example: "100.00"
+    AEFileType:
+      type: "string"
+      description: "Specifies the payment file type"
+      minLength: 1
+      maxLength: 40
+    AEFileHash:
+      type: "string"
+      description: "A base64 encoding of a SHA256 hash of the file to be uploaded."
+      minLength: 1
+      maxLength: 44
+    AEIdempotencyKeyQuery:
+      description: |
+        Response to a query for a given payment resource using `x-idempotency-key`
+      type: object
+      required: 
+        - Data
+        - Links
+      properties:
+        Data:
+          description: Data object. This will be empty for this response
+          type: object
+          additionalProperties: false
+        Links:
+          $ref: "#/components/schemas/AELinksSelf"
+      additionalProperties: false
+    AEServiceInitiationOpenFinanceBilling:
+      type: object
+      properties:
+        IsLargeCorporate:
+          type: "boolean"
+          description: Customer has more than 100 million AED turnover
+      description: Billing parameters specified by the LFI
+      additionalProperties: false
+    AEServiceInitiationOpenFinancePaymentBilling:
+      type: object
+      required:
+        - Type
+      properties:
+        Type:
+          enum:
+            - Collection
+            - LargeValueCollection
+            - PushP2P
+            - PullP2P
+            - Me2Me
+          description: The type payment for billing
+          type: string
+        MerchantId:
+          description: "MerchantId"
+          type: "string"
+          minLength: 8
+          maxLength: 20
+      description: Billing parameters specified by the TPP for a payment initiation
+      additionalProperties: false
+    AEServiceInitiationOpenFinanceFilePaymentBilling:
+      type: object
+      properties:
+        NumberOfSuccessfulTransactions:
+          type: "integer"
+          description: |
+            Number of individual transactions successfully executed by the LFI.	
+            This is returned by the LFI after the file is fully processed.
+      description: Billing parameters specified by the LFI
+      additionalProperties: false
+  ############################################
+  # PARAMETERS
+  ############################################
+  parameters:
+    #################################################
+    # HEADER PARAMETERS
+    #################################################
+    authorization:
+      in: "header"
+      name: "authorization"
+      required: true
+      description: "An authorization Token as per https://tools.ietf.org/html/rfc6750"
+      schema:
+        type: "string"
+      example: Bearer 12773da5-81c5-45e7-893c-381ca3cecc30
+    x-customer-user-agent:
+      in: "header"
+      name: "x-customer-user-agent"
+      description: "Indicates the user-agent that the User is using."
+      required: false
+      schema:
+        type: "string"
+      example: Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1
+    x-fapi-customer-ip-address:
+      in: "header"
+      name: "x-fapi-customer-ip-address"
+      required: false
+      description: "The User's IP address if the User is currently logged in with the TPP."
+      schema:
+        type: "string"
+      example: 51.235.115.203
+    x-fapi-auth-date:
+      in: "header"
+      name: "x-fapi-auth-date"
+      required: false
+      description: "The time when the User last logged in with the TPP. \nAll dates in the HTTP headers are represented as RFC 7231 Full Dates. An example is below: \nSun, 10 Sep 2023 19:43:31 UTC"
+      schema:
+        type: "string"
+        pattern: "^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \\d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \\d{4} \\d{2}:\\d{2}:\\d{2} (GMT|UTC)$"
+      example: Thu, 26 Jan 2023 16:31:32 UTC
+    x-fapi-interaction-id-request:
+      in: "header"
+      name: "x-fapi-interaction-id"
+      required: false
+      description: "An RFC4122 UID used as a correlation id."
+      schema:
+        type: "string"
+      example: 49df2c2c-6b80-40ee-96a1-71910a248048
+    x-idempotency-key:
+      name: "x-idempotency-key"
+      in: "header"
+      description: | 
+        Ensures the LFI processes the resource successfully only once per x-idempotency-key
+        
+        The TPP must not change the request body while using the same x-idempotency-key, changes to the request body 
+        will not result any action on the end resource. 
+
+        The OFP will treat a request as idempotent if it had received the first request with the same x-idempotency-key 
+        from the same TPP in the preceding 24 hours.
+      required: true
+      schema:
+        type: "string"
+        maxLength: 40
+        pattern: "^(\\S*)$"
+      example: 78dae4513b8847f98e2d4173b4ed0eb6
+    #################################################
+    # PATH PARAMETERS
+    #################################################
+    PaymentId:
+      name: "PaymentId"
+      in: "path"
+      description: "Unique identification as assigned by the LFI to uniquely identify the payment resource."
+      schema:
+        type: "string"
+        minLength: 1
+        maxLength: 40
+      required: true
+      example: 83b47199-90c2-4c05-9ef1-aeae68b0fc7c
+    ConsentId:
+      name: "ConsentId"
+      in: "path"
+      description: "Unique identification as assigned by the LFI to uniquely identify the Consent resource"
+      required: true
+      schema:
+        type: "string"
+      example: aac-69255d98-ab0e-4758-92a7-cacbf3073efa
+    #################################################
+    # QUERY PARAMETERS
+    #################################################
+    baseConsentId:
+      in: "query"
+      name: "baseConsentId"
+      required: true
+      description: |
+        A specific baseConsentId. For example:
+        ```
+        baseConsentId=abc-19877d98-ab0e-4758-92a7-vvffr1234abv 
+        ```
+      schema:
+        type: "string"
+      allowEmptyValue: false
+      example: abc-19877d98-ab0e-4758-92a7-vvffr1234abv
+  #################################################
+  # SECURITY SCHEMES
+  #################################################
+  securitySchemes:
+    TPPOAuth2Security:
+      type: oauth2
+      description: "TPP confidential client authorization with the LFI to stage a consent. **Please refer to [OpenID FAPI Security Profile 1.0 -Part 2 Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html#authorization-server) - 5.2.2 point 14 - shall authenticate the confidential client using one of the following methods private_key_jwt and [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication) 9. Client Authentication private_key_jwt**"
+      flows:
+        clientCredentials:
+          tokenUrl: "https://authserver.example/token"
+          scopes:
+            openid: Activates OpenID Connect Support
+            payments: Ability for accessing payments.
+            accounts: Ability for accessing account information.
+    UserOAuth2Security:
+      type: oauth2
+      description: "[OAuth2 PAR flow](https://datatracker.ietf.org/doc/html/rfc9126), it is required when the User needs to perform SCA with the LFI when a TPP wants to access an LFI resource owned by the User. **Please refer to [OpenID FAPI Security Profile 1.0 -Part 2 Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html#authorization-server) - 5.2.2 point 14 - shall authenticate the confidential client using one of the following methods private_key_jwt and [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication) 9. Client Authentication private_key_jwt**"
+      flows:
+        authorizationCode:
+          authorizationUrl: "https://authserver.example/authorization"
+          tokenUrl: "https://authserver.example/token"
+          scopes:
+            openid: Activates OpenID Connect Support
+            payments: Ability for initiating payments. This is a parameterized scope with the ConsentId
+            accounts: Ability for accessing account information.
+    LFIWebhookSecurity:
+      type: http
+      description: "The LFI generates a Self Signed JWT Authorization Token for Client Authentication with the TPP. **Please refer to Self-Signed JWT Authorization Token Specification in the UAE Standard API User Guide**"
+      scheme: bearer
+      bearerFormat: JWT
+  ############################################
+  # EXAMPLES
+  ############################################
+  examples:
+    Error400BadRequestSigned:
+      summary: 400 Bad Request
+      description: 400 Bad Request
+      value:
+        {
+          "iss": "c50f0152-49bb-4dc4-b866-b625271c4e78",
+          "exp": 3349494246,
+          "nbf": 1675765189,
+          "aud": ["e63df191-5fff-4e9c-bba2-b273c94e87f0"],
+          "iat": 1675765189,
+          "message":
+            {
+              "Errors":
+                [
+                  {
+                    "Code": "GenericError",
+                    "Message": { "en": "A mandatory field is missing." },
+                  },
+                ],
+            },
+        }
+    Error403ForbiddenSigned:
+      summary: 403 Forbidden
+      description: 403 Forbidden
+      value:
+        {
+          "iss": "c50f0152-49bb-4dc4-b866-b625271c4e78",
+          "exp": 3349494246,
+          "nbf": 1675765189,
+          "aud": ["e63df191-5fff-4e9c-bba2-b273c94e87f0"],
+          "iat": 1675765189,
+          "message":
+            {
+              "Errors":
+                [
+                  {
+                    "Code": "AccessToken.InvalidScope",
+                    "Message":
+                      {
+                        "en": "The access token did not have an appropriate scope attached to it.",
+                      },
+                  },
+                ],
+            },
+        }
+    Error500InternalServerErrorSigned:
+      summary: 500 Internal Server Error
+      description: 500 Internal Server Error
+      value:
+        {
+          "iss": "c50f0152-49bb-4dc4-b866-b625271c4e78",
+          "exp": 3349494246,
+          "nbf": 1675765189,
+          "aud": ["e63df191-5fff-4e9c-bba2-b273c94e87f0"],
+          "iat": 1675765189,
+          "message":
+            {
+              "Errors":
+                [
+                  {
+                    "Code": "GenericError",
+                    "Message":
+                      {
+                        "en": "An Internal Server error has occurred. Please retry in 60 seconds.",
+                      },
+                  },
+                ],
+            },
+        }

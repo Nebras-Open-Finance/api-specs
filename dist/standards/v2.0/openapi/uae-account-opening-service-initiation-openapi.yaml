@@ -1,0 +1,1646 @@
+openapi: 3.0.0
+info:
+  title: UAE Account Opening API
+  description: '## UAE Open Finance Account Opening API Specification'
+  version: v2.0
+tags:
+  - name: Accounts
+    description: Open an LFI account to complete an FX transaction
+paths:
+  /accounts:
+    post:
+      operationId: CreateAccount_signedRequest
+      summary: Create an account
+      description: |-
+        Create an Account based on data shared from the LFI. The response provides
+        an account identifier that can be used to retrieve the account details when
+        the provisioning process is complete.
+
+        Invoking this operation is driven by the User sharing with the TPP whether they
+        already hold an account with a given LFI. There is no expectation that the TPP
+        will automatically discover whether an account at this stage in the design as
+        this could compromise data being provided by LFI with the quote.
+
+        Please note that only **signed** request payloads are supported for this operation
+        and TPPs **MUST** sign the payload as a JSON Web Signature, using the relevant 
+        signing key.
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/x-customer-user-agent'
+        - $ref: '#/components/parameters/x-fapi-auth-date'
+        - $ref: '#/components/parameters/x-fapi-customer-ip-address'
+        - $ref: '#/components/parameters/x-fapi-interaction-id'
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            x-fapi-interaction-id:
+              required: false
+              description: An RFC4122 UID used as a correlation ID.
+              schema:
+                type: string
+          content:
+            application/jwt:
+              schema:
+                type: object
+                properties:
+                  iss:
+                    type: string
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)
+                  exp:
+                    type: number
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)
+                  nbf:
+                    type: number
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
+                  aud:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  iat:
+                    type: number
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)
+                  message:
+                    $ref: '#/components/schemas/AECreateAccountResponseBody1'
+                required:
+                  - iss
+                  - exp
+                  - nbf
+                  - message
+                additionalProperties: false
+              examples:
+                ReadAccountOpeningAwaitingPartyDataSignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningAwaitingPartyDataSignedResponse'
+                ReadAccountOpeningCreatedSignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningCreatedSignedResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+        '403':
+          $ref: '#/components/responses/403Error'
+        '404':
+          $ref: '#/components/responses/404Error'
+        '405':
+          $ref: '#/components/responses/405Error'
+        '406':
+          $ref: '#/components/responses/406Error'
+        '415':
+          $ref: '#/components/responses/415Error'
+        '429':
+          $ref: '#/components/responses/429Error'
+        '500':
+          $ref: '#/components/responses/500Error'
+      tags:
+        - Accounts
+      requestBody:
+        required: true
+        content:
+          application/jwt:
+            schema:
+              type: object
+              properties:
+                iss:
+                  type: string
+                  description: >-
+                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)
+                exp:
+                  type: number
+                  description: >-
+                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)
+                nbf:
+                  type: number
+                  description: >-
+                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
+                aud:
+                  type: array
+                  items:
+                    type: string
+                  description: >-
+                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                iat:
+                  type: number
+                  description: >-
+                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)
+                message:
+                  $ref: '#/components/schemas/AECreateAccountRequestBody1'
+              required:
+                - iss
+                - exp
+                - nbf
+                - message
+              additionalProperties: false
+            examples:
+              CreateAccountSignedRequest:
+                $ref: '#/components/examples/CreateAccountSignedRequest'
+        description: Signed request body for creating a new account
+      security:
+        - TPPOAuth2Security:
+            - account-opening
+  /accounts/{AccountId}:
+    get:
+      operationId: Account_read
+      summary: Retrieve an account
+      description: |-
+        Retrieve an Account based on a given account identifier. The response provides 
+        both the status of the account and, when opened, the account details required
+        by the TPP to complete an FX transaction.
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/x-customer-user-agent'
+        - $ref: '#/components/parameters/x-fapi-auth-date'
+        - $ref: '#/components/parameters/x-fapi-customer-ip-address'
+        - $ref: '#/components/parameters/x-fapi-interaction-id'
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-fapi-interaction-id:
+              required: false
+              description: An RFC4122 UID used as a correlation ID.
+              schema:
+                type: string
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/AEReadAccountResponseBody1'
+              examples:
+                ReadAccountOpeningAwaitingPartyDataUnsignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningAwaitingPartyDataUnsignedResponse'
+                ReadAccountOpeningCreatedUnsignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningCreatedUnsignedResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadAccountResponseBody1'
+              examples:
+                ReadAccountOpeningAwaitingPartyDataUnsignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningAwaitingPartyDataUnsignedResponse'
+                ReadAccountOpeningCreatedUnsignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningCreatedUnsignedResponse'
+            application/jwt:
+              schema:
+                type: object
+                properties:
+                  iss:
+                    type: string
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)
+                  exp:
+                    type: number
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)
+                  nbf:
+                    type: number
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
+                  aud:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  iat:
+                    type: number
+                    description: >-
+                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)
+                  message:
+                    $ref: '#/components/schemas/AEReadAccountResponseBody1'
+                required:
+                  - iss
+                  - exp
+                  - nbf
+                  - message
+                additionalProperties: false
+              examples:
+                ReadAccountOpeningAwaitingPartyDataSignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningAwaitingPartyDataSignedResponse'
+                ReadAccountOpeningCreatedSignedResponse:
+                  $ref: '#/components/examples/ReadAccountOpeningCreatedSignedResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+        '403':
+          $ref: '#/components/responses/403Error'
+        '404':
+          $ref: '#/components/responses/404Error'
+        '405':
+          $ref: '#/components/responses/405Error'
+        '406':
+          $ref: '#/components/responses/406Error'
+        '415':
+          $ref: '#/components/responses/415Error'
+        '429':
+          $ref: '#/components/responses/429Error'
+        '500':
+          $ref: '#/components/responses/500Error'
+      tags:
+        - Accounts
+      security:
+        - TPPOAuth2Security:
+            - account-opening
+components:
+  parameters:
+    AccountId:
+      name: AccountId
+      in: path
+      required: true
+      description: Unique identifier for a given account opening instance
+      schema:
+        $ref: '#/components/schemas/AEAccountIdType'
+    Authorization:
+      name: authorization
+      in: header
+      required: true
+      description: An Access Token as per https://tools.ietf.org/html/rfc6750
+      schema:
+        type: string
+    x-customer-user-agent:
+      name: x-customer-user-agent
+      in: header
+      required: false
+      description: Indicates the user-agent that the User is using.
+      schema:
+        type: string
+    x-fapi-auth-date:
+      name: x-fapi-auth-date
+      in: header
+      required: false
+      description: |-
+        The time when the User last logged in with the TPP. 
+        All dates in the HTTP headers are represented as RFC 7231 Full Dates. An example is below: 
+        Sun, 10 Sep 2017 19:43:31 UTC
+      schema:
+        type: string
+        pattern: >-
+          ^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}
+          \d{2}:\d{2}:\d{2} (GMT|UTC)$
+    x-fapi-customer-ip-address:
+      name: x-fapi-customer-ip-address
+      in: header
+      required: false
+      description: The User's IP address if the User is currently logged in with the TPP.
+      schema:
+        type: string
+    x-fapi-interaction-id:
+      name: x-fapi-interaction-id
+      in: header
+      required: false
+      description: An RFC4122 UID used as a correlation ID.
+      schema:
+        type: string
+  schemas:
+    AEAccount:
+      type: object
+      required:
+        - AccountId
+      properties:
+        AccountId:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AccountId'
+        AccountHolderName:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AccountHolderName'
+        AccountHolderShortName:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AccountHolderShortName'
+        Status:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEAccountStatusCode'
+        StatusUpdateDateTime:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.StatusUpdateDateTime'
+        Currency:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.ActiveOrHistoricCurrencyCode_0'
+        AccountType:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEExternalAccountTypeCode'
+        AccountSubType:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEExternalAccountSubTypeCode'
+        Description:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.Description_0'
+        Nickname:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.Nickname'
+        OpeningDate:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.OpeningDate'
+        MaturityDate:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.MaturityDate'
+        AccountIdentifiers:
+          $ref: '#/components/schemas/AccountIdentifiers'
+        Servicer:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEBranchAndFinancialInstitutionIdentification5_0'
+        CreationDateTime:
+          $ref: '#/components/schemas/CreationDateTime'
+        OpeningStatus:
+          $ref: '#/components/schemas/AEAccountOpeningStatusCodes'
+        OpeningStatusUpdateDateTime:
+          $ref: '#/components/schemas/OpeningStatusUpdateDateTime'
+      description: |
+        The account object, which includes the account properties and the status of the
+        account opening process. The properties of the account share the same structure
+        as the Bank Data Sharing API description, in an effort to maintain consistency 
+        with other open finance APIs.
+      additionalProperties: false
+    AEAccountIdType:
+      type: string
+      minLength: 1
+      maxLength: 40
+      description: >-
+        A unique and immutable identifier produced by the LFI to identify the account resource.This identifier has no
+        meaning to the account owner (User 1).
+    AEAccountOpeningDataSharingAudit:
+      type: object
+      required:
+        - JSONPath
+        - Action
+      properties:
+        JSONPath:
+          type: string
+          description: The JSONPath expression pointing to the data that has been changed in the original shared data payload.
+          example: $.Data.Party.EmiratesId
+        Action:
+          type: string
+          enum:
+            - Added
+            - Updated
+            - Removed
+          description: The action that was taken by the User
+        OriginalValue:
+          type: string
+          description: >-
+            The original value that was shared through Bank Data Sharing. Only applies if the Action is Updated or
+            Removed.
+      description: >-
+        Provides an audit trail of changes made by a User to the data shared from the LFI through Bank Data Sharing.
+
+
+        Each element in the array is a JSONPath expression that points to the data that has been changed and the
+        original value supplied through data sharing.
+
+
+        TPP must adhere to [RFC 9535](https://datatracker.ietf.org/doc/html/rfc9535) when constructing JSON Path
+        expressions. This value can be omitted when no changes are made by the User.
+      additionalProperties: false
+    AEAccountOpeningLinks1:
+      type: object
+      required:
+        - Self
+      properties:
+        Self:
+          $ref: '#/components/schemas/Self'
+        AccountOpeningRedirectUrl:
+          type: string
+          format: uri
+          description: >-
+            A redirect URL provided by the LFI to complete the FX trade. The TPP must redirect the User to this URL.
+
+            The URL is optional as the LFI may have all required information through party data to complete account
+            creation.
+      additionalProperties: false
+    AEAccountOpeningRequest:
+      type: object
+      properties:
+        LinkedOperations:
+          type: object
+          properties:
+            FxQuoteId:
+              allOf:
+                - $ref: '#/components/schemas/FxServiceInitiation.FxQuoteIdType'
+              description: The quote identifier returned by the LFI in the FX Quote.
+          required:
+            - FxQuoteId
+          minProperties: 1
+          description: >-
+            Operations that are linked to the account opening request, such as an accepted FX quote where no settlement
+            account is available at the LFI for the deposit of a funding payment. 
+
+
+            At least one property must be supplied, or the property omitted.
+          additionalProperties: false
+        Account:
+          allOf:
+            - $ref: '#/components/schemas/UAEAccountInformationAPI.AECashAccount6_1'
+          description: Details of the bank account details shared from the LFI through a data sharing consent with the TPP.
+        Party:
+          $ref: '#/components/schemas/AEIdentityAssurance'
+        DataSharingAudit:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEAccountOpeningDataSharingAudit'
+          description: List of changes to account data shared with TPP made by User.
+          example:
+            - JSONPath: $.Data.Party.GivenName
+              Action: Updated
+              OriginalValue: Harold
+            - JSONPath: $.Data.Party.FamilyName
+              Action: Updated
+              OriginalValue: Smith
+      description: |-
+        Request body for creating a new account based on a quote and shared user data.
+
+        PartyData is optional as LFI can support manual data entry by the User when they 
+        use the LFI user interface.
+      additionalProperties: false
+    AEAccountOpeningStatusCodes:
+      type: string
+      enum:
+        - AwaitingPartyData
+        - Pending
+        - Created
+        - Rejected
+      description: >
+        The status of the opening of the account, based on progress at the LFI.
+
+
+        The values are defined as follows:
+
+
+        * AwaitingPartyData: The account is awaiting user data to be provided.
+
+        * Pending: The account is pending opening, based on LFI processes being completed.
+
+        * Created: The account has been successfully opened. The account details will be available in the response to
+        the TPP.
+
+        * Rejected: The account opening has been rejected by the LFI due to insufficient data or failure to validate the
+        User data.
+    AECreateAccountRequestBody1:
+      type: object
+      properties:
+        Data:
+          allOf:
+            - $ref: '#/components/schemas/AEAccountOpeningRequest'
+          description: >-
+            Properties of the accepted quote. Must be supplied when initiating account opening, but can be omitted when
+            managing Webhook subscriptions. The request will be rejected if the account opening request is replayed.
+        Subscription:
+          allOf:
+            - $ref: '#/components/schemas/EventNotification'
+          description: >-
+            Allows a TPP to subscribe to event notifications through a Webhook. Omitted where the TPP does not want to
+            subscribe to notifications.
+      additionalProperties: false
+    AECreateAccountResponseBody1:
+      type: object
+      required:
+        - Data
+        - Links
+        - Meta
+      properties:
+        Data:
+          $ref: '#/components/schemas/AEAccount'
+        Links:
+          $ref: '#/components/schemas/AEAccountOpeningLinks1'
+        Meta:
+          $ref: '#/components/schemas/Meta'
+      additionalProperties: false
+    AECustomErrorCode:
+      type: string
+      pattern: ^[A-Za-z]+\.[A-Za-z]+$
+    AEError400:
+      anyOf:
+        - type: string
+          enum:
+            - Consent.Invalid
+            - Consent.BusinessRuleViolation
+            - Consent.FailsControlParameters
+            - Consent.InvalidUserIdentifier
+            - JWS.InvalidSignature
+            - JWS.Malformed
+            - JWS.InvalidClaim
+            - JWS.InvalidHeader
+            - JWE.DecryptionError
+            - JWE.InvalidHeader
+            - GenericRecoverableError
+            - GenericError
+            - Event.UnexpectedEvent
+            - Body.InvalidFormat
+            - Resource.InvalidFormat
+        - $ref: '#/components/schemas/AECustomErrorCode'
+    AEError400ResponseBody:
+      type: object
+      required:
+        - Errors
+      properties:
+        Errors:
+          type: array
+          items:
+            type: object
+            properties:
+              Code:
+                $ref: '#/components/schemas/AEError400'
+              Message:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: >-
+                  A description of the error that occurred. e.g., 'A mandatory field isn't supplied' or
+                  'RequestedExecutionDateTime must be in future'
+
+                  UAEOF doesn't standardise this field
+              Path:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: >-
+                  Recommended but optional reference to the JSON Path of the field with error, e.g.,
+                  $.Data.Initiation.InstructedAmount.Currency
+              Url:
+                type: string
+                description: URL to help remediate the problem, or provide more information, or to API Reference, or help etc
+            required:
+              - Code
+              - Message
+            additionalProperties: false
+          minItems: 1
+      description: An array of detail error codes, and messages, and URLs to documentation to help remediation.
+      additionalProperties: false
+    AEError400ResponseBodySigned:
+      type: object
+      required:
+        - iss
+        - exp
+        - nbf
+        - message
+      properties:
+        iss:
+          type: string
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)'
+        exp:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)'
+        nbf:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
+        aud:
+          type: array
+          items:
+            type: string
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+        iat:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
+        message:
+          $ref: '#/components/schemas/AEError400ResponseBody'
+      additionalProperties: false
+    AEError403:
+      anyOf:
+        - type: string
+          enum:
+            - AccessToken.InvalidScope
+            - Consent.TransientAccountAccessFailure
+            - Consent.AccountTemporarilyBlocked
+            - Consent.PermanentAccountAccessFailure
+            - GenericRecoverableError
+            - GenericError
+        - $ref: '#/components/schemas/AECustomErrorCode'
+    AEError403ResponseBody:
+      type: object
+      required:
+        - Errors
+      properties:
+        Errors:
+          type: array
+          items:
+            type: object
+            properties:
+              Code:
+                $ref: '#/components/schemas/AEError403'
+              Message:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: >-
+                  A description of the error that occurred. e.g., 'A mandatory field isn't supplied' or
+                  'RequestedExecutionDateTime must be in future'
+
+                  UAEOF doesn't standardise this field
+              Path:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: >-
+                  Recommended but optional reference to the JSON Path of the field with error, e.g.,
+                  $.Data.Initiation.InstructedAmount.Currency
+              Url:
+                type: string
+                description: URL to help remediate the problem, or provide more information, or to API Reference, or help etc
+            required:
+              - Code
+              - Message
+            additionalProperties: false
+          minItems: 1
+      description: An array of detail error codes, and messages, and URLs to documentation to help remediation.
+      additionalProperties: false
+    AEError403ResponseBodySigned:
+      type: object
+      required:
+        - iss
+        - exp
+        - nbf
+        - message
+      properties:
+        iss:
+          type: string
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)'
+        exp:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)'
+        nbf:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
+        aud:
+          type: array
+          items:
+            type: string
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+        iat:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
+        message:
+          $ref: '#/components/schemas/AEError403ResponseBody'
+      additionalProperties: false
+    AEError500:
+      anyOf:
+        - type: string
+          enum:
+            - GenericRecoverableError
+            - GenericError
+        - $ref: '#/components/schemas/AECustomErrorCode'
+    AEError500ResponseBody:
+      type: object
+      required:
+        - Errors
+      properties:
+        Errors:
+          type: array
+          items:
+            type: object
+            properties:
+              Code:
+                $ref: '#/components/schemas/AEError500'
+              Message:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: >-
+                  A description of the error that occurred. e.g., 'A mandatory field isn't supplied' or
+                  'RequestedExecutionDateTime must be in future'
+
+                  UAEOF doesn't standardise this field
+              Path:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: >-
+                  Recommended but optional reference to the JSON Path of the field with error, e.g.,
+                  $.Data.Initiation.InstructedAmount.Currency
+              Url:
+                type: string
+                description: URL to help remediate the problem, or provide more information, or to API Reference, or help etc
+            required:
+              - Code
+              - Message
+            additionalProperties: false
+          minItems: 1
+      description: An array of detail error codes, and messages, and URLs to documentation to help remediation.
+      additionalProperties: false
+    AEError500ResponseBodySigned:
+      type: object
+      required:
+        - iss
+        - exp
+        - nbf
+        - message
+      properties:
+        iss:
+          type: string
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.1)'
+        exp:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4)'
+        nbf:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
+        aud:
+          type: array
+          items:
+            type: string
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+        iat:
+          type: number
+          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
+        message:
+          $ref: '#/components/schemas/AEError500ResponseBody'
+      additionalProperties: false
+    AEIdentityAssurance:
+      type: object
+      required:
+        - Claims
+      properties:
+        Verification:
+          $ref: '#/components/schemas/AEVerifiedClaimVerification'
+        Claims:
+          $ref: '#/components/schemas/AEVerifiedClaims'
+      description: >-
+        Verified identity assurance data and claims. Data can collected from LFIs under Data Sharing consent or provided
+        manually by the TPP using data collected from the User.
+      example:
+        Claims:
+          IdentityType: Person
+          GivenName: John
+          Surname: Doe
+      additionalProperties: false
+    AEReadAccountResponseBody1:
+      type: object
+      required:
+        - Data
+        - Links
+        - Meta
+      properties:
+        Data:
+          $ref: '#/components/schemas/AEAccount'
+        Links:
+          $ref: '#/components/schemas/AEAccountOpeningLinks1'
+        Meta:
+          $ref: '#/components/schemas/Meta'
+      additionalProperties: false
+    AEVerifiedBusinessClaims:
+      type: object
+      required:
+        - IdentityType
+      properties:
+        IdentityType:
+          type: string
+          enum:
+            - Business
+        BusinessName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The name of the business
+        TradeLicenceNumber:
+          type: string
+          description: Trade License Number of the business.
+        TaxIdentificationNumber:
+          type: string
+          description: The tax identification number or VAT number for the company.
+        DateOfIncorporation:
+          type: string
+          format: date
+          description: The date the company was legally incorporated.
+        CountryOfIncorporation:
+          type: string
+          description: The country where the company is incorporated.
+        CorporateAddress:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEPartyIdentityAddressClaim'
+        CorporateContactEmail:
+          type: string
+          format: email
+          description: The primary email address for corporate communications.
+        CorporateContactPhoneNumber:
+          type: string
+          description: The primary phone number for corporate communications.
+        Industry:
+          type: string
+          description: The industry or sector in which the company operates.
+        CompanyWebsite:
+          type: string
+          format: uri
+          description: The official website of the company.
+      description: Claims related to a business entity that holds a Trade License Number.
+      additionalProperties: false
+    AEVerifiedClaimVerification:
+      type: object
+      required:
+        - TrustFramework
+      properties:
+        TrustFramework:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.TrustFrameworkCode'
+        AssuranceLevel:
+          type: string
+          description: >-
+            Determines the assurance level associated with the User in the respective VerifiedClaims. The value range
+            depends on the respective TrustFramework value.
+
+            Assurance Level:
+            [https://bitbucket.org/openid/ekyc-ida/wiki/identifiers](https://bitbucket.org/openid/ekyc-ida/wiki/identifiers)
+        AssuranceProcess:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AssuranceProcess'
+        Time:
+          description: >-
+            Representing the date and time when the identity verification process took place. All dates in the JSON
+            payloads are represented in ISO 8601 date-time format. All date-time fields in responses must include the
+            timezone. An example is below: 2017-04-05T10:43:07+00:00
+        VerificationProcess:
+          type: string
+          description: >-
+            Unique reference to the identity verification process as performed by the OP. Used for identifying and
+            retrieving details in case of disputes or audits. Presence of this element might be required for certain
+            trust frameworks.
+        Evidence:
+          description: >-
+            The type of evidence allowed for providing verification.
+
+            OpenID Connect for Identity Assurance 1.0:
+            [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element)
+      description: >-
+        Verification
+
+        [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element)
+      additionalProperties: false
+    AEVerifiedClaims:
+      oneOf:
+        - $ref: '#/components/schemas/AEVerifiedPersonClaims'
+        - $ref: '#/components/schemas/AEVerifiedBusinessClaims'
+      discriminator:
+        propertyName: IdentityType
+        mapping:
+          Person: '#/components/schemas/AEVerifiedPersonClaims'
+          Business: '#/components/schemas/AEVerifiedBusinessClaims'
+    AEVerifiedPersonClaims:
+      type: object
+      required:
+        - IdentityType
+      properties:
+        FullName:
+          type: string
+          description: >-
+            The full name of the person. Can be provided as an alternative to `GivenName` and `Surname` where only the
+            full name is captured.
+        IdentityType:
+          type: string
+          enum:
+            - Person
+        GivenName:
+          type: string
+          description: >-
+            Given name of the Party. Given name (also called forename) is used to differentiate from the surname or
+            family name.
+        Surname:
+          type: string
+          description: Surname of the Party
+        MiddleName:
+          type: string
+          description: Middle name of the Party
+        Nickname:
+          type: string
+          description: Nickname of the Party
+        EmiratesId:
+          type: string
+          description: Emirates ID number of the Party
+        EmiratesIdExpiryDate:
+          type: string
+          format: date
+          description: Emirates ID card expiry date
+        DateOfBirth:
+          type: string
+          format: date
+          description: Date of birth of the Party
+        SourceOfIncome:
+          type: string
+        Salary:
+          type: number
+        Nationality:
+          type: string
+        ResidentialAddress:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEPartyIdentityAddressClaim'
+        MobileNumber:
+          type: string
+        Email:
+          type: string
+        MaritalStatus:
+          type: string
+        Salutation:
+          type: string
+        Language:
+          type: string
+        EmployerName:
+          type: string
+        EmploymentSinceDate:
+          type: string
+          format: date
+        PowerofAttorney:
+          type: boolean
+        SalaryTransfer:
+          type: boolean
+        Profession:
+          type: string
+        UpdatedAt:
+          type: string
+          format: time
+      additionalProperties: false
+    AEWebhook:
+      type: object
+      required:
+        - IsActive
+      properties:
+        Url:
+          type: string
+          description: >-
+            The registered Webhook URL at which event notifications will be received. Required on first registration of
+            the Webhook.
+        IsActive:
+          type: boolean
+          description: >-
+            Indicator for whether event notifications should be sent to the TPP. When true event notifications will be
+            sent to the registered URL.
+      description: A Webhook Subscription Schema
+      additionalProperties: false
+    AccountIdentifiers:
+      type: array
+      items:
+        type: object
+        properties:
+          SchemeName:
+            $ref: '#/components/schemas/UAEAccountInformationAPI.AEExternalAccountIdentificationCode'
+          Identification:
+            $ref: '#/components/schemas/UAEAccountInformationAPI.Identification_0'
+          Name:
+            $ref: '#/components/schemas/UAEAccountInformationAPI.Name_0'
+        required:
+          - SchemeName
+          - Identification
+        additionalProperties: false
+    CreationDateTime:
+      type: string
+      format: date-time
+      description: The resource creation date and time.
+    EventNotification:
+      type: object
+      required:
+        - Webhook
+      properties:
+        Webhook:
+          allOf:
+            - $ref: '#/components/schemas/AEWebhook'
+          description: Properties of the Webhook registered to receive event notifications related to entity status.
+      additionalProperties: false
+    FxServiceInitiation.FxQuoteIdType:
+      type: string
+      minLength: 1
+      maxLength: 128
+    Meta:
+      type: object
+      description: Metadata relevant to the resource
+      additionalProperties: false
+    OpeningStatusUpdateDateTime:
+      type: string
+      format: date-time
+      description: The date and time the opening status was last updated.
+    Self:
+      type: string
+      format: uri
+      description: A link to the current resource
+    UAEAccountInformationAPI.AEAccountStatusCode:
+      type: string
+      enum:
+        - Active
+        - Inactive
+        - Dormant
+        - Unclaimed
+        - Deceased
+        - Suspended
+        - Closed
+      description: >-
+        Specifies the status of account resource in code form.
+
+
+        * Active: The account exist and is in an active state.
+
+
+        * Inactive: The account is deemed not active by the LFI. Please refer to the
+
+        [CBUAE Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+
+        for qualification of Inactive status.
+
+
+        * Dormant: Please refer to the [CBUAE
+        Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+
+        for the definition of Dormant status.
+
+
+        * Unclaimed: Please refer to the [CBUAE
+        Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+
+        for the definition of Unclaimed status.
+
+
+        * Deceased: The account holder has passed away.
+
+
+        * Suspended: The account has been temporarily deactivated by the LFI for reasons such as
+
+        suspicious activities or non-compliance with regulations. The account holder might
+
+        be unable to access funds or perform transactions until the bank's requirements
+
+        are met, and the suspension is lifted.
+
+
+        * Closed: The account is closed
+    UAEAccountInformationAPI.AEBranchAndFinancialInstitutionIdentification5_0:
+      type: object
+      required:
+        - SchemeName
+        - Identification
+      properties:
+        SchemeName:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEExternalFinancialInstitutionIdentificationCode'
+        Identification:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.Identification_1'
+      description: >-
+        Party that manages the account on behalf of the account owner, that is manages the registration and booking of
+        entries on the account, calculates balances on the account and provides information about the account.
+      additionalProperties: false
+    UAEAccountInformationAPI.AECashAccount6_1:
+      type: object
+      properties:
+        SchemeName:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.AEExternalAccountIdentificationCode'
+        Identification:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.Identification_0'
+        Name:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.Name_0'
+      description: >-
+        Account details of the Debtor in case the transaction is a Credit transaction.
+
+
+        These are optional because there are situations where this cannot be populated for the following Credit
+        transactions
+
+        - cash deposits (no creditor account/agent)
+
+        - cheques and DDs may not have this information at least during the process of clearing and sometimes (e.g. for
+        agency banks) may not be reconciled ever
+
+        - some corner situations with international payments
+
+        - for refunds with card payments  (instead merchant information fields should be populated)
+      additionalProperties: false
+    UAEAccountInformationAPI.AEExternalAccountIdentificationCode:
+      type: string
+      enum:
+        - IBAN
+        - AccountNumber
+        - MaskedPAN
+        - MortgageReference
+        - PersonalLoanReference
+      description: Name of the identification scheme for the account. Encoded with allowable values published in an external list.
+    UAEAccountInformationAPI.AEExternalAccountSubTypeCode:
+      type: string
+      enum:
+        - CurrentAccount
+        - Savings
+        - CreditCard
+        - Mortgage
+        - PersonalLoan
+      description: 'Specifies the sub type of account (product family group). Examples values include: CurrentAccount, Savings'
+    UAEAccountInformationAPI.AEExternalAccountTypeCode:
+      type: string
+      enum:
+        - Retail
+        - SME
+        - Corporate
+      description: Specifies the type of account (Retail, SME or Corporate).
+    UAEAccountInformationAPI.AEExternalFinancialInstitutionIdentificationCode:
+      type: string
+      enum:
+        - BICFI
+        - Other
+      description: >-
+        * /accounts resource
+
+        The name of the identification scheme for the LFI as the account services provider. Encoded with allowable value
+        as published in an external list.
+
+
+        * /beneficiaries resource
+
+        Refers to the Financial Institution that manages the account on behalf of the Beneficiary party, managing
+        registration, booking of entries on the account, calculating balances on the account and providing information
+        about the account. This is the servicing Financial Institution of the Beneficiary account.
+
+
+        * /scheduled-payments resource
+
+        Refers to the identification scheme for uniquely identifying the Creditor Agent.
+
+
+        * /standing-orders resource
+
+        Refers to the identification scheme for uniquely identifying the Creditor Agent.
+
+
+        * /transactions resource
+
+        Refers to the identification scheme for uniquely identifying the Creditor Agent.
+    UAEAccountInformationAPI.AEPartyIdentityAddressClaim:
+      type: object
+      required:
+        - Formatted
+        - StreetAddress
+        - Locality
+        - Region
+        - PostalCode
+        - Country
+      properties:
+        Formatted:
+          type: string
+          description: The address number and street claim that has been verified.
+        StreetAddress:
+          type: string
+          description: The address street claim that has been verified.
+        Locality:
+          type: string
+          description: The address locality (village, town, city etc) claim that has been verified.
+        Region:
+          type: string
+          description: The address region claim that has been verified.
+        PostalCode:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.PostalCode'
+        Country:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.CountryCode'
+      description: >-
+        Address object as per OpenID Connect Core 1.0 Address Claim
+
+        [https://openid.net/specs/openid-connect-core-1_0.html#AddressClaim](https://openid.net/specs/openid-connect-core-1_0.html#AddressClaim)
+      additionalProperties: false
+    UAEAccountInformationAPI.AccountHolderName:
+      type: string
+      description: >-
+        * /accounts resource
+
+        The Account Holder Name is the name or names of the Account owner(s) represented at the account level
+
+
+        * /accounts/{AccountId} resource
+
+        The Account Holder Name is the name or names of the Account owner(s) represented at the account level
+
+
+        * /beneficiaries resource
+
+        The Account Holder Name is the name or names of the Beneficiary account owner(s) represented at the account
+        level, as displayed by the Creditor Agent's online channels and as provided by the Beneficiary to the User 1
+        when adding the Beneficiary in the Beneficiary list.
+
+        Note, the Account Holder Name is not the product name or the nickname of the account.
+
+
+        * /scheduled-payments resource
+
+        The Account Holder Name is the name or names of the Beneficiary account owner(s) represented at the account
+        level, as displayed by the Creditor Agent's online channels and as provided by the Beneficiary to the User 1
+        when adding the Beneficiary in the Beneficiary list.
+
+        Note, the Account Holder Name is not the product name or the nickname of the account.
+
+
+        * /standing-orders resource
+
+        The Account Holder Name is the name or names of the Beneficiary account owner(s) represented at the account
+        level, as displayed by the Creditor Agent's online channels and as provided by the Beneficiary to the User 1
+        when adding the Beneficiary in the Beneficiary list.
+
+        Note, the Account Holder Name is not the product name or the nickname of the account.
+    UAEAccountInformationAPI.AccountHolderShortName:
+      type: string
+      description: |-
+        * /accounts resource
+        The Account holder nick name
+
+        * /accounts/{AccountId} resource
+        The Account holder nick name
+
+        * /beneficiaries resource
+        The Beneficiary account holder nick name
+
+        * /scheduled-payments resource
+        The Beneficiary account holder nick name
+
+        * /standing-orders resource
+        The Beneficiary account holder nick name
+    UAEAccountInformationAPI.AccountId:
+      type: string
+      minLength: 1
+      maxLength: 40
+      description: >-
+        A unique and immutable identifier produced by the LFI to identify the account resource.This identifier has no
+        meaning to the account owner (User 1).
+    UAEAccountInformationAPI.ActiveOrHistoricCurrencyCode_0:
+      type: string
+      pattern: ^[A-Z]{3,3}$
+      description: >-
+        Identification of the currency in which the account is held. A code allocated to a currency under an
+        international currency identification scheme, as described in the latest edition of the international standard
+        ISO 4217 'Codes for the representation of currencies and funds'.
+    UAEAccountInformationAPI.AssuranceDetails:
+      type: object
+      required:
+        - AssuranceType
+        - AssuranceClassification
+        - EvidenceRef
+      properties:
+        AssuranceType:
+          type: string
+          description: String denoting which part of the assurance_process the evidence fulfils
+        AssuranceClassification:
+          type: string
+          description: String reflecting how the evidence has been classified or measured as required by the TrustFramework
+        EvidenceRef:
+          type: array
+          items:
+            $ref: '#/components/schemas/UAEAccountInformationAPI.EvidenceRef'
+      description: Denoting the details about how the evidence complies with the policy
+      additionalProperties: false
+    UAEAccountInformationAPI.AssuranceProcess:
+      type: object
+      required:
+        - Policy
+        - Procedure
+        - AssuranceDetails
+      properties:
+        Policy:
+          type: string
+          description: Representing the standard or policy that was followed.
+        Procedure:
+          type: string
+          description: Representing a specific procedure from the policy that was followed.
+        AssuranceDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/UAEAccountInformationAPI.AssuranceDetails'
+      description: >-
+        Determines the assurance process that was followed. This reflects how the evidence meets the requirements of the
+        TrustFramework and AssuranceLevel. The factual record of the evidence and the procedures followed are recorded
+        in the evidence element, this element is used to cross reference the evidence to the AssuranceLevel followed
+
+        OpenID Connect for Identity Assurance 1.0:
+        [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element)
+      additionalProperties: false
+    UAEAccountInformationAPI.CountryCode:
+      type: object
+      required:
+        - CountryCode
+      properties:
+        CountryCode:
+          type: string
+          pattern: ^[A-Z]{2,2}$
+          description: Nation with its own government, occupying a particular territory.
+      additionalProperties: false
+    UAEAccountInformationAPI.Description_0:
+      type: string
+      minLength: 1
+      maxLength: 35
+      description: Specifies the description of the account sub-type.
+    UAEAccountInformationAPI.EvidenceMetadata:
+      type: object
+      required:
+        - EvidenceClassification
+      properties:
+        EvidenceClassification:
+          type: string
+      description: >-
+        Object indicating any meta data about the evidence that is required by the AssuranceProcess in order to
+        demonstrate compliance with the TrustFramework. It has the following sub-elements
+      additionalProperties: false
+    UAEAccountInformationAPI.EvidenceRef:
+      type: object
+      required:
+        - Txn
+        - EvidenceMetadata
+      properties:
+        Txn:
+          type: string
+          description: Identifier referring to the txn used in the CheckDetails.
+        EvidenceMetadata:
+          $ref: '#/components/schemas/UAEAccountInformationAPI.EvidenceMetadata'
+      description: Evidence being referred to
+      additionalProperties: false
+    UAEAccountInformationAPI.Identification_0:
+      type: string
+      minLength: 1
+      maxLength: 400
+      description: >-
+        Identification for the account assigned by the LFI based on the Account Scheme Name. This identification is
+        known by the User 1 account owner. For IBAN, refer to the ISO Standard 13616.
+    UAEAccountInformationAPI.Identification_1:
+      type: string
+      minLength: 1
+      maxLength: 35
+      description: >-
+        * /accounts resource
+
+        Unique and unambiguous identification of the LFI as the account servicing institution for the Open Banking
+        Services.
+
+
+        * /beneficiaries resource
+
+        Unique and unambiguous identification of the Creditor Agency as the servicing institution of the Beneficiary.
+
+
+        * /scheduled-payments resource
+
+        Unique and unambiguous identification of the LFI as the account servicing institution for the Open Banking
+        Services.
+
+
+        * /standing-orders resource
+
+        Unique and unambiguous identification of the LFI as the account servicing institution for the Open Banking
+        Services.
+
+
+        * /transactions resource
+
+        Unique and unambiguous identification of the LFI as the account servicing institution for the Open Banking
+        Services.
+
+
+        *  Notes:
+
+        Based on the value of the field **SchemeName**, this entry may be :
+
+        * BICFI: The BIC/SWIFT Code
+
+        * Other: The ID; A Country Code followed by a Bank Code (4 character code).
+    UAEAccountInformationAPI.MaturityDate:
+      type: string
+      format: date-time
+      description: >-
+        * Fixed Term Savings Account
+
+        MaturityDate is the date on which the savings mature and the balance can be withdrawn by the User without
+        penalty
+
+
+        * All dates in the JSON payloads are represented in ISO 8601 date-time format. All date-time fields in responses
+        must include the timezone. An example is: 2017-04-05T10:43:07+00:00
+    UAEAccountInformationAPI.Name_0:
+      type: string
+      minLength: 1
+      maxLength: 70
+      description: >-
+        The account name is the name or names of the User 1 account owner(s) represented at an account level, as
+        displayed by the LFI's online channels. Note: The account name is not the product name or the nickname of the
+        account.
+    UAEAccountInformationAPI.Nickname:
+      type: string
+      minLength: 1
+      maxLength: 70
+      description: >-
+        The nickname of the account, assigned by User 1 to provide an additional and easier means of identification of
+        the account at the LFI.
+    UAEAccountInformationAPI.OpeningDate:
+      type: string
+      format: date-time
+      description: >-
+        Date on which the account and its related basic services by LFI started to be operational for User 1. All dates
+        in the JSON payloads are represented in ISO 8601 date-time format. All date-time fields in responses must
+        include the timezone. An example is below: 2017-04-05T10:43:07+00:00
+    UAEAccountInformationAPI.PostalCode:
+      type: object
+      required:
+        - PostalCode
+      properties:
+        PostalCode:
+          type: string
+          minLength: 5
+          maxLength: 5
+          description: >-
+            Identifier consisting of a group of letters and/or numbers that is added to a postal address to assist the
+            sorting of mail.
+      additionalProperties: false
+    UAEAccountInformationAPI.StatusUpdateDateTime:
+      type: string
+      format: date-time
+      description: >-
+        Date and time at which the account resource status was updated. All dates in the JSON payloads are represented
+        in ISO 8601 date-time format.
+
+        All date-time fields in responses must include the timezone. An example is below:
+
+        2017-04-05T10:43:07+00:00
+    UAEAccountInformationAPI.TrustFrameworkCode:
+      type: string
+      enum:
+        - Undefined
+      description: >-
+        Identifies the trust framework used for verification. This consists of a set of rules and standards and sets out
+        requirements so that organisations know what ‘good’ identity verification looks like.
+
+        Trust Frameworks:
+        [https://bitbucket.org/openid/ekyc-ida/wiki/identifiers](https://bitbucket.org/openid/ekyc-ida/wiki/identifiers)
+  examples:
+    CreateAccountSignedRequest:
+      summary: Create Account Opening Example - Signed Request
+      description: Create an account opening request for a new account with party data provided through data sharing.
+      value:
+        iss: https://lfi.openfinanceapihub.ae
+        exp: 1738848508
+        nbf: 1738844908
+        message:
+          Data:
+            LinkedOperations:
+              FxQuoteId: 1d747c7b-7285-43e2-bb26-f7d6f195177e
+            Party:
+              Claims:
+                IdentityType: Person
+                GivenName: Hamad
+                Surname: Ali
+                EmiratesId: 7841-1234-1234567-1
+    ReadAccountOpeningAwaitingPartyDataUnsignedResponse:
+      summary: Read Account Opening Example - AwaitingPartyData - Unsigned Response
+      description: The account opening is pending the User providing additional data.
+      value:
+        Data:
+          AccountId: 7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+          OpeningStatus: AwaitingPartyData
+          OpeningStatusUpdateDateTime: '2021-01-01T00:00:00+04:00'
+        Links:
+          Self: https://lfi.openfinanceapihub.ae/accounts/7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+          AccountOpeningRedirectUrl: https://lfi.example.ae/accounts?account-id=7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+        Meta: {}
+    ReadAccountOpeningAwaitingPartyDataSignedResponse:
+      summary: Read Account Opening Example - AwaitingPartyData - Signed Response
+      description: The account opening is pending the User providing additional data.
+      value:
+        iss: https://lfi.openfinanceapihub.ae
+        exp: 1738848508
+        nbf: 1738844908
+        message:
+          Data:
+            AccountId: 7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+            OpeningStatus: AwaitingPartyData
+            OpeningStatusUpdateDateTime: '2021-01-01T00:00:00+04:00'
+          Links:
+            Self: https://lfi.openfinanceapihub.ae/accounts/7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+            AccountOpeningRedirectUrl: https://lfi.example.ae/accounts?account-id=7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+          Meta: {}
+    ReadAccountOpeningCreatedUnsignedResponse:
+      summary: Read Account Opening Example - Created - Unsigned Response
+      description: The account has been successfully opened and account details are available for use.
+      value:
+        Data:
+          AccountId: 7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+          AccountHolderName: Hamad Ali
+          AccountIdentifiers:
+            - SchemeName: IBAN
+              Identification: AE460090000000123456789
+          OpeningStatus: Created
+          OpeningStatusUpdateDateTime: '2021-01-01T01:00:00+04:00'
+        Links:
+          Self: https://lfi.openfinanceapihub.ae/accounts/7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+        Meta: {}
+    ReadAccountOpeningCreatedSignedResponse:
+      summary: Read Account Opening Example - Created - Signed Response
+      description: The account has been successfully opened and account details are available for use.
+      value:
+        iss: https://lfi.openfinanceapihub.ae
+        exp: 1738848508
+        nbf: 1738844908
+        message:
+          Data:
+            AccountId: 7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+            AccountHolderName: Hamad Ali
+            AccountIdentifiers:
+              - SchemeName: IBAN
+                Identification: AE460090000000123456789
+            OpeningStatus: Created
+            OpeningStatusUpdateDateTime: '2021-01-01T01:00:00+04:00'
+          Links:
+            Self: https://lfi.openfinanceapihub.ae/accounts/7a79d7f0-4054-4ee8-bce2-ef696f1a7a31
+          Meta: {}
+  securitySchemes:
+    TPPOAuth2Security:
+      type: oauth2
+      description: >-
+        TPP confidential client authorization with the LFI to stage a consent. **Please refer to [OpenID FAPI Security
+        Profile 1.0 -Part 2
+        Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html#authorization-server) - 5.2.2 point 14 -
+        shall authenticate the confidential client using one of the following methods private_key_jwt and [OpenID
+        Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication) 9. Client
+        Authentication private_key_jwt**
+      flows:
+        clientCredentials:
+          tokenUrl: https://authserver.example/token
+          scopes:
+            account-opening: Ability to open an account at a given LFI for the deposit of funds
+  responses:
+    400Error:
+      description: Bad request
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+      content:
+        application/jwt:
+          schema:
+            $ref: '#/components/schemas/AEError400ResponseBodySigned'
+        application/json; charset=utf-8:
+          schema:
+            $ref: '#/components/schemas/AEError400ResponseBody'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AEError400ResponseBody'
+    401Error:
+      description: Unauthorized
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+    403Error:
+      description: Forbidden
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+      content:
+        application/jwt:
+          schema:
+            $ref: '#/components/schemas/AEError403ResponseBodySigned'
+        application/json; charset=utf-8:
+          schema:
+            $ref: '#/components/schemas/AEError403ResponseBody'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AEError403ResponseBody'
+    404Error:
+      description: Not found
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+    405Error:
+      description: Method Not Allowed
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+    406Error:
+      description: Not Acceptable
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+    415Error:
+      description: Unsupported Media Type
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+    429Error:
+      description: Too Many Requests
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+        retry-after:
+          required: true
+          description: Number in seconds to wait
+          schema:
+            type: integer
+            format: int64
+    500Error:
+      description: Internal Server Error
+      headers:
+        x-fapi-interaction-id:
+          required: true
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+      content:
+        application/jwt:
+          schema:
+            $ref: '#/components/schemas/AEError500ResponseBodySigned'
+        application/json; charset=utf-8:
+          schema:
+            $ref: '#/components/schemas/AEError500ResponseBody'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AEError500ResponseBodySigned'
+servers:
+  - url: /open-finance/account-opening/v2.0
+    description: ''
+    variables: {}
