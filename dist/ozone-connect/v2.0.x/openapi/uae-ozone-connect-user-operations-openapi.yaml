@@ -1,0 +1,1099 @@
+openapi: 3.0.0
+info:
+  title: Ozone Connect - UAE User Operations API Description
+  description: >
+    ## Ozone Connect - UAE User Operations API Description
+
+
+    This document provides an API description in [OpenAPI](https://spec.openapis.org/oas/v3.0.1.html) for User
+    Operations API for Ozone Connect that support interactions with services hosted on the API Hub.
+
+
+    These APIs should be implemented by a financial institution to facilitate integration with the API Hub.
+
+
+    ### Versioning
+
+
+    The `version` property implements the following pattern
+    `{standards-major}.{standards-minor}.{ozone-connect-version}`, where:  
+
+
+    * `standards-major` is the major version of the latest UAE standard that the API description implements.
+
+
+    * `standards-minor` is the minor version of the latest UAE standard that the API description implements.
+
+
+    * `ozone-connect-version` is the version of the Ozone Connect API description.
+
+
+    So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
+    standard version 2.0.
+
+
+    ### v2.0.3
+
+
+    * Added PII decryption operation
+
+
+    * Changed `PersonalIdentifiableInformation` to `personalIdentifiableInformation`
+
+
+    ### v2.0.2
+
+
+    * Added masked email and phone number to initialization response
+
+
+    ### v2.0.1
+
+
+    * Added all v2.0 features to API description.
+
+
+    * Added user operations to support CAAP implementation.
+  version: v2.0.3
+tags:
+  - name: User Verification
+    description: Operations that allow a User to be verified in the API Hub
+  - name: User Registration
+    description: Operations that allow a User to be registered for services at the API Hub
+  - name: PII Decryption
+    description: Operations that allow a PII to be decrypted for use at the API Hub
+paths:
+  /users/actions/challenge/complete:
+    post:
+      operationId: CompleteUserChallenge_completeUserChallenge
+      summary: Complete a user challenge
+      description: |-
+        Complete the User Challenge.
+
+        This operation does not require a consent, as the challenge may be requested
+        during onboarding before a consent is granted. 
+
+        This is implemented as an RPC operation to remove any requirement for LFIs 
+        to implement a REST model for their Users, which is subject to significant variance across
+        providers.
+
+        If the challenge data is not matched an error response MUST not be returned. The response
+        data MUST be returned as a 200 response. All other error conditions should be returned based
+        on Ozone Connect guidance using an appropriate HTTP return code.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-fapi-interaction-id:
+              required: false
+              description: An RFC4122 UID used as a correlation ID.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      challengeId:
+                        allOf:
+                          - $ref: '#/components/schemas/OzoneConnectUserChallengeIdType'
+                        description: A unique identifier that allows the challenge to be tracked in the application.
+                      challengeType:
+                        type: string
+                        minLength: 1
+                        maxLength: 70
+                        description: The challenge type, set by the LFI.
+                      status:
+                        allOf:
+                          - $ref: '#/components/schemas/OzoneConnectUserChallengeStatusCodes'
+                        description: |
+                          The status of the challenge. Supported values are as follows:
+
+                          * Pending: The challenge has not been sent or returned.
+
+                          * Sent: The challenge has been sent or returned.
+
+                          * Passed: The challenge has been verified.
+
+                          * TransmissionFailed: The challenge failed to be sent due a business or technical failure.
+
+                          * VerificationFailed: Verification of the challenge failed.
+                      lastStatusUpdateDateTime:
+                        type: string
+                        format: date-time
+                        description: The last status update to the challenge by the LFI.
+                      message:
+                        type: string
+                        description: Optional diagnostic message indicating failure reason.
+                    required:
+                      - challengeId
+                      - challengeType
+                      - status
+                      - lastStatusUpdateDateTime
+                    description: Properties of the user challenge.
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - User Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    userId:
+                      type: string
+                      description: A user identifier value that uniquely identifies a given User at the LFI.
+                    challengeId:
+                      allOf:
+                        - $ref: '#/components/schemas/OzoneConnectUserChallengeIdType'
+                      description: A unique identifier that allows the challenge to be tracked in the application.
+                    challengeResponseData:
+                      type: string
+                      description: >-
+                        Challenge data as entered in OzoneConnect. Format is non-specific to accommodate variations
+                        between LFIs.
+                  required:
+                    - userId
+                    - challengeId
+                    - challengeResponseData
+                  description: Properties of the challenge data submitted by the User.
+              required:
+                - data
+        description: Response data supplied by the User at the API Hub
+  /users/actions/challenge/initialize:
+    post:
+      operationId: CreateUserChallenge_initializeUserChallenge
+      summary: Create a user challenge resource
+      description: |-
+        Create a user challenge through a means supported at the LFI. A unique identifier must
+        be generated by the LFI and returned to the API Hub for tracking purposes.
+
+        This operation does not require a consent, as the challenge may be requested
+        during onboarding before a consent is granted. 
+
+        This is implemented as an RPC operation to absolve the LFI of the requirement to implement a REST
+        model for their Users and to accommodate variations in User management across LFIs.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-fapi-interaction-id:
+              required: false
+              description: An RFC4122 UID used as a correlation ID.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      challengeId:
+                        allOf:
+                          - $ref: '#/components/schemas/OzoneConnectUserChallengeIdType'
+                        description: A unique identifier that allows the challenge to be tracked in the application.
+                      status:
+                        allOf:
+                          - $ref: '#/components/schemas/OzoneConnectUserChallengeStatusCodes'
+                        description: |
+                          The status of the challenge. Supported values are as follows:
+
+                          * Pending: The challenge has not been sent or returned.
+
+                          * Sent: The challenge has been sent or returned.
+
+                          * Passed: The challenge has been verified.
+
+                          * TransmissionFailed: The challenge failed to be sent due a business or technical failure.
+
+                          * VerificationFailed: Verification of the challenge failed.
+                      message:
+                        type: string
+                        description: Message providing diagnostic information if initialization of the challenge failed.
+                    required:
+                      - challengeId
+                      - status
+                    description: Properties of the user challenge resource.
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - User Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    userId:
+                      type: string
+                      description: A user identifier value that uniquely identifies a given User at the LFI.
+                  required:
+                    - userId
+                  description: |-
+                    Properties of the requested challenge. Only the LFI user identifier is required.
+
+                    The type of challenge is selected by the LFI, based on their internal implementation.
+                    It must, however, be on the basis of a code that can be submitted by API Hub services
+                    for verification.
+              required:
+                - data
+        description: Request a new user challenge. Data will contain properties of User held at API Hub
+  /users/actions/challenge/query:
+    post:
+      operationId: QueryUserChallenge_queryUserChallenge
+      summary: Query an outstanding user challenge
+      description: |-
+        Query the current state of the user challenge instance.
+
+        This operation does not require a consent, as the challenge may be requested
+        during onboarding before a consent is granted by the User. 
+
+        This is implemented as an RPC operation to remove any requirement for LFIs 
+        to implement a REST model for their Users, which is subject to significant variance across
+        providers.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            x-fapi-interaction-id:
+              required: false
+              description: An RFC4122 UID used as a correlation ID.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      challengeId:
+                        allOf:
+                          - $ref: '#/components/schemas/OzoneConnectUserChallengeIdType'
+                        description: A unique identifier that allows the challenge to be tracked in the application.
+                      challengeType:
+                        type: string
+                        minLength: 1
+                        maxLength: 70
+                        description: The challenge type, set by the LFI.
+                      status:
+                        allOf:
+                          - $ref: '#/components/schemas/OzoneConnectUserChallengeStatusCodes'
+                        description: |
+                          The status of the challenge. Supported values are as follows:
+
+                          * Pending: The challenge has not been sent or returned.
+
+                          * Sent: The challenge has been sent or returned.
+
+                          * Passed: The challenge has been verified.
+
+                          * TransmissionFailed: The challenge failed to be sent due a business or technical failure.
+
+                          * VerificationFailed: Verification of the challenge failed.
+                      lastStatusUpdateDateTime:
+                        type: string
+                        format: date-time
+                        description: The last status update to the challenge by the LFI.
+                      message:
+                        type: string
+                        description: Optional diagnostic message indicating failure reason.
+                    required:
+                      - challengeId
+                      - challengeType
+                      - status
+                      - lastStatusUpdateDateTime
+                    description: Properties of the user challenge.
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - User Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    userId:
+                      type: string
+                      description: A user identifier value that uniquely identifies a given User at the LFI.
+                    challengeId:
+                      allOf:
+                        - $ref: '#/components/schemas/OzoneConnectUserChallengeIdType'
+                      description: A unique identifier that allows the challenge to be tracked in the application.
+                  required:
+                    - userId
+                    - challengeId
+                  description: Properties of the requested challenge.
+              required:
+                - data
+        description: Query an existing challenge. Data will contain properties of User held at API Hub
+  /users/actions/deregister:
+    post:
+      operationId: DeregistrationUser_deregisterUser
+      summary: Deregistration of a User
+      description: |-
+        Deregister a User at the API Hub for services such as CAAP.
+
+        This is implemented as an RPC operation to remove any requirement for LFIs 
+        to implement a REST model for their Users, which is subject to significant variance across
+        providers.    
+      parameters: []
+      responses:
+        '204':
+          description: No content
+          headers:
+            x-fapi-interaction-id:
+              required: false
+              description: An RFC4122 UID used as a correlation ID.
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - User Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/OzoneConnectUserDeregistrationRequestBody'
+              required:
+                - data
+  /users/actions/pii/decrypt:
+    post:
+      operationId: DecryptPii_decryptPii
+      summary: Decrypt PII associated with a given user.
+      description: |2-
+          Decrypt PII sent by the API Hub. The LFI must implement the guidance provided with the Open Finance Framework.
+
+          The LFI should respond with the decrypted JSON object, or respond with an appropriate error code if they cannot
+          decrypt the data. Error codes for decryption failures are provided with the Ozone Connect implementation guidance.
+
+          The structure of the decoded JSON object is intentionally left open in this design, to ensure that new PII objects
+          can be added or existing PII objects updated without needing to implement a new version of this API description.
+          
+          LFIs **MUST** ensure they respond with a parsed, valid JSON object, **exactly** reflecting the JWE/JWS payload, to
+          ensure the content can be correctly interpreted by the API Hub.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jws:
+                    type: string
+                    description: >-
+                      The decrypted payload as a JWS, including both the header and signature.
+
+
+                      LFIs should return this value, if available through the decryption implementation, to support any
+                      additional 
+
+                      verification actions at the CAAP Resource Server.
+                  payload:
+                    type: object
+                    description: >-
+                      The decrypted JWS payload as a JSON object or, if not wrapped in a JWS, the decrypted JSON object.
+                      This value MUST be a JSON object.
+                required:
+                  - payload
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - PII Decryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    personalIdentifiableInformation:
+                      type: string
+                      description: A JWE transmitted by a TPP to the API Hub with a given consent.
+                    tpp:
+                      allOf:
+                        - $ref: '#/components/schemas/ConsentManagerAPI.tpp'
+                      description: >-
+                        Metadata captured by the API Hub relating to the TPP, which allows cross-referencing of the
+                        entity that transmitted the data.
+                  required:
+                    - personalIdentifiableInformation
+                    - tpp
+              required:
+                - data
+  /users/actions/register/complete:
+    post:
+      operationId: CompleteUserRegistration_completeRegistration
+      summary: Complete the registration of a User
+      description: |-
+        Complete the registration of a User at the API Hub for services such as CAAP. Only required
+        if the response from `post /users/actions/register/initialize` indicated the requirement for
+        a challenge to be sent to the User.
+
+        This is implemented as an RPC operation to remove any requirement for LFIs 
+        to implement a REST model for their Users, which is subject to significant variance across
+        providers.
+
+        If the challenge data is not matched an error response MUST not be returned. The response
+        data MUST be returned as a 200 response. All other error conditions should be returned based
+        on Ozone Connect guidance using an appropriate HTTP return code.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OzoneConnectCompleteUserRegistrationResponseBody'
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - User Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/OzoneConnectCompleteUserRegistrationRequestBody'
+              required:
+                - data
+  /users/actions/register/initialize:
+    post:
+      operationId: InitializeUserRegistration_initializeRegistration
+      summary: Initialize the registration of a User
+      description: |-
+        Initialize the registration of a User at the API Hub for services such as CAAP.
+
+        This is implemented as an RPC operation to remove any requirement for LFIs 
+        to implement a REST model for their Users, which is subject to significant variance across
+        providers.
+
+        The response status indicates next steps to the API Hub. If the `Complete` status is returned
+        then no step-up is feasible or is required, and the complete operation can be omitted.
+
+        If resolution of the User at the LFI an error response MUST be returned, in line with guidance
+        on HTTP response codes and error structures prescribed by Ozone Connect.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OzoneConnectInitializeUserRegistrationResponseBody'
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - User Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/OzoneConnectInitializeUserRegistrationRequestBody'
+              required:
+                - data
+components:
+  schemas:
+    AECustomErrorCode:
+      type: string
+      pattern: ^[A-Za-z]+\.[A-Za-z0-9]+$
+    AEDefaultErrorCode:
+      type: string
+      description: Custom error code without prefix, retained for compatibility with version 1.2.
+    AEError400Codes:
+      type: string
+      enum:
+        - Consent.Invalid
+        - Consent.BusinessRuleViolation
+        - Consent.FailsControlParameters
+        - Consent.InvalidUserIdentifier
+        - JWS.InvalidSignature
+        - JWS.Malformed
+        - JWS.InvalidClaim
+        - JWS.InvalidHeader
+        - JWS.InvalidPayload
+        - JWE.DecryptionError
+        - JWE.InvalidHeader
+        - GenericRecoverableError
+        - GenericError
+        - Event.UnexpectedEvent
+        - Body.InvalidFormat
+        - Resource.InvalidFormat
+    AEError403Codes:
+      type: string
+      enum:
+        - AccessToken.InvalidScope
+        - Consent.TransientAccountAccessFailure
+        - Consent.AccountTemporarilyBlocked
+        - Consent.PermanentAccountAccessFailure
+        - GenericRecoverableError
+        - GenericError
+    AEErrorGenericCodes:
+      type: string
+      enum:
+        - GenericRecoverableError
+        - GenericError
+    ConsentManagerAPI.softwareStatementProperties:
+      type: object
+      properties:
+        redirect_uris:
+          type: array
+          items:
+            type: string
+          description: The redirect URIs registered by the TPP at the Trust Framework
+        client_name:
+          type: string
+          description: Name of the Client to be presented to the End-User.
+        client_uri:
+          type: string
+          description: URL of the home page of the Client.
+        logo_uri:
+          type: string
+          description: URL of the Client logo.
+        jwks_uri:
+          type: string
+          description: URL of the Client JSON Web Key Set (JWKS) at the Trust Framework.
+        client_id:
+          type: string
+          description: Unique Client Identifier.
+        roles:
+          type: array
+          items:
+            type: string
+          description: The roles under which the organization is registered at the Trust Framework.
+        sector_identifier_uri:
+          type: string
+          description: >-
+            URL using the https scheme to be used in calculating Pseudonymous Identifiers by the OP. Allows redirect URI
+            values to be grouped, easing registration management.
+        application_type:
+          type: string
+          description: Client application type.
+        organisation_id:
+          type: string
+          description: Organization identifier for organization that owns the Client.
+      description: |-
+        The decoded software statement retrieved from the Trust Framework that provides
+        the properties of the Client.
+
+        Please note:
+
+        - The JSON payload will contain other properties in addition to those listed
+        here. The properties listed here are considered most relevant for activities
+        such as TPP logo retrieval and JWS verification.
+        - The content reflects elements of discovery metadata, which in generally
+        defined as a file rather than an API. Providing constraints such as
+        `minLength` and `maxLength` is impractical in this context
+
+        The full software statement record is also available in the Trust Framework.
+        Please also refer the Registration Framework page in the CBUAE standards for
+        additional guidance on these properties.
+    ConsentManagerAPI.tpp:
+      type: object
+      required:
+        - clientId
+        - tppId
+        - tppName
+        - softwareStatementId
+        - decodedSsa
+        - orgId
+      properties:
+        clientId:
+          type: string
+          pattern: ^.*[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+          description: The client identifier for the TPP as issued by the Trust Framework
+        tppId:
+          type: string
+          description: The identifier used by the API Hub to uniquely identify the TPP
+        tppName:
+          type: string
+          description: The TPP name recorded in the Trust Framework
+        obieTppId:
+          type: string
+          description: The UK market TPP identifier. This property is not used for CBUAE and is therefore marked as deprecated.
+        softwareStatementId:
+          type: string
+          description: The software statement identifier for the Client.
+        obieSoftwareStatementId:
+          type: string
+          description: >-
+            The UK market software statement identifier. This property is not used for CBUAE and is therefore marked as
+            deprecated.
+        obieSoftwareStatementName:
+          type: string
+          description: >-
+            The UK market software statement name. This property is not used for CBUAE and is therefore marked as
+            deprecated.
+        directoryRecord:
+          type: string
+          format: base64
+          description: >-
+            The latest copy of the TPP directory record retrieve from the CBUAE Trust Framework directory, encoded as a
+            Base 64 string
+        ssa:
+          type: string
+          description: >-
+            The encoded Software Statement Assertion. This property is not used for CBUAE and is therefore marked as
+            deprecated.
+        decodedSsa:
+          $ref: '#/components/schemas/ConsentManagerAPI.softwareStatementProperties'
+        orgId:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+          description: The organization identifier for the TPP
+      description: >-
+        The TPP record as held by Ozone. If Ozone TPP Connect has been integrated into a directory, the
+        `directoryRecord` provides the TPP's directory record as held by Ozone in base 64 encoded format.
+    DefaultError:
+      type: object
+      properties:
+        errorCode:
+          allOf:
+            - $ref: '#/components/schemas/AEDefaultErrorCode'
+          description: >-
+            Generic error code set by the LFI. Non-namespaced error codes are allowed for compatibility versions prior
+            to v2.0.
+        errorMessage:
+          type: string
+          description: Message describing what problem has occurred
+    Error400:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          anyOf:
+            - $ref: '#/components/schemas/AEError400Codes'
+            - $ref: '#/components/schemas/AECustomErrorCode'
+            - $ref: '#/components/schemas/AEDefaultErrorCode'
+          description: >-
+            Error code identifying the problem that occurred. This may either be one of the prescribed Error Code(s) or
+            a namespaced Error Code where the namespace is the system or organisation that has responded with the error,
+            and the code is the code specific to the system or organisation. organisation or system.
+
+
+            LFIs should implement error codes based on the prescribed codes or guidance in the standards, with
+            non-specific codes maintained for backward compatibility with version 1.2.
+        errorMessage:
+          type: string
+          description: Message describing what problem has occurred
+      description: Default error response payload structure for Ozone Connect
+    Error403:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          anyOf:
+            - $ref: '#/components/schemas/AEError403Codes'
+            - $ref: '#/components/schemas/AECustomErrorCode'
+            - $ref: '#/components/schemas/AEDefaultErrorCode'
+          description: >-
+            Error code identifying the problem that occurred. This may either be one of the prescribed Error Code(s) or
+            a namespaced Error Code where the namespace is the system or organisation that has responded with the error,
+            and the code is the code specific to the system or organisation.
+                  
+            LFIs should implement error codes based on the prescribed codes or guidance in the standards, with
+            non-specific codes maintained for backward compatibility with version 1.2.
+        errorMessage:
+          type: string
+          description: Message describing what problem has occurred
+      description: >-
+        Error code identifying the problem that occurred. The first part of the code is the namespace, which is the name
+        of the organisation or system that is rejecting the payment, and the second part is the specific rejection
+        reason code for the originating organisation or system.
+    Error409:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          anyOf:
+            - $ref: '#/components/schemas/AEErrorGenericCodes'
+            - $ref: '#/components/schemas/AECustomErrorCode'
+            - $ref: '#/components/schemas/AEDefaultErrorCode'
+          description: >-
+            Error code identifying the problem that occurred. This may either be one of the prescribed Error Code(s) or
+            a namespaced Error Code where the namespace is the system or organisation that has responded with the error,
+            and the code is the code specific to the system or organisation.
+
+
+            LFIs should implement error codes based on the prescribed codes or guidance in the standards, with
+            non-specific codes maintained for backward compatibility with version 1.2.
+        errorMessage:
+          type: string
+          description: Message describing what problem has occurred
+      description: >-
+        Error code identifying the problem that occurred. The first part of the code is the namespace, which is the name
+        of the organisation or system that is rejecting the payment, and the second part is the specific rejection
+        reason code for the originating organisation or system.
+    Error500:
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorCode:
+          anyOf:
+            - $ref: '#/components/schemas/AEErrorGenericCodes'
+            - $ref: '#/components/schemas/AECustomErrorCode'
+            - $ref: '#/components/schemas/AEDefaultErrorCode'
+          description: >-
+            Error code identifying the problem that occurred. This may either be one of the prescribed Error Code(s) or
+            a namespaced Error Code where the namespace is the system or organisation that has responded with the error,
+            and the code is the code specific to the system or organisation.
+
+
+            LFIs should implement error codes based on the prescribed codes or guidance in the standards, with
+            non-specific codes maintained for backward compatibility with version 1.2.
+        errorMessage:
+          type: string
+          description: Message describing what problem has occurred
+      description: >-
+        Error code identifying the problem that occurred. The first part of the code is the namespace, which is the name
+        of the organisation or system that is rejecting the payment, and the second part is the specific rejection
+        reason code for the originating organisation or system.
+    OzoneConnectCompleteUserRegistrationRequestBody:
+      type: object
+      required:
+        - userId
+        - challengeResponse
+      properties:
+        userId:
+          type: string
+          description: A user identifier value that uniquely identifies a given User at the LFI.
+        challengeResponse:
+          type: string
+          description: The challenge response data, as entered by the User using API Hub services.
+    OzoneConnectCompleteUserRegistrationResponseBody:
+      type: object
+      required:
+        - registrationStatus
+      properties:
+        registrationStatus:
+          allOf:
+            - $ref: '#/components/schemas/OzoneConnectUserRegistrationStatusCodes'
+          description: Status of the user registration request.
+        registrationStatusMessage:
+          type: string
+          description: Optional message providing information on the status of the user registration request.
+    OzoneConnectInitializeUserRegistrationPersonalIdentifiableInformation:
+      oneOf:
+        - type: string
+        - type: object
+          properties:
+            emiratesId:
+              type: string
+              description: Emirates ID
+            emiratesIdExpirationDate:
+              type: string
+              format: date
+              description: Emirates ID Expiration Date
+          required:
+            - emiratesId
+      description: Request to initialize user registration.
+    OzoneConnectInitializeUserRegistrationRequestBody:
+      type: object
+      required:
+        - verificationTypes
+        - personalIdentifiableInformation
+      properties:
+        verificationTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/OzoneConnectUserVerificationCodes'
+          minItems: 1
+          description: Verification performed by API Hub services.
+        personalIdentifiableInformation:
+          allOf:
+            - $ref: '#/components/schemas/OzoneConnectInitializeUserRegistrationPersonalIdentifiableInformation'
+          description: User personal information encrypted by API Hub services and transmitted to the LFI.
+    OzoneConnectInitializeUserRegistrationResponseBody:
+      type: object
+      required:
+        - user
+        - registrationStatus
+      properties:
+        user:
+          allOf:
+            - $ref: '#/components/schemas/OzoneConnectProviderUserProperties'
+          description: Properties of the User identified by the LFI, used to correlate User in all operations.
+        registrationStatus:
+          allOf:
+            - $ref: '#/components/schemas/OzoneConnectUserRegistrationStatusCodes'
+          description: Status of the user registration request.
+        registrationStatusMessage:
+          type: string
+          description: Optional message providing information on the status of the user registration request.
+        maskedEmailAddress:
+          type: string
+          description: >-
+            Masked email address to which a challenge will be sent. The value must be sufficiently obfuscated to
+            safeguard data privacy but allow recognition by the User.
+        maskedPhoneNumber:
+          type: string
+          description: >-
+            Masked phone number to which a challenge will be sent. The value must be sufficiently obfuscated to
+            safeguard data privacy but allow recognition by the User.
+      description: Response to a user registration request.
+    OzoneConnectProviderUserIdentifier:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          description: A user identifier value that uniquely identifies a given User at the LFI.
+        supplementaryData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SupplementaryData'
+          description: Supplementary data relating the user as identified by the bank
+    OzoneConnectProviderUserProperties:
+      type: object
+      required:
+        - providerUserIdentifier
+        - userIdentificationProperties
+      properties:
+        providerUserIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/OzoneConnectProviderUserIdentifier'
+          description: The identifier of the user at the financial institution
+        userIdentificationProperties:
+          type: string
+          description: The encrypted properties of the user provided by the financial institution
+    OzoneConnectUserChallengeIdType:
+      type: string
+      format: uuid
+    OzoneConnectUserChallengeStatusCodes:
+      type: string
+      enum:
+        - Pending
+        - Sent
+        - Passed
+        - TransmissionFailed
+        - VerificationFailed
+    OzoneConnectUserDeregistrationRequestBody:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          description: A user identifier value that uniquely identifies a given User at the LFI.
+    OzoneConnectUserRegistrationStatusCodes:
+      type: string
+      enum:
+        - AwaitingChallengeResponse
+        - ChallengeFailed
+        - Complete
+    OzoneConnectUserVerificationCodes:
+      type: string
+      enum:
+        - EFR
+        - UAEPass
+        - LivenessCheck
+    SupplementaryData:
+      type: object
+  responses:
+    error400Response:
+      description: Operation failed due to a invalid request parameter
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error400'
+    error403Response:
+      description: Operation failed as access to the requested resource is forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error403'
+    error409Response:
+      description: Operation failed due to a conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error409'
+    error500Response:
+      description: Operation failed due to an internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error500'
+    errorResponse:
+      description: Default error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultError'
+  securitySchemes:
+    OzoneConnectApiKey:
+      description: >-
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using an API Key, which
+        is a secret shared between the API Hub and the LFI.
+      type: apiKey
+      in: header
+      name: Authorization
+    OzoneConnectClientCredentials:
+      type: oauth2
+      description: >
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using a Client
+        Credentials grant type.
+
+
+        LFIs must host an OAuth 2.0 Authorization Server to utilise this security pattern. Scope values are set during
+        the onboarding process, and represented by a placeholder in this API description.
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.lfi.ae/token
+          scopes:
+            placeholder: Placeholder for scopes, which are set by the LFI during onboarding
+    OzoneConnectJwtAuth:
+      description: >
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using the "JWT Auth"
+        mechanism, where the Client presents a signed JSON Web Token as a credential.
+
+
+        The Server MUST verify the signature in order to authenticate the Client.
+
+
+        Please note that the value of the `scheme` parameter is not a registered HTTP Authentication Scheme, to indicate
+        it is specific to Ozone Connect. Please refer to API Hub documentation for further details.
+      type: http
+      scheme: Ozone-Connect-JWT-Auth
+    OzoneConnectServiceInitiationToken:
+      description: >
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using a Service
+        Initiation Token.
+
+
+        The API Hub will set an Access Token based on a value set by the LFI, which has been patched onto the associated
+        consent. The value will be transmitted in the `Authorization` header, which is represented as a `Bearer` in this
+        Security Scheme Object.
+      type: http
+      scheme: Bearer
+servers:
+  - url: https://<your-ozone-connect-server>
+    description: ''
+    variables: {}
+security:
+  - {}
+  - OzoneConnectApiKey: []
+  - OzoneConnectClientCredentials:
+      - placeholder
+  - OzoneConnectJwtAuth: []

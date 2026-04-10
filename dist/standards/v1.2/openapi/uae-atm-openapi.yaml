@@ -1,0 +1,498 @@
+openapi: 3.0.0
+info:
+  title: UAE ATM API
+  description: '## UAE Open Finance ATM API Specification'
+  version: v1.2
+  contact:
+    email: openfinance@cbuae.gov.ae
+tags:
+  - name: ATM
+    description: ATM operations and resources
+paths:
+  /atms:
+    get:
+      tags:
+        - ATM
+      operationId: getAtms
+      summary: Retrieve ATM
+      description: Retrieve all ATM
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/AEReadAtms1'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadAtms1'
+        "400":
+          $ref: "#/components/responses/400Error"
+        "401":
+          $ref: "#/components/responses/401Error"
+        "403":
+          $ref: "#/components/responses/403Error"
+        "405":
+          $ref: "#/components/responses/405Error"
+        "406":
+          $ref: "#/components/responses/406Error"
+        "415":
+          $ref: "#/components/responses/415Error"
+        "429":
+          $ref: "#/components/responses/429Error"
+        "500":
+          $ref: "#/components/responses/500Error"
+components:
+  schemas:
+    AEError:
+      type: object
+      required:
+        - Code
+        - Message
+      properties:
+        Code:
+          allOf:
+            - $ref: '#/components/schemas/AEErrorCode'
+          description: Low level textual error code, e.g., Field.Missing
+        Message:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: >-
+            A description of the error that occurred. e.g., 'A mandatory field
+            isn't supplied' or 'RequestedExecutionDateTime must be in future'
+
+            UAEOF doesn't standardise this field
+        Path:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: >-
+            Recommended but optional reference to the JSON Path of the field
+            with error, e.g., Data.Initiation.InstructedAmount.Currency
+        Url:
+          type: string
+          description: >-
+            URL to help remediate the problem, or provide more information, or
+            to API Reference, or help etc
+      description: Error
+      additionalProperties: false
+    AEErrorCode:
+      type: string
+      enum:
+        - GenericError
+    AEErrorResponse:
+      type: object
+      required:
+        - Errors
+      properties:
+        Errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEError'
+          minItems: 1
+      description: >-
+        An array of detail error codes, and messages, and URLs to documentation
+        to help remediation.
+      additionalProperties: false
+    AEReadAtms1:
+      properties:
+        Meta:
+          title: Meta data
+          type: object
+          properties:
+            LastUpdatedDateTime:
+              type: string
+              format: date-time
+            TotalResults:
+              type: integer
+          required:
+            - LastUpdatedDateTime
+            - TotalResults
+          additionalProperties: false
+        Data:
+          description: List of ATMs
+          type: array
+          items:
+            properties:
+              LFIId:
+                description: LFI identification.
+                title: LFIId
+                type: string
+                minLength: 1
+                maxLength: 36
+              LFIBrandId:
+                description: LFI identification for a brand - that an LFI uses to market its products or services to a User
+                title: LFIBrandId
+                type: string
+                minLength: 1
+                maxLength: 140
+              ATMId:
+                description: ATM terminal device identification for the LFI and the issuer.
+                title: ATMId
+                type: string
+                minLength: 1
+                maxLength: 36
+              SupportedLanguages:
+                description: Identification of the language name according to the ISO 639-1 codes. The type is validated by the list of values coded with two alphabetic characters, defined in the standard.
+                title: SupportedLanguages
+                type: array
+                items:
+                  description: Identification of the language name according to the ISO 639-1 codes. The type is validated by the list of values coded with two alphabetic characters, defined in the standard.
+                  type: string
+                  pattern: "[a-z]{2}"
+              Services:
+                description: Describes the type of transaction available for a customer on an ATM.
+                title: Services
+                type: array
+                items:
+                  description: Describes the type of transaction available for a customer on an ATM.
+                  type: string
+                  enum:
+                    - Balance
+                    - BillPayments
+                    - CashDeposits
+                    - CharityDonation
+                    - ChequeDeposits
+                    - CashWithdrawal
+                    - EnvelopeDeposit
+                    - FastCash
+                    - MobileBankingRegistration
+                    - MobilePaymentRegistration
+                    - MobilePhoneTopUp
+                    - OrderStatement
+                    - Other
+                    - PINActivation
+                    - PINChange
+                    - PINUnblock
+                    - MiniStatement
+              Accessibility:
+                description: Indicates Types of Accessibility
+                title: Accessibility
+                type: array
+                items:
+                  description: Indicates Types of Accessibility
+                  type: string
+                  enum:
+                    - AudioCashMachine
+                    - AutomaticDoors
+                    - ExternalRamp
+                    - InductionLoop
+                    - InternalRamp
+                    - LevelAccess
+                    - LowerLevelCounter
+                    - Other
+                    - WheelchairAccess
+              IsAccess24Hour:
+                description: Indicates that the ATM is available for use by customers 24 hours per day
+                title: IsAccess24Hour
+                type: boolean
+              Availability:
+                description: Indicates the availability status of the ATM
+                type: object
+                title: Availability 
+                properties:
+                  Status:
+                    description: Current operational status of the ATM
+                    type: string
+                    enum:
+                      - Available
+                      - Unavailable
+                      - UnderMaintenance
+                  OperatingHours:
+                    type: object
+                    properties:
+                      Days:
+                        type: array
+                        items:
+                          type: string
+                          enum:
+                            - Monday
+                            - Tuesday
+                            - Wednesday
+                            - Thursday
+                            - Friday
+                            - Saturday
+                            - Sunday
+                      OpenTime:
+                        type: string
+                        pattern: "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                      CloseTime:
+                        type: string
+                        pattern: "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                    required:
+                      - Days
+                      - OpenTime
+                      - CloseTime
+              SupportedCurrencies:
+                description: All ISO 4217 defined currency supported by the ATM.
+                title: SupportedCurrencies
+                type: array
+                items:
+                  description: ISO 4217 defined currency
+                  type: string
+                  pattern: "[A-Z]{3}"
+                minItems: 1
+              MinPossibleAmount:
+                description: Minimum amount allowed for a transaction in the service.
+                title: MinimumPossibleAmount
+                type: string
+                pattern: ^-?\d{1,10}\.?\d{0,2}$
+              MaxPossibleAmount:
+                description: Maximum amount allowed for a transaction in the service.
+                title: MaximumPossibleAmount
+                type: string
+                pattern: ^-?\d{1,10}\.?\d{0,2}$
+              Notes:
+                description: Summary description of the ATM.
+                title: Note
+                type: array
+                items:
+                  description: maxLength 2000 text
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+              Branch:
+                description: Information that locates and identifies a specific branch of a LFI.
+                type: object
+                title: Branch
+                properties:
+                  SchemeName:
+                    description: The name of the identification scheme for uniquely identifying the branch of a LFI.
+                    type: string
+                    enum:
+                      - BICFI
+                      - Other
+                  Identification:
+                    description: Unique and unambiguous identification of a branch of a LFI.
+                    title: Identification
+                    type: string
+                    minLength: 1
+                    maxLength: 36
+                additionalProperties: false
+              Location:
+                description: Location of the ATM.
+                type: object
+                title: Location
+                required:
+                  - PostalAddress
+                  - GeoLocation
+                properties:
+                  LocationCategory:
+                    description: Indicates the environment of the ATM.
+                    title: LocationCategory
+                    type: array
+                    items:
+                      description: Indicates the environment of the ATM.
+                      type: string
+                      enum:
+                        - BranchExternal
+                        - BranchInternal
+                        - BranchLobby
+                        - Other
+                        - RetailerOutlet
+                        - RemoteUnit
+                  Site:
+                    description: Used by the LFI internally to identify the location of an ATM.
+                    type: object
+                    title: Site
+                    properties:
+                      Identification:
+                        description: ATM site identification for the LFI.
+                        title: Identification
+                        type: string
+                        minLength: 1
+                        maxLength: 36
+                      Name:
+                        description: ATM site name as used by LFI.
+                        title: Name
+                        type: string
+                        minLength: 1
+                        maxLength: 140
+                    additionalProperties: false
+                  PostalAddress:
+                    description: Information that locates and identifies a specific address, as defined by postal services or in free format text.
+                    type: object
+                    title: PostalAddress
+                    properties:
+                      AddressLine:
+                        description: Information that locates and identifies a specific address, as defined by postal services, that is presented in free format text.
+                        title: AddressLine
+                        type: array
+                        items:
+                          description: maxLength 70 text
+                          type: string
+                          minLength: 1
+                          maxLength: 70
+                        minItems: 0
+                        maxItems: 7
+                      BuildingNumber:
+                        description: Name or Number that identifies the position of a building on a street.
+                        title: BuildingNumber
+                        type: string
+                        minLength: 1
+                        maxLength: 360
+                      StreetName:
+                        description: Name of a street or thoroughfare.
+                        title: StreetName
+                        type: string
+                        minLength: 1
+                        maxLength: 70
+                      TownName:
+                        description: Name of a built-up area, with defined boundaries, and a local government.
+                        title: TownName
+                        type: string
+                        minLength: 1
+                        maxLength: 36
+                      CountrySubDivision:
+                        description: Identifies a subdivision of a country, for instance state, region, county.
+                        title: CountrySubDivision
+                        type: array
+                        items:
+                          description: maxLength 35 text
+                          type: string
+                          minLength: 1
+                          maxLength: 36
+                        minItems: 0
+                        maxItems: 2
+                      Country:
+                        description: Nation with its own government, occupying a particular territory.
+                        title: Country
+                        type: string
+                        pattern: "[A-Z]{2}"
+                      PostCode:
+                        description: Identifier consisting of a group of letters and/or numbers that is added to a postal address to assist the sorting of mail.
+                        title: PostCode
+                        type: string
+                        minLength: 1
+                        maxLength: 16
+                    additionalProperties: false
+                  GeoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                additionalProperties: false
+            required:
+              - Identification
+              - LFIIdentification
+              - LFIBrandIdentification
+              - SupportedCurrencies
+              - Location
+          additionalProperties: false
+          minItems: 1
+      required:
+        - Meta
+        - Data
+      additionalProperties: false
+    GeoLocation:
+      type: "object"
+      description: "GPS to identify the whereabouts of the ATM."
+      required:
+        - Latitude
+        - Longitude
+      properties:
+        Latitude:
+          type: "string"
+          description: "latitude"
+        Longitude:
+          type: "string"
+          description: "longitude"
+  responses:
+    403Error:
+      description: Forbidden
+      headers:
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          required: true
+          schema:
+            type: string
+      content:
+        application/json; charset=utf-8:
+          schema:
+            $ref: '#/components/schemas/AEErrorResponse'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AEErrorResponse'
+    405Error:
+      description: Method Not Allowed
+      headers:
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          required: true
+          schema:
+            type: string
+    406Error:
+      description: Not Acceptable
+      headers:
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          required: true
+          schema:
+            type: string
+    415Error:
+      description: Unsupported Media Type
+      headers:
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          required: true
+          schema:
+            type: string
+    429Error:
+      description: Too Many Requests
+      headers:
+        Retry-After:
+          description: Number in seconds to wait
+          schema:
+            type: integer
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          schema:
+            type: string
+    500Error:
+      description: Internal Server Error
+      headers:
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          required: true
+          schema:
+            type: string
+      content:
+        application/json; charset=utf-8:
+          schema:
+            $ref: '#/components/schemas/AEErrorResponse'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AEErrorResponse'
+    401Error:
+      description: Unauthorized
+      headers:
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          required: true
+          schema:
+            type: string
+    400Error:
+      description: Bad request
+      headers:
+        x-fapi-interaction-id:
+          description: An RFC4122 UID used as a correlation id.
+          required: true
+          schema:
+            type: string
+      content:
+        application/json; charset=utf-8:
+          schema:
+            $ref: '#/components/schemas/AEErrorResponse'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AEErrorResponse'
+  parameters:
+    Authorization:
+      name: authorization
+      in: header
+      required: true
+      description: An authorization Token as per https://tools.ietf.org/html/rfc6750
+      schema:
+        type: string
+servers:
+  - url: /open-finance/atm/v1.2

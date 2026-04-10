@@ -1,0 +1,1535 @@
+openapi: 3.0.0
+info:
+  title: UAE Authorization Endpoints API
+  description: '## UAE Open Finance Authorization Endpoints API Description'
+  version: v2.0-errata1
+tags:
+  - name: Token Endpoint
+    description: Operations for creating OAuth 2.0 Access Tokens
+paths:
+  /token:
+    post:
+      operationId: AccessTokenOperationsV20_request
+      summary: Obtain an Access Token
+      description: >-
+        Request an Access Token based on a given grant type, indicated by `grant_type` and request payload properties.
+
+
+        Response provides information on the original Rich Authorization Request (RAR) as described in [RFC
+        9396](https://datatracker.ietf.org/doc/html/rfc9396).
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationCodeGrantTokenV20ResponseProperties'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthBadRequestErrorResponse'
+      tags:
+        - Token Endpoint
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRequestBodies'
+components:
+  schemas:
+    AECharges:
+      type: array
+      items:
+        type: object
+        properties:
+          ChargeBearer:
+            $ref: '#/components/schemas/UAEPaymentAPIV20.AEChargeBearerType1Code'
+          Type:
+            $ref: '#/components/schemas/UAEPaymentAPIV20.AEExternalPaymentChargeTypeCode'
+          Amount:
+            $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveCurrencyAmount'
+        required:
+          - ChargeBearer
+          - Type
+          - Amount
+    AEConsentPermissions:
+      type: array
+      items:
+        type: string
+        enum:
+          - ReadAccountsBasic
+          - ReadAccountsDetail
+          - ReadBalances
+          - ReadBeneficiariesBasic
+          - ReadBeneficiariesDetail
+          - ReadFXTransactionsBasic
+          - ReadFXTransactionsDetail
+          - ReadFXRemittanceCharges
+          - ReadTransactionsBasic
+          - ReadTransactionsDetail
+          - ReadProduct
+          - ReadScheduledPaymentsBasic
+          - ReadScheduledPaymentsDetail
+          - ReadDirectDebits
+          - ReadStandingOrdersBasic
+          - ReadStandingOrdersDetail
+          - ReadPartyUser
+          - ReadPartyUserIdentity
+          - ReadParty
+          - ReadProductLendingRates
+      minItems: 1
+      description: |-
+        Specifies the permitted Account Access data types.
+        This is a list of the data groups being consented by the User, and requested for authorization with the LFI.
+    AEPaymentConsentPermissions:
+      type: array
+      items:
+        type: string
+        enum:
+          - ReadAccountsBasic
+          - ReadAccountsDetail
+          - ReadBalances
+          - ReadRefundAccount
+      minItems: 1
+      description: |-
+        Specifies the permitted Account Access data types.
+        This is a list of the data groups being consented by the User, and requested for authorization with the LFI.
+
+        This allows a TPP to request a balance check permission.
+    AERelatedPayment:
+      type: array
+      items:
+        type: string
+      description: >-
+        A link to the related payments resource.
+
+
+        * For a Single Payment, this Array must have have 1 entry, associated with the Single Payment resource created
+        against this consent.
+
+        * For Multi-Payment, this Array will have 1 or more entries of all the Payment resources created against this
+        Consent
+    AuthorizationCodeGrantTokenRequestProperties:
+      type: object
+      required:
+        - client_id
+        - client_assertion_type
+        - client_assertion
+        - code_verifier
+        - grant_type
+        - code
+        - redirect_uri
+      properties:
+        client_id:
+          type: string
+          description: The OAuth 2.0 Client ID value as set in the Trust Framework.
+        client_assertion_type:
+          type: string
+          enum:
+            - urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
+          description: Client Assertion Type, which defaults to `urn:ietf:params:oauth:client-assertion-type:jwt-bearer`.
+        client_assertion:
+          type: string
+          description: Client assertion, which **MUST** be created using `private_key_jwt`.
+        code_verifier:
+          type: string
+          description: >-
+            Code verifier value, created for Proof of Key Code Exchange correlating with value sent with Authorization
+            Request.
+        grant_type:
+          type: string
+          enum:
+            - authorization_code
+          description: The grant type, which must be set to `authorization_code`.
+        code:
+          type: string
+          description: The authorization code received by the TPP from the Authorization Server.
+        redirect_uri:
+          type: string
+          format: uri
+          description: The TPP Redirect URI value.
+        scope:
+          type: string
+          description: >-
+            [Access Token Scope](https://datatracker.ietf.org/doc/html/rfc6749#section-3.3) as sent in Authorization
+            Request and granted by the End User.
+    AuthorizationCodeGrantTokenV20ResponseProperties:
+      type: object
+      required:
+        - access_token
+        - token_type
+        - expires_in
+        - authorization_details
+      properties:
+        access_token:
+          type: string
+          description: >-
+            [OAuth 2.0 Access Token](https://datatracker.ietf.org/doc/html/rfc6749#section-1.4) issued through
+            Authorization Code grant.
+        token_type:
+          type: string
+          enum:
+            - Bearer
+          description: Access Token type.
+        expires_in:
+          type: integer
+          description: Validity period of Access Token in seconds.
+        scope:
+          type: string
+          description: >-
+            [Access Token Scope](https://datatracker.ietf.org/doc/html/rfc6749#section-3.3) as sent in Authorization
+            Request and granted by the End User.
+        state:
+          type: string
+          description: >-
+            OAuth 2.0 `state` value, provided as a means to support integrity checking by the Client under FAPI 2.0.
+            Omitted from Refresh Token Grant.
+        refresh_token:
+          type: string
+          description: >-
+            [OAuth 2.0 Refresh Token](https://datatracker.ietf.org/doc/html/rfc6749#section-1.5). Omitted from responses
+            where not supported by a given consent type.
+        id_token:
+          type: string
+          description: OpenID Connect ID Token, returned where applicable to requested scope and supported flows.
+        authorization_details:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                pattern: ^urn:openfinanceuae:[a-z-]+:v[0-9]+\.[0-9]+$
+                example: urn:openfinanceuae:account-access-consent:v1.2
+              consent:
+                $ref: '#/components/schemas/AuthorizationDetailsV20Properties'
+            required:
+              - type
+              - consent
+          description: Authorization details are sent in the Pushed Authorization Request
+    AuthorizationDetailsV20Properties:
+      oneOf:
+        - $ref: '#/components/schemas/UAEAccountInformationAPIV20.AEReadConsentResponse'
+        - $ref: '#/components/schemas/UAEInsuranceAPIV20.AEReadInsuranceConsent1'
+        - $ref: '#/components/schemas/UAEPaymentAPIV20.AEPaymentConsentResponse'
+    OAuthBadRequestErrorResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/OAuthErrorResponse'
+      description: Bad Request
+    OAuthErrorCodes:
+      type: string
+      enum:
+        - invalid_request
+        - invalid_client
+        - invalid_grant
+        - unauthorized_client
+        - unsupported_grant_type
+        - invalid_scope
+      description: Status code corresponding to error condition to be returned to the client
+    OAuthErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          $ref: '#/components/schemas/OAuthErrorCodes'
+        error_description:
+          type: string
+          description: Description of the error providing additional information
+        error_uri:
+          type: string
+          description: A URI identifying a human-readable web page with information about the error
+      description: Error returned from endpoints compliant with security profile
+    RefreshTokenGrantTokenRequestProperties:
+      type: object
+      required:
+        - client_id
+        - client_assertion_type
+        - client_assertion
+        - grant_type
+        - refresh_token
+      properties:
+        client_id:
+          type: string
+          description: The OAuth 2.0 Client ID value as set in the Trust Framework.
+        client_assertion_type:
+          type: string
+          enum:
+            - urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
+          description: Client Assertion Type, which defaults to `urn:ietf:params:oauth:client-assertion-type:jwt-bearer`.
+        client_assertion:
+          type: string
+          description: Client assertion, which **MUST** be created using `private_key_jwt`.
+        grant_type:
+          type: string
+          enum:
+            - refresh_token
+          description: The grant type, which must be set to `refresh_token`.
+        refresh_token:
+          type: string
+          description: >-
+            [OAuth 2.0 Refresh Token](https://datatracker.ietf.org/doc/html/rfc6749#section-1.5). Omitted from responses
+            where not supported by a given consent type.
+        scope:
+          type: string
+          description: Access Token scope, if scope differs from original grant. Omitted if not required.
+    TokenRequestBodies:
+      oneOf:
+        - $ref: '#/components/schemas/AuthorizationCodeGrantTokenRequestProperties'
+        - $ref: '#/components/schemas/RefreshTokenGrantTokenRequestProperties'
+    UAEAccountInformationAPIV20.AEAccountAccessOpenFinanceBilling:
+      type: object
+      required:
+        - UserType
+        - Purpose
+      properties:
+        IsLargeCorporate:
+          type: boolean
+          description: Customer has more than 100 million AED turnover
+        UserType:
+          type: string
+          enum:
+            - Retail
+            - SME
+            - Corporate
+          description: Type of Customer
+        Purpose:
+          type: string
+          enum:
+            - AccountAggregation
+            - RiskAssessment
+            - TaxFiling
+            - Onboarding
+            - Verification
+            - QuoteComparison
+            - BudgetingAnalysis
+            - FinancialAdvice
+            - AuditReconciliation
+          description: Purpose of data sharing request
+      description: Billing parameters specified by the TPP
+    UAEAccountInformationAPIV20.AEBaseConsentId:
+      type: string
+      minLength: 1
+      maxLength: 128
+      description: >-
+        The original ConsentId assigned by the TPP.
+
+        It is used by the TPP for updating/renewing parameters associated with long-lived consents.
+
+        It must be provided when long-lived consent parameters are updated/renewed for a current consent that has not
+        yet finished.
+    UAEAccountInformationAPIV20.AEConsentId:
+      type: string
+      minLength: 1
+      maxLength: 128
+      description: Unique identification assigned by the TPP to identify the consent resource.
+    UAEAccountInformationAPIV20.AEExternalAccountSubTypeCode:
+      type: string
+      enum:
+        - CurrentAccount
+        - Savings
+        - CreditCard
+        - Mortgage
+        - PersonalLoan
+      description: 'Specifies the sub type of account (product family group). Examples values include: CurrentAccount, Savings'
+    UAEAccountInformationAPIV20.AEExternalAccountTypeCode:
+      type: string
+      enum:
+        - Retail
+        - SME
+        - Corporate
+      description: Specifies the type of account (Retail, SME or Corporate).
+    UAEAccountInformationAPIV20.AEReadConsentResponse:
+      type: object
+      required:
+        - Data
+        - Links
+      properties:
+        Data:
+          type: object
+          properties:
+            ConsentId:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.AEConsentId'
+            BaseConsentId:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.AEBaseConsentId'
+            CreationDateTime:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.CreationDateTime'
+            Status:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.ConsentStatus'
+            StatusUpdateDateTime:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.StatusUpdateDateTime'
+            Permissions:
+              $ref: '#/components/schemas/AEConsentPermissions'
+            ExpirationDateTime:
+              type: string
+              format: date-time
+            TransactionFromDateTime:
+              type: string
+              format: date-time
+            TransactionToDateTime:
+              type: string
+              format: date-time
+            AccountType:
+              type: array
+              items:
+                $ref: '#/components/schemas/UAEAccountInformationAPIV20.AEExternalAccountTypeCode'
+            AccountSubType:
+              type: array
+              items:
+                $ref: '#/components/schemas/UAEAccountInformationAPIV20.AEExternalAccountSubTypeCode'
+            OnBehalfOf:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.OnBehalfOf'
+            OpenFinanceBilling:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.AEAccountAccessOpenFinanceBilling'
+            RevokedBy:
+              $ref: '#/components/schemas/UAEAccountInformationAPIV20.AERevokedBy'
+          required:
+            - ConsentId
+            - BaseConsentId
+            - CreationDateTime
+            - Status
+            - StatusUpdateDateTime
+            - Permissions
+            - ExpirationDateTime
+            - OpenFinanceBilling
+          description: Primary data for the resource
+        Subscription:
+          $ref: '#/components/schemas/UAEAccountInformationAPIV20.EventNotification'
+        Links:
+          $ref: '#/components/schemas/UAEAccountInformationAPIV20.LinksSelf'
+        Meta:
+          $ref: '#/components/schemas/UAEAccountInformationAPIV20.Meta'
+      description: Account Access Consent
+    UAEAccountInformationAPIV20.AERevokedBy:
+      type: string
+      enum:
+        - LFI
+        - TPP
+        - LFI.InitiatedByUser
+        - TPP.InitiatedByUser
+      description: |-
+        Denotes the Identifier of the revocation.
+
+        | Identifier| Description|
+        |-----------|------------|
+        | LFI | Revoked by LFI without User initiation|
+        | TPP | Revoked by TPP without User initiation|
+        | LFI.InitiatedByUser | Initiated by User via the LFI|
+        | TPP.InitiatedByUser | Initiated by User via the TPP|
+    UAEAccountInformationAPIV20.ConsentStatus:
+      type: string
+      enum:
+        - Authorized
+        - AwaitingAuthorization
+        - Rejected
+        - Revoked
+        - Expired
+        - Suspended
+      description: Specifies the status of consent resource in code form.
+    UAEAccountInformationAPIV20.CreationDateTime:
+      type: string
+      format: date-time
+      description: >-
+        Date and time at which the resource was created.All dates in the JSON payloads are represented in ISO 8601
+        date-time format.
+
+        All date-time fields in responses must include the timezone. An example is below:
+
+        2017-04-05T10:43:07+00:00
+    UAEAccountInformationAPIV20.EventNotification:
+      type: object
+      required:
+        - Webhook
+      properties:
+        Webhook:
+          type: object
+          properties:
+            Url:
+              type: string
+            IsActive:
+              type: boolean
+          description: A Webhook Schema
+      description: A Webhook Subscription Schema
+    UAEAccountInformationAPIV20.LinksSelf:
+      type: object
+      required:
+        - Self
+      properties:
+        Self:
+          $ref: '#/components/schemas/UAEAccountInformationAPIV20.Self'
+      description: Links relevant to the resource
+    UAEAccountInformationAPIV20.Meta:
+      type: object
+      description: Meta Data relevant to the resource
+    UAEAccountInformationAPIV20.OnBehalfOf:
+      type: object
+      properties:
+        TradingName:
+          type: string
+          description: Trading Name
+        LegalName:
+          type: string
+          description: Legal Name
+        IdentifierType:
+          type: string
+          enum:
+            - Other
+          description: Identifier Type
+        Identifier:
+          type: string
+          description: Identifier
+      description: On Behalf Of
+    UAEAccountInformationAPIV20.Self:
+      type: string
+      format: uri
+      description: A link to the current resource
+    UAEAccountInformationAPIV20.StatusUpdateDateTime:
+      type: string
+      format: date-time
+      description: >-
+        Date and time at which the account resource status was updated. All dates in the JSON payloads are represented
+        in ISO 8601 date-time format.
+
+        All date-time fields in responses must include the timezone. An example is below:
+
+        2017-04-05T10:43:07+00:00
+    UAEInsuranceAPIV20.AEConsentPermissionCodes:
+      type: string
+      enum:
+        - ReadInsurancePolicies
+        - ReadCustomerBasic
+        - ReadCustomerDetail
+        - ReadCustomerPaymentDetails
+        - ReadInsuranceProduct
+        - ReadCustomerClaims
+        - ReadInsurancePremium
+    UAEInsuranceAPIV20.AEConsentPermissions:
+      type: object
+      required:
+        - InsuranceType
+        - Permissions
+      properties:
+        InsuranceType:
+          type: string
+          enum:
+            - Employment
+            - Health
+            - Home
+            - Life
+            - Motor
+            - Renters
+            - Travel
+          description: The insurance sector to which the permissions relate.
+        Permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UAEInsuranceAPIV20.AEConsentPermissionCodes'
+          minItems: 1
+          description: The data clusters requested by the TPP.
+    UAEInsuranceAPIV20.AEOnBehalfOf:
+      type: object
+      properties:
+        TradingName:
+          type: string
+          description: Trading Name
+        LegalName:
+          type: string
+          description: Legal Name
+        IdentifierType:
+          description: Identifier Type
+        Identifier:
+          type: string
+          description: Identifier
+    UAEInsuranceAPIV20.AEReadInsuranceConsent1:
+      type: object
+      required:
+        - Data
+        - Links
+        - Meta
+      properties:
+        Data:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.AEReadInsuranceConsent1Properties'
+        Subscription:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.EventNotification'
+        Links:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.LinksSelf'
+        Meta:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.Meta'
+    UAEInsuranceAPIV20.AEReadInsuranceConsent1Properties:
+      type: object
+      required:
+        - ConsentId
+        - Permissions
+        - ExpirationDateTime
+        - OpenFinanceBilling
+        - CreationDateTime
+        - Status
+        - StatusUpdateDateTime
+      properties:
+        ConsentId:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.uuid'
+        BaseConsentId:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.uuid'
+        Permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UAEInsuranceAPIV20.AEConsentPermissions'
+          minItems: 1
+          description: |-
+            Specifies the permitted insurance policy data types.
+            This is a list of the data groups being consented by the User, and requested for authorization with the LFI.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            Specified date and time the permissions will expire.
+
+            If this is not populated, the permissions will be open ended.All dates in the JSON payloads are represented
+            in ISO 8601 date-time format.
+
+            All date-time fields in responses must include the timezone. An example is below:
+
+            2017-04-05T10:43:07+00:00
+        OnBehalfOf:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.AEOnBehalfOf'
+        OpenFinanceBilling:
+          type: object
+          properties:
+            IsLargeCorporate:
+              type: boolean
+            Purpose:
+              type: string
+              enum:
+                - AccountAggregation
+                - RiskAssessment
+                - PremiumHistory
+                - ClaimHistory
+                - Onboarding
+                - Verification
+                - QuoteComparison
+                - FinancialAdvice
+                - Other
+          required:
+            - Purpose
+        CreationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            Date and time at which the resource was created. All dates in the JSON payloads are represented in ISO 8601
+            date-time format.
+
+            All date-time fields in responses must include the timezone, as shown in this example:
+            2017-04-05T10:43:07+00:00
+        Status:
+          description: Specifies the status of consent resource in code form.
+        StatusUpdateDateTime:
+          type: string
+          format: date-time
+          description: >-
+            Date and time at which the account resource status was updated. All dates in the JSON payloads are
+            represented in ISO 8601 date-time format.
+
+            All date-time fields in responses must include the timezone, as shown in this example:
+            2017-04-05T10:43:07+00:00
+        RevokedBy:
+          description: Denotes the Identifier of the revocation.
+    UAEInsuranceAPIV20.EventNotification:
+      type: object
+      required:
+        - Webhook
+      properties:
+        Webhook:
+          description: Properties of the Webhook registered to receive event notifications related to entity status.
+    UAEInsuranceAPIV20.LinksSelf:
+      type: object
+      required:
+        - Self
+      properties:
+        Self:
+          $ref: '#/components/schemas/UAEInsuranceAPIV20.Self'
+      description: Links relevant to the resource
+    UAEInsuranceAPIV20.Meta:
+      type: object
+      description: Metadata relevant to the resource
+    UAEInsuranceAPIV20.Self:
+      type: string
+      format: uri
+      description: A link to the current resource
+    UAEInsuranceAPIV20.uuid:
+      type: string
+      minLength: 1
+      maxLength: 128
+    UAEPaymentAPIV20.AEActiveCurrencyAmount:
+      type: object
+      required:
+        - Amount
+        - Currency
+      properties:
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricAmount'
+        Currency:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricCurrencyCode'
+      description: The Currency and Amount relating to the Payment
+    UAEPaymentAPIV20.AEActiveOrHistoricAmount:
+      type: string
+      pattern: ^\\d{1,16}\\.\\d{2}$
+      description: >-
+        A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
+        with ISO 4217.
+    UAEPaymentAPIV20.AEActiveOrHistoricCurrencyCode:
+      type: string
+      pattern: ^[A-Z]{3,3}$
+      description: >-
+        A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as
+        described in the latest edition of the international standard ISO 4217 'Codes for the representation of
+        currencies and funds'.
+    UAEPaymentAPIV20.AEBaseConsentId:
+      type: string
+      minLength: 1
+      maxLength: 128
+      description: >-
+        The original ConsentId assigned by the TPP.
+
+        It is used by the TPP for updating/renewing parameters associated with long-lived consents.
+
+        It must be provided when long-lived consent parameters are updated/renewed for a current consent that has not
+        yet finished.
+    UAEPaymentAPIV20.AEChargeBearerType1Code:
+      type: string
+      enum:
+        - BorneByCreditor
+        - BorneByDebtor
+        - Shared
+      description: Specifies which party/parties will bear the charges associated with the processing of the payment transaction.
+    UAEPaymentAPIV20.AEConsentExpirationDateTime:
+      type: string
+      format: date-time
+      description: |-
+        Specified date and time the consent will expire.
+        All dates in the JSON payloads are represented in ISO 8601 date-time format.
+        All date-time fields in responses must include the timezone. An example is :2023-04-05T10:43:07+00:00
+    UAEPaymentAPIV20.AEConsentId:
+      type: string
+      minLength: 1
+      maxLength: 128
+      description: Unique identification assigned by the TPP to identify the consent resource.
+    UAEPaymentAPIV20.AEConsentStatus:
+      type: string
+      enum:
+        - AwaitingAuthorization
+        - Authorized
+        - Rejected
+        - Revoked
+        - Expired
+        - Consumed
+        - Suspended
+      description: |-
+        Specifies the status of a consent.
+
+        | Consent Status| State Type| Description|
+        |---------------|-----------|------|
+        | AwaitingAuthorization | Pending | The consent is awaiting authorization.|
+        | Authorized | In Use | The consent has been successfully authorized.|
+        | Rejected | Terminal | The unauthorized consent has been rejected at the LFI.|
+        | Revoked | Terminal | The consent has been revoked at the TPP or LFI.|
+        | Expired | Terminal | The consent is now expired.|
+        | Consumed | Terminal | The consented action(s) have either been completed successfully.|
+        | Suspended | In Use | The consent has been suspended, pending further enquiries.|
+    UAEPaymentAPIV20.AEControlSum:
+      type: string
+      pattern: ^\\d{1,16}\\.\\d{2}$
+      description: Total of all individual amounts included in the group, irrespective of currencies.
+    UAEPaymentAPIV20.AECreationDateTime:
+      type: string
+      format: date-time
+      description: >-
+        Date and time at which the message was created. All dates in the JSON payloads are represented in ISO 8601
+        date-time format.
+
+        All date-time fields in responses must include the timezone. An example is below:
+
+        2023-04-05T10:43:07+00:00
+    UAEPaymentAPIV20.AECurrencyRequest:
+      type: object
+      required:
+        - ExtendedPurpose
+        - CurrencyOfTransfer
+      properties:
+        InstructionPriority:
+          type: string
+          enum:
+            - Normal
+            - Urgent
+          description: >-
+            Indicator of the urgency or order of importance that the instructing party would like the instructed party
+            to apply to the processing of the instruction.
+        ExtendedPurpose:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: Specifies the purpose of an international payment.
+        ChargeBearer:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEChargeBearerType1Code'
+        CurrencyOfTransfer:
+          type: string
+          pattern: ^[A-Z]{3,3}$
+          description: >-
+            Specifies the currency of the to be transferred amount, which is different from the currency of the debtor's
+            account.
+        DestinationCountryCode:
+          type: string
+          pattern: '[A-Z]{2,2}'
+          description: >-
+            Country in which Credit Account is domiciled. Code to identify a country, a dependency, or another area of
+            particular geopolitical interest, on the basis of country names obtained from the United Nations (ISO 3166,
+            Alpha-2 code).
+        ExchangeRateInformation:
+          type: object
+          properties:
+            UnitCurrency:
+              type: string
+              pattern: ^[A-Z]{3,3}$
+            ExchangeRate:
+              type: number
+            RateType:
+              type: string
+              enum:
+                - Actual
+                - Agreed
+                - Indicative
+            ContractIdentification:
+              type: string
+              minLength: 1
+              maxLength: 256
+          required:
+            - UnitCurrency
+            - RateType
+          description: Provides details on the currency exchange rate and contract.
+        FxQuoteId:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: >-
+            Required where the consent or payment initiation request relates to a previously quoted FX trade. The TPP
+            must provide the `QuoteId` value where a long-lived consent exists, meaning that each payment initiation
+            request will relate to a different `QuoteId` value.
+      description: >-
+        The details of the non-local currency or FX request that has been agreed between the User and the TPP.
+
+        The requested ChargeBearer and ExchangeRateInformation are included in this object may be overwritten by the LFI
+        in the returned Consent object.
+    UAEPaymentAPIV20.AEEventNotification:
+      type: object
+      required:
+        - Webhook
+      properties:
+        Webhook:
+          type: object
+          properties:
+            Url:
+              type: string
+            IsActive:
+              type: boolean
+          description: A Webhook Schema
+      description: A Webhook Subscription Schema
+    UAEPaymentAPIV20.AEExchangeRateInformation:
+      type: object
+      required:
+        - UnitCurrency
+        - ExchangeRate
+        - RateType
+      properties:
+        UnitCurrency:
+          type: string
+          pattern: ^[A-Z]{3,3}$
+          description: >-
+            Currency in which the rate of exchange is expressed in a currency exchange. In the example 1GBP = xxxCUR,
+            the unit currency is GBP.
+        ExchangeRate:
+          type: number
+          description: >-
+            The factor used for conversion of an amount from one currency to another. This reflects the price at which
+            one currency was bought with another currency.
+        RateType:
+          type: string
+          enum:
+            - Actual
+            - Agreed
+            - Indicative
+          description: Specifies the type used to complete the currency exchange.
+        ContractIdentification:
+          type: string
+          minLength: 1
+          maxLength: 256
+          description: >-
+            Unique and unambiguous reference to the foreign exchange contract agreed between the initiating
+            party/creditor and the debtor agent.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            Specified date and time the exchange rate agreement will expire. All dates in the JSON payloads are
+            represented in ISO 8601 date-time format.
+
+            All date-time fields in responses must include the timezone. An example is below:
+
+            2017-04-05T10:43:07+00:00
+      description: >-
+        Further detailed information on the exchange rate that has been used in the payment transaction - returned by
+        the LFI.
+    UAEPaymentAPIV20.AEExternalPaymentChargeTypeCode:
+      type: string
+      enum:
+        - VAT
+        - Fees
+      description: Charge type, in a coded form.
+    UAEPaymentAPIV20.AEFileHash:
+      type: string
+      minLength: 1
+      maxLength: 44
+      description: A base64 encoding of a SHA256 hash of the file to be uploaded.
+    UAEPaymentAPIV20.AEFileNumberOfTransactions:
+      type: integer
+      description: Number of individual transactions contained in the payment information group.
+    UAEPaymentAPIV20.AEFilePaymentConsent:
+      type: object
+      required:
+        - FileType
+        - FileHash
+        - NumberOfTransactions
+        - ControlSum
+      properties:
+        FileType:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEFileType'
+        FileHash:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEFileHash'
+        FileReference:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEReference'
+        NumberOfTransactions:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEFileNumberOfTransactions'
+        ControlSum:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEControlSum'
+        RequestedExecutionDate:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AERequestedExecutionDate'
+      description: A file based payment consent.
+    UAEPaymentAPIV20.AEFileType:
+      type: string
+      minLength: 1
+      maxLength: 40
+      description: Specifies the payment file type
+    UAEPaymentAPIV20.AEFixedDefinedSchedule:
+      type: object
+      required:
+        - Type
+        - Schedule
+      properties:
+        Type:
+          type: string
+          enum:
+            - FixedDefinedSchedule
+          description: The Periodic Schedule Type
+        Schedule:
+          type: array
+          items:
+            type: object
+            properties:
+              PaymentExecutionDate:
+                $ref: '#/components/schemas/UAEPaymentAPIV20.AEPaymentExecutionDate'
+              Amount:
+                $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveCurrencyAmount'
+            required:
+              - PaymentExecutionDate
+              - Amount
+          minItems: 1
+          maxItems: 53
+      description: Payment Schedule denoting a list of pre-defined future dated payments all with fixed amounts and dates.
+    UAEPaymentAPIV20.AEFixedOnDemand:
+      type: object
+      required:
+        - Type
+        - PeriodType
+        - PeriodStartDate
+        - Amount
+        - Controls
+      properties:
+        Type:
+          type: string
+          enum:
+            - FixedOnDemand
+          description: The Periodic Schedule Type
+        PeriodType:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodType'
+        PeriodStartDate:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodStartDate'
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveCurrencyAmount'
+        Controls:
+          type: object
+          properties:
+            MaximumCumulativeValueOfPaymentsPerPeriod:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodTypeMaximumCumulativeValueOfPayments'
+            MaximumCumulativeNumberOfPaymentsPerPeriod:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodTypeMaximumCumulativeNumberOfPayments'
+      description: >-
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+
+        The payments for this consent may be executed on any date, as long as they are within the Controls for a
+        PeriodType
+    UAEPaymentAPIV20.AEFixedPeriodicSchedule:
+      type: object
+      required:
+        - Type
+        - PeriodType
+        - PeriodStartDate
+        - Amount
+      properties:
+        Type:
+          type: string
+          enum:
+            - FixedPeriodicSchedule
+          description: The Periodic Schedule Type
+        PeriodType:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodType'
+        PeriodStartDate:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodStartDate'
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveCurrencyAmount'
+      description: |-
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+        The payments for this consent must be executed only on the PeriodStartDate, and
+        dates recurring based on the PeriodType.
+    UAEPaymentAPIV20.AELinksRelatedPayment:
+      type: object
+      required:
+        - Self
+        - Related
+      properties:
+        Self:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AESelfConsent'
+        Related:
+          $ref: '#/components/schemas/AERelatedPayment'
+      description: Links relevant to the resource
+    UAEPaymentAPIV20.AELongLivedPaymentConsent:
+      type: object
+      required:
+        - PeriodicSchedule
+      properties:
+        MaximumCumulativeValueOfPayments:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEMaximumCumulativeValueOfPayments'
+        MaximumCumulativeNumberOfPayments:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEMaximumCumulativeNumberOfPayments'
+        PeriodicSchedule:
+          oneOf:
+            - $ref: '#/components/schemas/UAEPaymentAPIV20.AEFixedDefinedSchedule'
+            - $ref: '#/components/schemas/UAEPaymentAPIV20.AEVariableDefinedSchedule'
+            - $ref: '#/components/schemas/UAEPaymentAPIV20.AEFixedPeriodicSchedule'
+            - $ref: '#/components/schemas/UAEPaymentAPIV20.AEVariablePeriodicSchedule'
+            - $ref: '#/components/schemas/UAEPaymentAPIV20.AEFixedOnDemand'
+            - $ref: '#/components/schemas/UAEPaymentAPIV20.AEVariableOnDemand'
+          description: The definition for a schedule
+      description: A long-lived payment consent.
+    UAEPaymentAPIV20.AEMaximumCumulativeNumberOfPayments:
+      type: integer
+      description: >-
+        The maximum cumulative number of all successful payment rails executions under the Consent.
+
+        Each successful payment rails execution (related to the Consent) is added to the total cumulative number of
+        payments for the Consent which cannot exceed the maximum value agreed with the User at the point of consent.
+    UAEPaymentAPIV20.AEMaximumCumulativeValueOfPayments:
+      type: object
+      required:
+        - Amount
+        - Currency
+      properties:
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricAmount'
+        Currency:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricCurrencyCode'
+      description: >-
+        The maximum cumulative value of all successful payment rails executions under the Consent.
+
+        Each successful payment rails execution amount (related to the Consent) is added to the total cumulative value
+        of the Consent which cannot exceed the maximum value agreed with the User at the point of consent.
+    UAEPaymentAPIV20.AEMaximumIndividualAmount:
+      type: object
+      required:
+        - Amount
+        - Currency
+      properties:
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricAmount'
+        Currency:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricCurrencyCode'
+      description: This is the Maximum amount a variable payment can take per period.
+    UAEPaymentAPIV20.AEMetaMultiAuthorization:
+      type: object
+      properties:
+        MultipleAuthorizers:
+          type: object
+          properties:
+            TotalRequired:
+              type: number
+            Authorizations:
+              type: array
+              items:
+                type: object
+                properties:
+                  AuthorizerId:
+                    type: string
+                  AuthorizerType:
+                    type: string
+                  AuthorizationDate:
+                    type: string
+                    format: date-time
+                  AuthorizationStatus:
+                    type: string
+                    enum:
+                      - Pending
+                      - Approved
+                      - Rejected
+          description: Multiple Authorizers Schema
+      description: >-
+        Meta Data with Multi-Authorization relevant to the payload.
+
+        For a payment, it represents any Authorizers within the LFI domain that are involved in approving the payment
+        request.
+    UAEPaymentAPIV20.AEPaymentConsentResponse:
+      type: object
+      required:
+        - Data
+        - Links
+      properties:
+        Data:
+          type: object
+          properties:
+            ConsentId:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEConsentId'
+            BaseConsentId:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEBaseConsentId'
+            IsSingleAuthorization:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.IsSingleAuthorization'
+            AuthorizationExpirationDateTime:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AuthorizationExpirationDateTime'
+            Permissions:
+              $ref: '#/components/schemas/AEPaymentConsentPermissions'
+            ExpirationDateTime:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEConsentExpirationDateTime'
+            Status:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEConsentStatus'
+            RevokedBy:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AERevokedBy'
+            CreationDateTime:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AECreationDateTime'
+            StatusUpdateDateTime:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEStatusUpdateDateTime'
+            Charges:
+              $ref: '#/components/schemas/AECharges'
+            ExchangeRate:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEExchangeRateInformation'
+            CurrencyRequest:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AECurrencyRequest'
+            ControlParameters:
+              type: object
+              properties:
+                IsDelegatedAuthentication:
+                  type: boolean
+                ConsentSchedule:
+                  type: object
+                  properties:
+                    SinglePayment:
+                      oneOf:
+                        - $ref: '#/components/schemas/UAEPaymentAPIV20.AESingleInstantPayment'
+                        - $ref: '#/components/schemas/UAEPaymentAPIV20.AESingleFutureDatedPayment'
+                    MultiPayment:
+                      $ref: '#/components/schemas/UAEPaymentAPIV20.AELongLivedPaymentConsent'
+                    FilePayment:
+                      $ref: '#/components/schemas/UAEPaymentAPIV20.AEFilePaymentConsent'
+            DebtorReference:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEStructuredDebtorReference'
+            CreditorReference:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEStructuredCreditorReference'
+            PaymentPurposeCode:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEPaymentPurposeCode'
+            SponsoredTPPInformation:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AESponsoredTPPInformation'
+            PaymentConsumption:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEPaymentConsumption'
+            OpenFinanceBilling:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEServiceInitiationOpenFinanceBilling'
+          required:
+            - ConsentId
+            - BaseConsentId
+            - ExpirationDateTime
+            - Status
+            - CreationDateTime
+            - StatusUpdateDateTime
+            - ControlParameters
+            - PaymentPurposeCode
+            - PaymentConsumption
+        Subscription:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEEventNotification'
+        Links:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AELinksRelatedPayment'
+        Meta:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEMetaMultiAuthorization'
+      description: Payment Consent Response Schema
+    UAEPaymentAPIV20.AEPaymentConsumption:
+      type: object
+      required:
+        - CumulativeNumberOfPayments
+        - CumulativeValueOfPayments
+      properties:
+        CumulativeNumberOfPayments:
+          type: number
+          description: >-
+            The cumulative number of payment instructions initiated under the consent schedule, excluding instructions
+            in a Rejected state.
+        CumulativeValueOfPayments:
+          type: object
+          properties:
+            Amount:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricAmount'
+            Currency:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricCurrencyCode'
+          required:
+            - Amount
+            - Currency
+          description: >-
+            The cumulative value of payment instructions initiated under the consent schedule, excluding instructions in
+            a Rejected state.
+
+            A number of monetary units specified in an active currency where the unit of currency is explicit and
+            compliant with ISO 4217."
+        CumulativeNumberOfPaymentsInCurrentPeriod:
+          type: number
+          description: >-
+            The cumulative number of payment instructions in the current period initiated under the consent schedule,
+            excluding instructions in a Rejected state.
+        CumulativeValueOfPaymentsInCurrentPeriod:
+          type: object
+          properties:
+            Amount:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricAmount'
+            Currency:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricCurrencyCode'
+          required:
+            - Amount
+            - Currency
+          description: >-
+            The cumulative value of payment instructions in the current period initiated under the consent schedule,
+            excluding instructions in a Rejected state.
+
+            A number of monetary units specified in an active currency where the unit of currency is explicit and
+            compliant with ISO 4217."
+      description: Data to track the consumption of Payments in relation to an authorized Consent Schedule
+    UAEPaymentAPIV20.AEPaymentExecutionDate:
+      type: string
+      format: date
+      description: |-
+        Used to specify the expected payment execution date/time.
+        All dates in the JSON payloads are represented in ISO 8601 date format.
+        An example is: 2023-04-05
+    UAEPaymentAPIV20.AEPaymentPurposeCode:
+      type: string
+      minLength: 1
+      maxLength: 3
+      pattern: ^[A-Z]{3}$
+      description: >-
+        A category code that relates to the type of services or goods that corresponds to the underlying purpose of the
+        payment. The code must conform to the published Aani payment purpose code list.
+    UAEPaymentAPIV20.AEPeriodStartDate:
+      type: string
+      format: date
+      description: Specifies the start date of when a payment schedule begins.
+    UAEPaymentAPIV20.AEPeriodType:
+      type: string
+      enum:
+        - Day
+        - Week
+        - Month
+        - Year
+      description: >-
+        |Period Type|Description|
+
+        |-----------|-----------|
+
+        |Day|A continuous period of time, consisting of 24 consecutive hours, starting from midnight (00:00:00) and
+        finishing at 23:59:59 of the same day. |
+
+        |Week|A continuous period of time, consisting of seven consecutive days, starting from midnight (00:00:00) and
+        finishing at 23:59:59 of the 7th day. |
+
+        |Month|A continuous period of time starting from midnight (00:00:00) of the first day of a month and finishing
+        at 23:59:59 of the last day of that month.|
+
+        |Year|A continuous period of time, consisting of 12 months.|
+    UAEPaymentAPIV20.AEPeriodTypeMaximumCumulativeNumberOfPayments:
+      type: integer
+      description: The maximum frequency of payment initiations per Period Type.
+    UAEPaymentAPIV20.AEPeriodTypeMaximumCumulativeValueOfPayments:
+      type: object
+      required:
+        - Amount
+        - Currency
+      properties:
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricAmount'
+        Currency:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveOrHistoricCurrencyCode'
+      description: The maximum cumulative payment value of all payment initiations per Period Type.
+    UAEPaymentAPIV20.AEReference:
+      type: string
+      minLength: 1
+      maxLength: 120
+      description: A reason or reference in relation to a payment.
+    UAEPaymentAPIV20.AERequestedExecutionDate:
+      type: string
+      format: date
+      description: >-
+        The date when the TPP expects the LFI to execute the payment.
+
+        The date must be in the future and cannot be on the same day or a day in the past.
+
+        The maximum date in the future that can be specified is 1 year from the day of the consent of the User to the
+        TPP.
+
+        All dates in the JSON payloads are represented in ISO 8601 date format.
+    UAEPaymentAPIV20.AERevokedBy:
+      type: string
+      enum:
+        - LFI
+        - TPP
+        - LFI.InitiatedByUser
+        - TPP.InitiatedByUser
+      description: |-
+        Denotes the Identifier of the revocation.
+
+        | Identifier| Description|
+        |-----------|------------|
+        | LFI | Revoked by LFI without User initiation|
+        | TPP | Revoked by TPP without User initiation|
+        | LFI.InitiatedByUser | Initiated by User via the LFI|
+        | TPP.InitiatedByUser | Initiated by User via the TPP|
+    UAEPaymentAPIV20.AESelfConsent:
+      type: string
+      format: uri
+      description: A link to the related payment consents resource
+    UAEPaymentAPIV20.AEServiceInitiationOpenFinanceBilling:
+      type: object
+      properties:
+        IsLargeCorporate:
+          type: boolean
+          description: Customer has more than 100 million AED turnover
+      description: Billing parameters specified by the LFI
+    UAEPaymentAPIV20.AESingleFutureDatedPayment:
+      type: object
+      required:
+        - Type
+        - Amount
+        - RequestedExecutionDate
+      properties:
+        Type:
+          type: string
+          enum:
+            - SingleFutureDatedPayment
+          description: The Payment Type
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveCurrencyAmount'
+        RequestedExecutionDate:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AERequestedExecutionDate'
+      description: >-
+        A single payment consent that MUST be used for a single payment executed by the LFI on a future date. This
+        payment consent will be authorized by the User during the payment journey, and the payment will be exectued by
+        the TPP immediately.
+    UAEPaymentAPIV20.AESingleInstantPayment:
+      type: object
+      required:
+        - Type
+        - Amount
+      properties:
+        Type:
+          type: string
+          enum:
+            - SingleInstantPayment
+          description: The Payment Type
+        Amount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEActiveCurrencyAmount'
+      description: >-
+        A single immediate payment consent that MUST be used for a single payment which will be initiated immediately
+        after User authorization at the LFI.
+    UAEPaymentAPIV20.AESponsoredTPPInformation:
+      type: object
+      properties:
+        Name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: The Sponsored TPP Name
+        Identification:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: The Sponsored TPP Identification
+      description: |-
+        The Sponsored TPP is:
+        * A TPP that itself has no direct Open Banking API integrations.
+        * A TPP that is using the integration of another TPP that does have direct Open Banking API integrations.
+    UAEPaymentAPIV20.AEStatusUpdateDateTime:
+      type: string
+      format: date-time
+      description: >-
+        Date and time at which the resource status was updated.All dates in the JSON payloads are represented in ISO
+        8601 date-time format.
+
+        All date-time fields in responses must include the timezone. An example is below:
+
+        2023-04-05T10:43:07+00:00
+    UAEPaymentAPIV20.AEStructuredCreditorReference:
+      type: string
+      minLength: 1
+      maxLength: 120
+      pattern: >-
+        ^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)
+      description: >-
+        A reason or reference in relation to a payment, set to facilitate a structured Creditor reference consisting of:
+
+
+        * TPP ID and BIC for the Debtor Account, followed by freeform text to a maximum of 120 characters.
+
+
+        The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4 UUID.
+
+
+        A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11 characters
+        in length.
+
+
+        If the value of the concatenated string exceeds 120 characters, the TPP must first omit or truncate the freeform
+        element of the reference.
+    UAEPaymentAPIV20.AEStructuredDebtorReference:
+      type: string
+      minLength: 1
+      maxLength: 120
+      pattern: >-
+        ^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},(Merchant=[A-Z0-9]{3}-[A-Z]{4}-TL.+-[0-9]{4},|)BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)
+      description: >-
+        A reason or reference in relation to a payment, set to facilitate a structured Debtor reference consisting of:
+
+
+        * For payments to Merchants: TPP ID, Merchant ID, BIC for the Creditor Account, followed by freeform text to a
+        maximum of 120 characters.
+
+
+        * For other payments: TPP ID and BIC for the Creditor Account, followed by freeform text to a maximum of 120
+        characters.
+
+
+        The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4 UUID.
+
+
+        The Merchant ID wil be as per the existing Aani Core rules for the Merchant identification, and will incorporate
+        the Trade License number for the Merchant.
+
+
+        A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11 characters
+        in length.
+
+
+        If the value of the concatenated string exceeds 120 characters, the TPP must omit or truncate the freeform
+        element of the reference.
+    UAEPaymentAPIV20.AEVariableDefinedSchedule:
+      type: object
+      required:
+        - Type
+        - Schedule
+      properties:
+        Type:
+          type: string
+          enum:
+            - VariableDefinedSchedule
+          description: The Periodic Schedule Type
+        Schedule:
+          type: array
+          items:
+            type: object
+            properties:
+              PaymentExecutionDate:
+                $ref: '#/components/schemas/UAEPaymentAPIV20.AEPaymentExecutionDate'
+              MaximumIndividualAmount:
+                $ref: '#/components/schemas/UAEPaymentAPIV20.AEMaximumIndividualAmount'
+            required:
+              - PaymentExecutionDate
+              - MaximumIndividualAmount
+          minItems: 1
+          maxItems: 53
+      description: Payment Schedule denoting a list of pre-defined future dated payments all with variable amounts and dates.
+    UAEPaymentAPIV20.AEVariableOnDemand:
+      type: object
+      required:
+        - Type
+        - PeriodType
+        - PeriodStartDate
+        - Controls
+      properties:
+        Type:
+          type: string
+          enum:
+            - VariableOnDemand
+          description: The Periodic Schedule Type
+        PeriodType:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodType'
+        PeriodStartDate:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodStartDate'
+        Controls:
+          type: object
+          properties:
+            MaximumIndividualAmount:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEMaximumIndividualAmount'
+            MaximumCumulativeValueOfPaymentsPerPeriod:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodTypeMaximumCumulativeValueOfPayments'
+            MaximumCumulativeNumberOfPaymentsPerPeriod:
+              $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodTypeMaximumCumulativeNumberOfPayments'
+      description: >-
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+
+        The payments for this consent may be executed on any date, as long as they are within the Controls for a
+        PeriodType
+    UAEPaymentAPIV20.AEVariablePeriodicSchedule:
+      type: object
+      required:
+        - Type
+        - PeriodType
+        - PeriodStartDate
+        - MaximumIndividualAmount
+      properties:
+        Type:
+          type: string
+          enum:
+            - VariablePeriodicSchedule
+          description: The Periodic Schedule Type
+        PeriodType:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodType'
+        PeriodStartDate:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEPeriodStartDate'
+        MaximumIndividualAmount:
+          $ref: '#/components/schemas/UAEPaymentAPIV20.AEMaximumIndividualAmount'
+      description: |-
+        Payment Controls that apply to all payment instructions in a given period under this payment consent.
+        The payments for this consent must be executed only on the PeriodStartDate, and
+        dates recurring based on the PeriodType.
+    UAEPaymentAPIV20.AuthorizationExpirationDateTime:
+      type: string
+      format: date-time
+      description: The date and time by which a Consent (in AwaitingAuthorization status) must be Authorized by the User.
+    UAEPaymentAPIV20.IsSingleAuthorization:
+      type: boolean
+      description: |-
+        Specifies to the LFI that the consent authorization must be completed in a single authorization Step
+        with the LFI
+servers:
+  - url: /open-finance/auth/v2.0
