@@ -1,41 +1,60 @@
 # UAE Open Finance API Specifications
 
-This repository contains the official OpenAPI specifications used by Third Party Providers (TPPs) and Licensed Financial Institutions (LFIs) participating in the UAE Open Finance ecosystem.
+This repository contains the official API specifications used by Third Party Providers (TPPs) and Licensed Financial Institutions (LFIs) participating in the UAE Open Finance ecosystem.
 
-All specifications are in OpenAPI YAML format. The `main` branch always reflects the current live specifications.
+The OpenAPI YAML files in this repository are the **source of truth**. Excel workbooks are provided alongside them as a convenience for analysis and data-mapping exercises.
+
+## Branches
+
+- **`main`** — the live source of truth. Everything on `main` is considered **published, authoritative, and externally consumable** by the wider ecosystem.
+- **Other branches** — used for drafts of future content (for example a forthcoming `v2.2`). The Nebras Open Finance team will announce when draft content on a non-`main` branch is ready for ecosystem review.
+
+New implementers should work from the latest version on `main`.
 
 ## Viewing the Specifications
 
 We recommend [Redocly](https://redocly.github.io/redoc/) for a clean, navigable rendering of any spec file. Paste the raw GitHub URL of a YAML file directly into the Redocly viewer.
 
+Excel workbooks can be opened directly in Excel, Numbers, or any compatible spreadsheet tool.
+
 ## Repository Structure
+
 
 ```
 dist/
-├── api-hub/          # APIs provided by the API Hub for LFIs to consume
-├── standards/        # APIs provided by the API Hub for TPPs to consume
-└── ozone-connect/    # APIs provided by LFIs for the API Hub to consume
+├── api-hub/          # APIs the API Hub exposes to LFIs
+├── standards/        # APIs the API Hub exposes to TPPs
+└── ozone-connect/    # APIs that LFIs implement for the API Hub to consume
 ```
 
-Each category is versioned independently. The most up-to-date version across all categories is **v2.1**.
+
+Each category contains one folder per version. Inside every version folder you will find two sibling folders:
+
+```
+dist/standards/vX.Y/
+├── openapi/   # OpenAPI 3.x YAML — the source of truth
+└── excel/     # The same API surface (endpoints, fields, descriptions) in spreadsheet form
+```
+
+The `excel/` folder is generated from, and kept consistent with, the OpenAPI YAML. If the two ever disagree, **the YAML is correct**.
 
 ### API Hub (`dist/api-hub/`)
 
-These specifications describe the APIs that the API Hub exposes **to LFIs**. LFIs integrate against these APIs to participate in the Open Finance ecosystem.
-
+Specifications for the APIs that the API Hub exposes **to LFIs**. LFIs integrate against these APIs to participate in the Open Finance ecosystem (for example, to consume consent and event services from the Hub).
 
 ### Standards (`dist/standards/`)
 
-These specifications describe the APIs that the API Hub exposes **to TPPs**. TPPs use these APIs to access financial data and initiate services on behalf of their customers.
+Specifications for the APIs that the API Hub exposes **to TPPs**. TPPs use these APIs to access account, payment, and other Open Finance services on behalf of their customers.
 
 ### Ozone Connect (`dist/ozone-connect/`)
 
-These specifications describe the APIs that **LFIs must implement** for the API Hub to call. When a TPP makes a valid API request to the API Hub, the API Hub often proxies that request to the relevant LFI using these Ozone Connect APIs.
-
+Specifications for the APIs that **LFIs must implement** for the API Hub to call. When a TPP makes a valid request to the API Hub, the API Hub proxies the relevant call to the appropriate LFI's Ozone Connect endpoint.
 
 ## API Flow Overview
 
-The API Hub acts as a gateway between TPPs and LFIs. Therefore there is a natural mapping between the **Standards** APIs and the **Ozone Connect** APIs:
+The API Hub sits between TPPs and LFIs as the single point of mediation. There is a natural mapping between the **Standards** APIs (TPP-facing) and the **Ozone Connect** APIs (LFI-facing): the Hub validates and translates between them on every request.
+
+
 
 ```
 +======================================================================+
@@ -60,10 +79,21 @@ The API Hub acts as a gateway between TPPs and LFIs. Therefore there is a natura
 +======================================================================+
 ```
 
+TPPs never call LFIs directly — all traffic flows through the API Hub.
+
 ## Versioning
 
-Specifications follow a `vMAJOR.MINOR` scheme. Errata releases (e.g. `v2.0-errata1`) contain targeted corrections to a published version without incrementing the version number. 
+Specifications follow a `vMAJOR.MINOR` scheme. When you see `v2.1` in this repository it refers to the same logical release across all three categories:
+
+- `dist/api-hub/v2.1.x/` and `dist/ozone-connect/v2.1.x/` hold the v2.1 line for the Hub-to-LFI and LFI-to-Hub interfaces.
+- `dist/standards/v2.1/` holds the v2.1 line for the TPP-facing interface.
+
+Errata releases (for example `dist/standards/v2.1-errata1/`) contain targeted corrections to a published version without incrementing the version number. **Where an errata folder exists, the files inside it supersede the corresponding base version.**
+
+## License
+
+This repository is published under the [MIT License](LICENSE) and is freely available for the UAE Open Finance ecosystem and the wider community to read, reference, and build against.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidance on reporting issues, proposing new endpoints, or submitting corrections.
+Issues and pull requests are welcome from LFIs, TPPs, vendors, and the wider community. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidance on reporting issues, proposing new endpoints, and submitting corrections.
