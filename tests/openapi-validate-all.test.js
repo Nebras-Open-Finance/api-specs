@@ -22,7 +22,7 @@ function findOpenApiFiles(dir, files = []) {
 const distDir = path.join(__dirname, '..', 'dist');
 const specFiles = findOpenApiFiles(distDir);
 
-describe('OpenAPI spec validation', () => {
+describe('OpenAPI spec validation (all files)', () => {
   it('should find OpenAPI spec files', () => {
     assert.ok(specFiles.length > 0, 'Expected at least one OpenAPI spec file in dist/');
   });
