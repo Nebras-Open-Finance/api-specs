@@ -8,10 +8,18 @@ const { distDir, repoRoot, parseVersion, compareVersions } = require('../helpers
 
 const acceptedChangesRoot = path.join(repoRoot, 'breaking-changes', 'standards');
 
-// Only consider versions at or above this one. Leave empty/null to include
-// every version present on disk.
+// Per-file start version. A file is only checked for breaking changes from its
+// start version onward; files without an entry here are skipped entirely.
 // Format: "v2.1" or "v2.1-errata1".
-const START_VERSION = 'v2.1';
+const START_VERSIONS = {
+  'uae-account-information-openapi.yaml': 'v2.1',
+  'uae-atm-openapi.yaml': 'v2.1',
+  'uae-authorization-endpoints-openapi.yaml': 'v2.1',
+  'uae-bank-initiation-openapi.yaml': 'v2.1',
+  'uae-confirmation-of-payee-openapi.yaml': 'v2.1',
+  'uae-product-openapi.yaml': 'v2.1',
+  'uae-webhook-template-openapi.yaml': 'v2.1',
+};
 
 const standardsDir = path.join(distDir, 'standards');
 
@@ -28,9 +36,9 @@ function listVersionDirs() {
 }
 
 function listSpecFiles(versionDirName) {
-  const openapiDir = path.join(standardsDir, versionDirName, 'openapi');
-  if (!fs.existsSync(openapiDir)) return [];
-  return fs.readdirSync(openapiDir).filter(f => f.endsWith('-openapi.yaml'));
+  const specDir = path.join(standardsDir, versionDirName);
+  if (!fs.existsSync(specDir)) return [];
+  return fs.readdirSync(specDir).filter(f => f.endsWith('-openapi.yaml'));
 }
 
 function groupByMinor(versions) {
@@ -58,7 +66,7 @@ function effectiveFiles(versionsInMinor) {
   return effective;
 }
 
-function buildPairs(versions, startParsed) {
+function buildPairs(versions) {
   const pairs = [];
   const groups = groupByMinor(versions);
   const minorKeys = [...groups.keys()].sort((a, b) => {
@@ -71,10 +79,7 @@ function buildPairs(versions, startParsed) {
   for (const key of minorKeys) {
     const list = groups.get(key);
     for (let i = 1; i < list.length; i++) {
-      const base = list[i - 1];
-      const revision = list[i];
-      if (startParsed && compareVersions(base.parsed, startParsed) < 0) continue;
-      pairs.push({ kind: 'errata', base, revision });
+      pairs.push({ kind: 'errata', base: list[i - 1], revision: list[i] });
     }
   }
 
@@ -86,7 +91,6 @@ function buildPairs(versions, startParsed) {
     const newerBase = newerList.find(v => v.parsed.errata === 0);
     if (!newerBase) continue;
     const olderLatest = olderList[olderList.length - 1];
-    if (startParsed && compareVersions(olderLatest.parsed, startParsed) < 0) continue;
     pairs.push({ kind: 'minor', olderList, olderLatest, revision: newerBase });
   }
 
@@ -146,18 +150,26 @@ function assertNoBreakingChanges(baseFile, revisionFile, revisionDirName, specFi
   );
 }
 
-const startParsed = START_VERSION ? parseVersion(START_VERSION) : null;
-if (START_VERSION && !startParsed) {
-  throw new Error(`Invalid START_VERSION: ${START_VERSION}`);
+const fileStartParsed = new Map();
+for (const [file, v] of Object.entries(START_VERSIONS)) {
+  const parsed = parseVersion(v);
+  if (!parsed) throw new Error(`Invalid START_VERSION for ${file}: ${v}`);
+  fileStartParsed.set(file, parsed);
+}
+
+function shouldCheckFile(file, baseParsed) {
+  const start = fileStartParsed.get(file);
+  if (!start) return false;
+  return compareVersions(baseParsed, start) >= 0;
 }
 
 const versions = listVersionDirs();
-const pairs = buildPairs(versions, startParsed);
+const pairs = buildPairs(versions);
 
 describe('No breaking changes within a major version (standards)', { skip: !oasdiffAvailable() && 'oasdiff not installed — see https://github.com/oasdiff/oasdiff#installation' }, () => {
   if (pairs.length === 0) {
     it('should have at least one comparison pair', () => {
-      assert.fail(`No version pairs found in ${standardsDir} (START_VERSION=${START_VERSION || '<unset>'})`);
+      assert.fail(`No version pairs found in ${standardsDir}`);
     });
     return;
   }
@@ -169,9 +181,10 @@ describe('No breaking changes within a major version (standards)', { skip: !oasd
       const erratFiles = listSpecFiles(revision.name);
 
       for (const file of erratFiles) {
-        const baseFile = path.join(standardsDir, base.name, 'openapi', file);
+        if (!shouldCheckFile(file, base.parsed)) continue;
+        const baseFile = path.join(standardsDir, base.name, file);
         if (!fs.existsSync(baseFile)) continue; // new file in errata, not breaking
-        const revisionFile = path.join(standardsDir, revision.name, 'openapi', file);
+        const revisionFile = path.join(standardsDir, revision.name, file);
         it(`${label}: ${file} has no breaking changes`, () => {
           assertNoBreakingChanges(baseFile, revisionFile, revision.name, file);
         });
@@ -183,7 +196,13 @@ describe('No breaking changes within a major version (standards)', { skip: !oasd
       const newerFiles = new Set(listSpecFiles(revision.name));
 
       it(`${label}: no spec files removed`, () => {
-        const removed = [...effective.keys()].filter(f => !newerFiles.has(f));
+        const removed = [...effective.entries()]
+          .filter(([f, sourceVersion]) => {
+            if (newerFiles.has(f)) return false;
+            const sourceParsed = parseVersion(sourceVersion);
+            return shouldCheckFile(f, sourceParsed);
+          })
+          .map(([f]) => f);
         assert.deepStrictEqual(
           removed,
           [],
@@ -193,8 +212,10 @@ describe('No breaking changes within a major version (standards)', { skip: !oasd
 
       for (const [file, sourceVersion] of effective) {
         if (!newerFiles.has(file)) continue;
-        const baseFile = path.join(standardsDir, sourceVersion, 'openapi', file);
-        const revisionFile = path.join(standardsDir, revision.name, 'openapi', file);
+        const sourceParsed = parseVersion(sourceVersion);
+        if (!shouldCheckFile(file, sourceParsed)) continue;
+        const baseFile = path.join(standardsDir, sourceVersion, file);
+        const revisionFile = path.join(standardsDir, revision.name, file);
         it(`${label}: ${file} has no breaking changes (older from ${sourceVersion})`, () => {
           assertNoBreakingChanges(baseFile, revisionFile, revision.name, file);
         });

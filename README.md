@@ -2,7 +2,7 @@
 
 This repository contains the official API specifications used by Third Party Providers (TPPs) and Licensed Financial Institutions (LFIs) participating in the UAE Open Finance ecosystem.
 
-The OpenAPI YAML files in this repository are the **source of truth**. Excel workbooks are provided alongside them as a convenience for analysis and data-mapping exercises.
+The OpenAPI YAML files in this repository are the **source of truth**.
 
 ## Branches
 
@@ -15,8 +15,6 @@ New implementers should work from the latest version on `main`.
 
 We recommend [Redocly](https://redocly.github.io/redoc/) for a clean, navigable rendering of any spec file. Paste the raw GitHub URL of a YAML file directly into the Redocly viewer.
 
-Excel workbooks can be opened directly in Excel, Numbers, or any compatible spreadsheet tool.
-
 ## Repository Structure
 
 
@@ -28,15 +26,14 @@ dist/
 ```
 
 
-Each category contains one folder per version. Inside every version folder you will find two sibling folders:
+Each category contains one folder per version, and each version folder contains the OpenAPI 3.x YAML files directly:
 
 ```
 dist/standards/vX.Y/
-├── openapi/   # OpenAPI 3.x YAML — the source of truth
-└── excel/     # The same API surface (endpoints, fields, descriptions) in spreadsheet form
+├── uae-account-information-openapi.yaml
+├── uae-atm-openapi.yaml
+└── ...
 ```
-
-The `excel/` folder is generated from, and kept consistent with, the OpenAPI YAML. If the two ever disagree, **the YAML is correct**.
 
 ### API Hub (`dist/api-hub/`)
 
