@@ -62,13 +62,13 @@ function findLatestSpecs(dir = distDir) {
 
     const specsByName = {};
     for (const { name: versionDir } of matchingDirs) {
-      const openapiDir = path.join(productDir, versionDir, 'openapi');
-      if (!fs.existsSync(openapiDir)) continue;
+      const specDir = path.join(productDir, versionDir);
+      if (!fs.existsSync(specDir)) continue;
 
-      for (const file of fs.readdirSync(openapiDir)) {
+      for (const file of fs.readdirSync(specDir)) {
         if (!file.endsWith('-openapi.yaml')) continue;
         if (!specsByName[file]) {
-          specsByName[file] = path.join(openapiDir, file);
+          specsByName[file] = path.join(specDir, file);
         }
       }
     }
