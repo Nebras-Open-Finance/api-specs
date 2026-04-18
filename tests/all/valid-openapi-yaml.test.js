@@ -1,44 +1,23 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
-const path = require('node:path');
 const YAML = require('yaml');
+const { distDir, findOpenApiFiles, relativeToRepo } = require('../helpers');
 
-/**
- * Recursively find all OpenAPI YAML files under the dist directory.
- */
-function findOpenApiFiles(dir, files = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      findOpenApiFiles(fullPath, files);
-    } else if (entry.name.endsWith('-openapi.yaml')) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-}
-
-const distDir = path.join(__dirname, '..', 'dist');
 const specFiles = findOpenApiFiles(distDir);
 
-describe('OpenAPI spec validation (all files)', () => {
+describe('YAML is a valid OpenAPI file', () => {
   it('should find OpenAPI spec files', () => {
     assert.ok(specFiles.length > 0, 'Expected at least one OpenAPI spec file in dist/');
   });
 
   for (const filePath of specFiles) {
-    const relativePath = path.relative(path.join(__dirname, '..'), filePath);
+    const relativePath = relativeToRepo(filePath);
 
-    it(`${relativePath} should be valid YAML`, () => {
+    it(`${relativePath} is a valid OpenAPI 3.x YAML document`, () => {
       const content = fs.readFileSync(filePath, 'utf8');
       const doc = YAML.parse(content);
       assert.ok(doc, 'YAML parse returned empty document');
-    });
-
-    it(`${relativePath} should have required OpenAPI fields`, () => {
-      const content = fs.readFileSync(filePath, 'utf8');
-      const doc = YAML.parse(content);
 
       assert.ok(doc.openapi, 'Missing "openapi" version field');
       assert.match(doc.openapi, /^3\./, 'Expected OpenAPI 3.x version');
