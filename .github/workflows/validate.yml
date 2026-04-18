@@ -2,7 +2,7 @@ name: Validate Source Branch
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, ozone]
 
 jobs:
   validateExpected:
