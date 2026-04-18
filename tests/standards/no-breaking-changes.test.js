@@ -116,7 +116,8 @@ function isAccepted(errorLine, accepted) {
   const parsed = parseErrorLine(errorLine);
   if (!parsed) return false;
   return accepted.some(entry => {
-    if (entry.rule !== parsed.rule) return false;
+    const rules = entry.rules || (entry.rule ? [entry.rule] : []);
+    if (!rules.includes(parsed.rule)) return false;
     if (!entry.endpoints || entry.endpoints.length === 0) return true;
     return entry.endpoints.some(e => e.method === parsed.method && e.path === parsed.path);
   });

@@ -1,9 +1,9 @@
 # Accepted breaking changes introduced in this version of the spec.
 #
 # Each entry is matched against oasdiff's ERR-level output. An entry is
-# considered matching if its `rule` matches AND any of its `endpoints` matches
-# the (method, path) of the change. Matched changes are filtered out before
-# the test asserts.
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
 #
 # Format:
 #   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
@@ -15,30 +15,34 @@
 #       Free text written from the perspective of the change author,
 #       explaining what changed, why, and the impact on consumers.
 
-- rule: response-property-type-changed
+- rules:
+    - request-property-became-enum
+    - request-property-type-changed
+    - response-property-type-changed
   endpoints:
-    - method: GET
-      path: /account-access-consents
-    - method: GET
-      path: /account-access-consents/{ConsentId}
+    - method: POST
+      path: /
   signedOffBy: Thomas Catchpole - CTO, Nebras
   rationale: |
     This change corrects a long-standing modelling error in v2.1.
 
-    In v2.1, the Data/Permissions array references AEBankDataSharingConsentPermissionCodesItem
+    In v2.1, the Data/Permissions array references AEBankDataSharingConsentPermissionCodes
     as its items schema. However, that schema is itself defined as type: array
     of string enums. Because Permissions is also defined as type: array with
     items: $ref: ..., the resulting contract becomes a two-dimensional
     structure (array<array<string-enum>>).
 
     This structure is inconsistent with both intended design and real-world
-    usage. No known implementation has ever returned nested arrays for
-    Permissions, and consumers universally expect a flat array of permission
-    codes.
+    usage. No known implementation has ever emitted nested arrays for
+    Permissions in webhook event payloads, and consumers universally expect a
+    flat array of permission codes.
 
-    In v2.1-errata1, this is corrected by introducing
+    In v2.1-errata1, this is corrected by redefining
     AEBankDataSharingConsentPermissionCodes as a type: string enum. When used
     as the items schema of Permissions, this produces the correct and
     intended shape: a flat array<string-enum> (e.g.,
     ["ReadAccountsBasic", "ReadBalances", ...]), which matches all known
     production implementations.
+
+    This mirrors the equivalent fix applied to uae-account-information-openapi
+    in v2.1-errata1.
