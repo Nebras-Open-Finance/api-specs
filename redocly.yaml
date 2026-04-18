@@ -1,0 +1,23 @@
+extends:
+  - recommended
+
+rules:
+  # Stylistic — not enforced on internal specs
+  info-license: off
+  tag-description: off
+  tags-alphabetical: off
+  operation-tag-defined: off
+
+  # Legitimately violated: token/authorization endpoints have operations with
+  # no security by design. Revisit if/when we adopt per-op security docs.
+  security-defined: off
+
+  # Bundled specs frequently include shared components that aren't referenced
+  # by every file — not a bug.
+  no-unused-components: off
+
+  # Downgrade from error to warn: we want visibility but not a hard fail while
+  # response coverage is still being filled in.
+  operation-4xx-response: warn
+  operation-2xx-response: warn
+  operation-summary: warn
