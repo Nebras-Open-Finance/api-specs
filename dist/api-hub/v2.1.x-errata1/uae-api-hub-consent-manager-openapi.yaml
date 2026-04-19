@@ -32,6 +32,12 @@ info:
     So, for example, `.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.1.7
+
+    * Fixed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal monetary values.
+
+    * Removed the unused `AEBankServiceInitiationRichAuthorizationRequests.AERiskExternalAccountIdentificationCode` schema, which duplicated `AERiskExternalAccountIdentificationCode` and was never referenced.
+
     ### v2.1.6
 
     * Added revised PII properties compatible with version 2.1.
@@ -57,7 +63,7 @@ info:
       line with changes in v2.1 Pushed Authorization Requests.
 
 
-  version: v2.1.6
+  version: v2.1.7
 tags:
   - name: consents
   - name: consent-groups
@@ -5457,13 +5463,6 @@ components:
     AEBankServiceInitiationRichAuthorizationRequests.AEIsVerifiedbyTPP:
       type: boolean
       description: The TPP has onboarded the Creditor
-    AEBankServiceInitiationRichAuthorizationRequests.AERiskExternalAccountIdentificationCode:
-      type: string
-      enum:
-        - EmiratesID
-        - TradeLicenceNumber
-      description: Name of the identification scheme, in a coded form as published in an external list.
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalPaymentPII:
       type: object
       properties:
