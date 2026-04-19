@@ -6,7 +6,7 @@ const { spawnSync } = require('node:child_process');
 const YAML = require('yaml');
 const { distDir, repoRoot, parseVersion, compareVersions } = require('../helpers');
 
-const acceptedChangesRoot = path.join(repoRoot, 'breaking-changes', 'standards');
+const acceptedChangesRoot = path.join(repoRoot, 'supporting', 'breaking-changes', 'standards');
 
 // Per-file start version. A file is only checked for breaking changes from its
 // start version onward; files without an entry here are skipped entirely.
@@ -140,7 +140,7 @@ function assertNoBreakingChanges(baseFile, revisionFile, revisionDirName, specFi
     const unaccepted = allErrors.filter(line => !isAccepted(line, accepted));
     if (unaccepted.length === 0) return;
     const acceptedCount = allErrors.length - unaccepted.length;
-    const acceptedNote = acceptedCount > 0 ? ` (${acceptedCount} accepted via breaking-changes/)` : '';
+    const acceptedNote = acceptedCount > 0 ? ` (${acceptedCount} accepted via supporting/breaking-changes/)` : '';
     assert.fail(
       `Found ${unaccepted.length} breaking change(s)${acceptedNote}:\n  ${unaccepted.join('\n  ')}`
     );

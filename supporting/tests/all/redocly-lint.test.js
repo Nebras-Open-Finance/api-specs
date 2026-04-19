@@ -1,9 +1,11 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
+const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { distDir, repoRoot, findOpenApiFiles, relativeToRepo } = require('../helpers');
 
 const specFiles = findOpenApiFiles(distDir);
+const configPath = path.join(repoRoot, 'supporting', 'redocly.yaml');
 
 describe('Redocly lint', () => {
   it('should find OpenAPI spec files', () => {
@@ -16,7 +18,7 @@ describe('Redocly lint', () => {
     it(`${relativePath} passes redocly lint`, () => {
       const result = spawnSync(
         'npx',
-        ['--no-install', 'redocly', 'lint', filePath],
+        ['--no-install', 'redocly', 'lint', '--config', configPath, filePath],
         { cwd: repoRoot, encoding: 'utf8', shell: true }
       );
 

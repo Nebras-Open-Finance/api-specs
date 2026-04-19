@@ -2,4 +2,4 @@
 .claude
 CLAUDE.md
 node_modules
-tests/spec-validation
+supporting/tests/spec-validation

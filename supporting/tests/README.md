@@ -6,11 +6,11 @@ Run with `npm test`. Tests use the Node built-in runner (`node:test`) and are or
 
 | Folder | Scope | How it's selected |
 | --- | --- | --- |
-| `tests/all/` | Every `-openapi.yaml` file under `dist/`, all versions, all categories. | `findOpenApiFiles(distDir)` in [helpers.js](helpers.js) |
-| `tests/latest/` | Only the latest spec set. For each product, the highest `major.minor` is taken, with errata files overriding the base file-by-file. Older `major.minor` lines are not included. | `findLatestSpecs()` in [helpers.js](helpers.js) |
-| `tests/standards/` | Files under `dist/standards/` only. | Test iterates `dist/standards/` directly. |
-| `tests/api-hub/` | Files under `dist/api-hub/` only. | Test iterates `dist/api-hub/` directly. |
-| `tests/ozone-connect/` | Files under `dist/ozone-connect/` only. | Test iterates `dist/ozone-connect/` directly. |
+| `supporting/tests/all/` | Every `-openapi.yaml` file under `dist/`, all versions, all categories. | `findOpenApiFiles(distDir)` in [helpers.js](helpers.js) |
+| `supporting/tests/latest/` | Only the latest spec set. For each product, the highest `major.minor` is taken, with errata files overriding the base file-by-file. Older `major.minor` lines are not included. | `findLatestSpecs()` in [helpers.js](helpers.js) |
+| `supporting/tests/standards/` | Files under `dist/standards/` only. | Test iterates `dist/standards/` directly. |
+| `supporting/tests/api-hub/` | Files under `dist/api-hub/` only. | Test iterates `dist/api-hub/` directly. |
+| `supporting/tests/ozone-connect/` | Files under `dist/ozone-connect/` only. | Test iterates `dist/ozone-connect/` directly. |
 
 ## Per-test restrictions
 
