@@ -1,0 +1,63 @@
+# Recommended changes to defer to the next major version of this spec.
+#
+# Entries here are non-urgent design improvements that would be breaking in a
+# pre-v3.0 errata context but are sensible to apply when v3.0 is cut. Each
+# entry describes the proposed change, why it is being deferred, and the
+# migration impact on implementers.
+#
+# Format:
+#   - change: <short title>
+#     schemas: [<schema or field paths affected>]
+#     endpoints:
+#       - method: GET
+#         path: /some/path
+#     proposedBy: Name - Role, Org
+#     rationale: |
+#       What we want to change, why, and the migration impact.
+
+- change: Enrich `TrustFrameworkCode` enum and rename `FI` to `cbuae_kyc`
+  schemas:
+    - TrustFrameworkCode
+    - VerifiedClaimVerification.TrustFramework
+  endpoints:
+    - method: GET
+      path: /parties
+    - method: GET
+      path: /accounts/{AccountId}/parties
+  proposedBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    In v2.1-errata1 the `TrustFrameworkCode` enum is `[FI]`, carried over
+    from the historical Ozone Connect vocabulary where `FI` means "the LFI
+    performed KYC/AML under UAE law using its own processes".
+
+    Two changes are proposed for v3.0:
+
+    1. **Add `uae_pass` and `emirates_id` to the enum.** Today the
+       framework collapses every identity-verification path into a single
+       catch-all. In practice UAE LFIs verify customers through distinct
+       channels: UAE Pass (the national digital identity service) and
+       Emirates ID (physical card / chip reading). Distinguishing them
+       lets TPPs reason about assurance and lets LFIs report accurately
+       how verification was performed. This part is additive and would be
+       non-breaking on its own — the reason it is deferred is to bundle
+       it with the rename below into a single major-version transition.
+
+    2. **Rename `FI` to `cbuae_kyc`.** `FI` is not aligned with the OIDC
+       for Identity Assurance trust framework registry naming convention
+       (snake_case, regulator-prefixed identifiers like `de_aml`,
+       `uk_tfida`, `nist_800_63A`). `cbuae_kyc` carries the same
+       semantics — generic catch-all for in-house LFI-led verification
+       under CBUAE KYC/AML obligations — but is more self-describing and
+       interoperates better with cross-border OIDC IDA consumers.
+
+    Resulting v3.0 enum: `[cbuae_kyc, uae_pass, emirates_id]`.
+
+    Migration impact: LFIs emitting `FI` today would switch to
+    `cbuae_kyc`. New values are opt-in — LFIs can adopt them as their
+    verification flows support richer reporting. The rename is a formal
+    enum-value removal and is acceptable at a major version boundary.
+
+    This change should be mirrored on the Ozone Connect bank data sharing
+    API (`CbuaeVerifiedClaim.verification.trustFramework` and
+    `CbuaeVerifiedCopClaim.verification.trustFramework`) — see the
+    corresponding entry in `supporting/future-updates/ozone-connect/v3.0.x/`.
