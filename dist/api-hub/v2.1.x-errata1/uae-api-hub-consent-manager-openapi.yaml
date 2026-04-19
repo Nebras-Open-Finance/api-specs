@@ -40,6 +40,8 @@ info:
 
     * Added `SME` to `AEAccountTypeCode` and collapsed the duplicate `AEExternalAccountTypeCode` into it. The two schemas carried the same intent but different enums (`[Retail, Corporate]` vs `[Retail, SME, Corporate]`), causing the same `AccountType: SME` value to validate against the RAR `request` body but fail against the stored `consentBody` in the same payload. Also unblocks SME creditor classification on `AECreditorIndicators`.
 
+    * Collapsed the duplicate `OnBehalfOf` schema into `AEOnBehalfOf`. The Insurance RAR now references the same `OnBehalfOf` schema as Bank Data Sharing and the consent body paths, eliminating drift risk between two structurally equivalent definitions.
+
     ### v2.1.6
 
     * Added revised PII properties compatible with version 2.1.
@@ -4316,7 +4318,7 @@ components:
             Specified date and time the permissions will expire. All date-time fields in responses must include the
             timezone. An example is below: 2017-04-05T10:43:07+00:00
         OnBehalfOf:
-          $ref: '#/components/schemas/OnBehalfOf'
+          $ref: '#/components/schemas/AEOnBehalfOf'
         ConsentId:
           $ref: '#/components/schemas/AEConsentId'
         Permissions:
@@ -4384,28 +4386,6 @@ components:
             $ref: '#/components/schemas/AEAccountSubTypeCode'
         OnBehalfOf:
           $ref: '#/components/schemas/AEOnBehalfOf'
-      additionalProperties: false
-    OnBehalfOf:
-      type: object
-      description: On Behalf Of
-      properties:
-        TradingName:
-          type: string
-          description: Trading Name
-          example: Acme Accounting Trading Name
-        LegalName:
-          type: string
-          description: Legal Name
-          example: Acme Accounting Legal Name
-        IdentifierType:
-          type: string
-          description: Identifier Type
-          enum:
-            - Other
-        Identifier:
-          type: string
-          description: Identifier
-          example: abcd1234
       additionalProperties: false
     EventNotification:
       type: object
