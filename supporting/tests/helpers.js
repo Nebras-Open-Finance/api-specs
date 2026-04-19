@@ -1,8 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const distDir = path.join(__dirname, '..', 'dist');
-const repoRoot = path.join(__dirname, '..');
+const repoRoot = path.join(__dirname, '..', '..');
+const distDir = path.join(repoRoot, 'dist');
 
 function findOpenApiFiles(dir, files = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

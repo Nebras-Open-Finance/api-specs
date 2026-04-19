@@ -87,6 +87,42 @@ Specifications follow a `vMAJOR.MINOR` scheme. When you see `v2.1` in this repos
 
 Errata releases (for example `dist/standards/v2.1-errata1/`) contain targeted corrections to a published version without incrementing the version number. **Where an errata folder exists, the files inside it supersede the corresponding base version.**
 
+## Governance folders
+
+`supporting/` holds everything that sits alongside the specs without being part of the published surface — tests, accepted breaking changes, and a forward-looking design backlog.
+
+### `supporting/breaking-changes/`
+
+Records breaking changes that have been **knowingly accepted** within an errata release. Each entry names the oasdiff rule, the affected endpoints, a sign-off, and a rationale. Enforced by [supporting/tests/standards/no-breaking-changes.test.js](supporting/tests/standards/no-breaking-changes.test.js): any breaking change flagged by oasdiff must have a matching entry here, or the test fails. This keeps the bar high without blocking corrections when the team genuinely decides a change is worth making.
+
+Structure mirrors `dist/`:
+
+```text
+supporting/breaking-changes/
+└── standards/
+    └── vX.Y-errataN/
+        └── <spec-basename>/
+            └── breaking-changes.yaml
+```
+
+### `supporting/future-updates/`
+
+Records **recommended changes to defer to the next major version**. Entries are non-urgent design improvements that would be breaking inside a pre-vN.0 errata context but are sensible to apply when the major is cut. Each entry describes the proposed change, affected schemas/endpoints, a proposer, and a rationale. Not enforced by tests — purely a forward-looking design backlog.
+
+Structure mirrors `supporting/breaking-changes/`, scoped to the target major version:
+
+```text
+supporting/future-updates/
+├── standards/
+│   └── v3.0/
+│       └── <spec-basename>/
+│           └── future-updates.yaml
+└── ozone-connect/
+    └── v3.0.x/
+        └── <spec-basename>/
+            └── future-updates.yaml
+```
+
 ## License
 
 This repository is published under the [MIT License](LICENSE) and is freely available for the UAE Open Finance ecosystem and the wider community to read, reference, and build against.
