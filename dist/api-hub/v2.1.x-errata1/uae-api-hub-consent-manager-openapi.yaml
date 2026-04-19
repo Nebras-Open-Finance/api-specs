@@ -42,6 +42,10 @@ info:
 
     * Collapsed the duplicate `OnBehalfOf` schema into `AEOnBehalfOf`. The Insurance RAR now references the same `OnBehalfOf` schema as Bank Data Sharing and the consent body paths, eliminating drift risk between two structurally equivalent definitions.
 
+    * Collapsed the duplicate `EventNotification` schema into `AEEventNotification`. Both defined the same Webhook subscription shape; refs in the consent-events paths now point to the AE-prefixed canonical name, removing drift risk.
+
+    * Collapsed the duplicate `Amount` schema into `AEActiveOrHistoricAmount`. Both defined the same monetary-amount string pattern; the single ref in the Service Initiation `RemittanceAmount` path now points to the AE-prefixed canonical name.
+
     ### v2.1.6
 
     * Added revised PII properties compatible with version 2.1.
@@ -2739,7 +2743,7 @@ components:
         consent:
           $ref: '#/components/schemas/AuthorizationDetailsDataSharingConsent'
         subscription:
-          $ref: '#/components/schemas/EventNotification'
+          $ref: '#/components/schemas/AEEventNotification'
     InsuranceAuthorizationDetails:
       type: object
       properties:
@@ -2751,7 +2755,7 @@ components:
         consent:
           $ref: '#/components/schemas/AuthorizationDetailsInsuranceConsent'
         subscription:
-          $ref: '#/components/schemas/EventNotification'
+          $ref: '#/components/schemas/AEEventNotification'
     ServiceInitiationAuthorizationDetails:
       type: object
       properties:
@@ -2763,7 +2767,7 @@ components:
         consent:
           $ref: '#/components/schemas/AEServiceInitiationAuthorizationDetailProperties'
         subscription:
-          $ref: '#/components/schemas/EventNotification'
+          $ref: '#/components/schemas/AEEventNotification'
     AEServiceInitiationAuthorizationDetailProperties:
       type: object
       required:
@@ -3279,15 +3283,9 @@ components:
         Currency:
           $ref: '#/components/schemas/CurrencyCode'
         Amount:
-          $ref: '#/components/schemas/Amount'
+          $ref: '#/components/schemas/AEActiveOrHistoricAmount'
       description: The Currency and Amount relating to the Payment
       additionalProperties: false
-    Amount:
-      description: >-
-        A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
-        with ISO 4217.
-      type: string
-      pattern: ^\d{1,16}\.\d{2}$
     CurrencyCode:
       description: >-
         A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as
@@ -4386,34 +4384,6 @@ components:
             $ref: '#/components/schemas/AEAccountSubTypeCode'
         OnBehalfOf:
           $ref: '#/components/schemas/AEOnBehalfOf'
-      additionalProperties: false
-    EventNotification:
-      type: object
-      description: |
-        A Webhook Subscription Schema
-      required:
-        - Webhook
-      properties:
-        Webhook:
-          description: |
-            A Webhook Schema
-          type: object
-          required:
-            - Url
-            - IsActive
-          properties:
-            Url:
-              description: |
-                The TPP Callback URL being registered with the LFI
-              type: string
-              example: https://api.tpp.com/webhook/callbackUrl
-            IsActive:
-              description: >
-                The TPP specifying whether the LFI should send (IsActive true) or not send (IsActive false) Webhook
-                Notifications to the TPP's Webhook URL
-              type: boolean
-              example: false
-          additionalProperties: false
       additionalProperties: false
     HealthCheckCertResponse:
       type: object
