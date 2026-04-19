@@ -32,6 +32,12 @@ info:
     standard version 2.0.
 
 
+    ### v2.1.3
+
+
+    * Fixed `pattern` regexes on the `AEActiveOrHistoricAmount`, `ControlSum`, and `Amount` schemas, which were over-escaped in YAML and failed to validate decimal monetary values.
+
+
     ### v2.1.2
 
 
@@ -45,7 +51,7 @@ info:
 
 
     * Added initial version for compatibility with v2.1-rc2 of standards.
-  version: v2.1.2
+  version: v2.1.3
 tags:
   - name: User Verification
     description: Operations that allow a User to be verified in the API Hub

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: UAE Confirmation of Payee API
   description: '## UAE Open Finance Confirmation of Payee API Specification'
-  version: v2.1
+  version: v2.1-errata1
 tags:
   - name: Confirmation Operations
     description: Payee confirmation operations and resources
