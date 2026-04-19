@@ -24,7 +24,7 @@ info:
     Users of this API description must ensure they implement the Authorization Request as a JWS, encoding the payload as
     described by [RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515) and reflecting the requirements of the API
     Security Profile for the UAE Open Finance Framework.
-  version: v2.1
+  version: v2.1-errata1
 tags:
   - name: Pushed Authorization Requests
     description: Operations to support Pushed Authorization Requests (PAR)

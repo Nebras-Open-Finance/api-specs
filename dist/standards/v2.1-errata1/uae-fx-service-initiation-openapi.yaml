@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: UAE FX API
   description: '## UAE Open Finance FX API Specification'
-  version: v2.1
+  version: v2.1-errata1
 tags:
   - name: FX Quotes
     description: Operations to create foreign exchange quotes at a given LFI
