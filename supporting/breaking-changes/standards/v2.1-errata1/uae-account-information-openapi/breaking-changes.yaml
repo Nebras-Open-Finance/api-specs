@@ -15,6 +15,44 @@
 #       Free text written from the perspective of the change author,
 #       explaining what changed, why, and the impact on consumers.
 
+- rule: response-property-enum-value-removed
+  endpoints:
+    - method: GET
+      path: /parties
+    - method: GET
+      path: /accounts/{AccountId}/parties
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    This change updates the `TrustFrameworkCode` enum (used by
+    `VerifiedClaimVerification.TrustFramework` on both `GET /parties` and
+    `GET /accounts/{AccountId}/parties`).
+
+    In v2.1, `TrustFrameworkCode` declared a single value: `Undefined`.
+    That value could not be produced on the wire by any conforming
+    implementation. LFIs populate `trustFramework` via Ozone Connect's
+    `CbuaeVerifiedClaim.verification.trustFramework`, whose own schema
+    enum is `[FI]`; the Hub forwards the value to the TPP surface without
+    translation. Every real response reaching a TPP therefore carried
+    `FI` — a value the standards enum did not declare — while
+    `Undefined` (the only declared value) could not be emitted by any
+    conforming LFI.
+
+    v2.1-errata1 replaces `Undefined` with `FI`, bringing the standards
+    contract into line with what TPPs have always received. Formally
+    this is an enum-value removal; in practice no consumer could have
+    relied on `Undefined` because no conforming implementation could
+    have produced it. Ozone Connect itself needs no change — it already
+    carries `[FI]`.
+
+    Richer values (UAE Pass digital identity, Emirates ID physical
+    verification) are deferred to v3.0 — see
+    `supporting/future-updates/standards/v3.0/uae-account-information-openapi/`.
+
+    oasdiff classifies response enum-value removal as a warning rather
+    than an ERR (a server emitting fewer values narrows — not broadens —
+    the consumer contract). This entry is recorded for historical
+    traceability regardless of test-level enforcement.
+
 - rule: response-property-type-changed
   endpoints:
     - method: GET

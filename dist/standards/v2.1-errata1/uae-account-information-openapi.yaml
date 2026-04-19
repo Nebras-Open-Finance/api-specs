@@ -4567,10 +4567,22 @@ components:
     TrustFrameworkCode:
       type: string
       enum:
-        - Undefined
+        - FI
       description: >-
         Identifies the trust framework used for verification. This consists of a set of rules and standards and sets out
         requirements so that organisations know what ‘good’ identity verification looks like.
+
+
+        Permitted values:
+
+
+        * `FI` — the LFI (Financial Institution) has carried out verification of the customer details based on its own
+        processes adhering to UAE legislation for KYC and AML.
+
+
+        Mirrors `CbuaeVerifiedClaim.verification.trustFramework` in the Ozone Connect Bank Data Sharing API so that the
+        value emitted by an LFI can be passed through to the TPP-facing surface without translation.
+
 
         Trust Frameworks:
         [https://bitbucket.org/openid/ekyc-ida/wiki/identifiers](https://bitbucket.org/openid/ekyc-ida/wiki/identifiers)
