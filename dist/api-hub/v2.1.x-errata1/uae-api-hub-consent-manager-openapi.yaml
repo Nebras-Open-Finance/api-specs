@@ -38,6 +38,8 @@ info:
 
     * Removed the unused `AEBankServiceInitiationRichAuthorizationRequests.AERiskExternalAccountIdentificationCode` schema, which duplicated `AERiskExternalAccountIdentificationCode` and was never referenced.
 
+    * Added `SME` to `AEAccountTypeCode` and collapsed the duplicate `AEExternalAccountTypeCode` into it. The two schemas carried the same intent but different enums (`[Retail, Corporate]` vs `[Retail, SME, Corporate]`), causing the same `AccountType: SME` value to validate against the RAR `request` body but fail against the stored `consentBody` in the same payload. Also unblocks SME creditor classification on `AECreditorIndicators`.
+
     ### v2.1.6
 
     * Added revised PII properties compatible with version 2.1.
@@ -1807,8 +1809,9 @@ components:
       type: string
       enum:
         - Retail
+        - SME
         - Corporate
-      description: Specifies the type of account (Retail or Corporate).
+      description: Specifies the type of account (Retail, SME or Corporate).
     AEBaseConsentId:
       type: string
       minLength: 1
@@ -4374,7 +4377,7 @@ components:
         AccountType:
           type: array
           items:
-            $ref: '#/components/schemas/AEExternalAccountTypeCode'
+            $ref: '#/components/schemas/AEAccountTypeCode'
         AccountSubType:
           type: array
           items:
@@ -4382,13 +4385,6 @@ components:
         OnBehalfOf:
           $ref: '#/components/schemas/AEOnBehalfOf'
       additionalProperties: false
-    AEExternalAccountTypeCode:
-      description: Specifies the type of account (Retail, SME or Corporate).
-      type: string
-      enum:
-        - Retail
-        - SME
-        - Corporate
     OnBehalfOf:
       type: object
       description: On Behalf Of
