@@ -34,14 +34,8 @@ info:
 
     ### v2.1.3
 
-
-    * Fixed `pattern` regexes on the `AEActiveOrHistoricAmount`, `ControlSum`, and `Amount` schemas, which were over-escaped in YAML and failed to validate decimal monetary values.
-
-
-    * Collapsed the duplicate `OzoneConnectConsentEventActionAPIs.AEAddressItem` schema into `OzoneConnectConsentEventActionAPIs.AEAddress`. Both defined the same array-of-postal-address shape; `Debtor.PostalAddress` and `Creditor.PostalAddress` now reference the canonical name.
-
-
-    * Collapsed the duplicate `OzoneConnectConsentEventActionAPIs.Amount` schema into `OzoneConnectConsentEventActionAPIs.AEActiveOrHistoricAmount`. Both defined the same monetary-amount string pattern; the single ref in the consent event payload now points to the AE-prefixed canonical name.
+    * Changed `pattern` regexes on the `AEActiveOrHistoricAmount`, `ControlSum`, and `Amount` schemas, which were 
+      over-escaped in YAML and failed to validate decimal monetary values.
 
 
     ### v2.1.2
@@ -1502,6 +1496,79 @@ components:
           - AddressLine
           - Country
       minItems: 1
+    OzoneConnectConsentEventActionAPIs.AEAddressItem:
+      type: array
+      items:
+        type: object
+        properties:
+          AddressType:
+            type: string
+            enum:
+              - Billing
+              - Business
+              - Correspondence
+              - DeliveryTo
+              - MailTo
+              - POBox
+              - Postal
+              - Permanent
+              - Residential
+              - Statement
+              - Other
+          AddressLine:
+            type: array
+            items:
+              type: string
+            minItems: 1
+            maxItems: 7
+          BuildingNumber:
+            type: string
+            minLength: 1
+            maxLength: 16
+          BuildingName:
+            type: string
+            minLength: 1
+            maxLength: 140
+          Floor:
+            type: string
+            minLength: 1
+            maxLength: 70
+          StreetName:
+            type: string
+            minLength: 1
+            maxLength: 140
+          DistrictName:
+            type: string
+            minLength: 1
+            maxLength: 140
+          PostBox:
+            type: string
+            minLength: 1
+            maxLength: 16
+          TownName:
+            type: string
+            minLength: 1
+            maxLength: 140
+          CountrySubDivision:
+            anyOf:
+              - type: string
+                enum:
+                  - AbuDhabi
+                  - Ajman
+                  - Dubai
+                  - Fujairah
+                  - RasAlKhaimah
+                  - Sharjah
+                  - UmmAlQuwain
+              - type: string
+          Country:
+            type: string
+            pattern: ^[A-Z]{2}$
+        required:
+          - AddressType
+          - AddressLine
+          - Country
+      minItems: 1
     OzoneConnectConsentEventActionAPIs.AEAmountAndCurrency:
       type: object
       required:
@@ -1511,7 +1578,7 @@ components:
         Currency:
           $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.CurrencyCode'
         Amount:
-          $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AEActiveOrHistoricAmount'
+          $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.Amount'
       description: The Currency and Amount relating to the Payment
     OzoneConnectConsentEventActionAPIs.AEAuthorizationExpirationDateTime:
       type: string
@@ -1667,7 +1734,7 @@ components:
               minLength: 1
               maxLength: 140
             PostalAddress:
-              $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AEAddress'
+              $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AEAddressItem'
           required:
             - SchemeName
             - Identification
@@ -1680,7 +1747,7 @@ components:
               minLength: 1
               maxLength: 140
             PostalAddress:
-              $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AEAddress'
+              $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AEAddressItem'
           description: Party to which an amount of money is due.
         CreditorAccount:
           type: object
@@ -3208,6 +3275,12 @@ components:
     OzoneConnectConsentEventActionAPIs.ARConsentExpirationDateTime:
       type: string
       format: date-time
+    OzoneConnectConsentEventActionAPIs.Amount:
+      type: string
+      pattern: ^\d{1,16}\.\d{2}$
+      description: >-
+        A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
+        with ISO 4217.
     OzoneConnectConsentEventActionAPIs.AuthorizationDetails:
       oneOf:
         - $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.DataSharingAuthorizationDetails'
