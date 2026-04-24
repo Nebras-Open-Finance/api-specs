@@ -35,17 +35,13 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
-
     ### v2.1.2
 
+    * Changed the `HealthCheckCertResponse.clientCertificate.subject` description and example. The endpoint echoes 
+      the client certificate presented by the caller during the mTLS handshake; for Open Finance UAE callers the `OU` 
+      carries the caller's organisation ID from the Trust Framework directory, not a DNS name in the `CN`. Refreshed 
+      the `issuer` example to the Sandbox Trust Framework issuing CA for symmetry.
 
-    * Corrected the `HealthCheckCertResponse.clientCertificate.subject` description and example. The endpoint echoes the client certificate presented by the caller during the mTLS handshake; for Open Finance UAE callers the `OU` carries the caller's organisation ID from the Trust Framework directory, not a DNS name in the `CN`. Refreshed the `issuer` example to the Sandbox Trust Framework issuing CA for symmetry.
-
-
-    ### v2.1.1
-
-
-    * Added initial version for compatibility with v2.1-rc2 of standards.
   version: v2.1.2
 servers:
   - url: https://<your-ozone-connect-server>
@@ -189,7 +185,8 @@ components:
             issuer:
               description: The Distinguished Name of the issuing Certificate Authority.
               type: string
-              example: C=AE, O=Open Finance UAE, OU=Open Finance UAE Sandbox Trust Framework, CN=Open Finance UAE Sandbox Issuing CA - G1
+              example: C=AE, O=Open Finance UAE, OU=Open Finance UAE Sandbox Trust Framework, CN=Open Finance UAE 
+                Sandbox Issuing CA - G1
           required:
             - subject
             - issuer
