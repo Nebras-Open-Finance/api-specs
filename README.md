@@ -85,7 +85,12 @@ Specifications follow a `vMAJOR.MINOR` scheme. When you see `v2.1` in this repos
 - `dist/api-hub/v2.1.x/` and `dist/ozone-connect/v2.1.x/` hold the v2.1 line for the Hub-to-LFI and LFI-to-Hub interfaces.
 - `dist/standards/v2.1/` holds the v2.1 line for the TPP-facing interface.
 
-Errata releases (for example `dist/standards/v2.1-errata1/`) contain targeted corrections to a published version without incrementing the version number. **Where an errata folder exists, the files inside it supersede the corresponding base version.**
+### How changes are introduced
+
+The update mechanism differs between categories:
+
+- **`standards/`** — Targeted corrections to a published version land in an errata release (for example `dist/standards/v2.1-errata1/`) without incrementing the `vMAJOR.MINOR`. **Where an errata folder exists, the files inside it supersede the corresponding base version.**
+- **`api-hub/` and `ozone-connect/`** — Changes are made directly to the spec in the `vMAJOR.MINOR.x/` folder. Each change uplifts the file's `info.version` third segment (for example `v2.1.4` → `v2.1.5`) and adds a bullet to the changelog in `info.description` describing what changed. There are no separate errata folders for these categories.
 
 ## Governance folders
 

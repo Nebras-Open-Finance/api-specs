@@ -40,7 +40,12 @@ info:
     **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
     for deprecated properties.**
 
-    ### v2.1.2
+    ### v2.1.4
+
+    * Changed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal 
+      monetary values.
+
+    ### v2.1.3
 
     * Added revised PII properties compatible with version 2.1.
 
@@ -65,7 +70,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
     * Removed support for single future-dated payment consents that are warehoused at the LFI.
-  version: v2.1.3
+  version: v2.1.4
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -2153,7 +2158,7 @@ components:
         A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
         with ISO 4217.
       type: string
-      pattern: ^\\d{1,16}\\.\\d{2}$
+      pattern: ^\d{1,16}\.\d{2}$
     CurrencyCode:
       description: >-
         A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as
