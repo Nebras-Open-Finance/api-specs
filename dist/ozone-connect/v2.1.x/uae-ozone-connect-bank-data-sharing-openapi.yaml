@@ -61,6 +61,12 @@ info:
     **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
     for deprecated properties.**
 
+    ### v2.1.9
+
+
+    * Added `meta` property to `get /accounts/{accountId}/statements` operation.
+
+
     ### v2.1.8
 
 
@@ -97,7 +103,7 @@ info:
     * Changed `paymentModes` to optional.
 
 
-  version: v2.1.8
+  version: v2.1.9
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -759,6 +765,19 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/AEStatements'
+                  meta:
+                    allOf:
+                    - $ref: '#/components/schemas/Meta'
+                    - type: object
+                      properties:
+                        firstAvailableDateTime:
+                          description: The first date and time for which statement data is available for the account
+                          type: string
+                          format: date-time
+                        lastAvailableDateTime:
+                          description: The last date and time for which statement data is available for the account
+                          type: string
+                          format: date-time
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
