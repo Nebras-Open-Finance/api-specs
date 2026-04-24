@@ -842,7 +842,7 @@ components:
             The value matches the value of the request_uri returned by the post call to the PAR endpoint.
         rarType:
           type: string
-          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\\.[0-9]+$
+          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\.[0-9]+$
           description: |-
             The authorization detail type of the RAR request that resulted in this consent.
             This value matches the Type of the authorization_details element of the RAR request.
@@ -1637,7 +1637,7 @@ components:
           - Amount
     OzoneConnectConsentEventActionAPIs.AEConfirmationOfPayeeResponse:
       type: string
-      pattern: ^.+\\..+\\..+$
+      pattern: ^.+\..+\..+$
       description: >-
         The JSON Web Signature returned by the Payee Confirmation operation at the Confirmation of Payee API. The value
         must be the full JWS string, including the header and signature, without decoding to an object. If Confirmation
@@ -3433,7 +3433,7 @@ components:
       properties:
         type:
           type: string
-          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\\.[0-9]+$
+          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\.[0-9]+$
           description: The Rich Authorization Request (RAR) type
         consent:
           $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AuthorizationDetailsDataSharingConsent'
@@ -3461,7 +3461,7 @@ components:
       properties:
         type:
           type: string
-          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\\.[0-9]+$
+          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\.[0-9]+$
           description: The Rich Authorization Request (RAR) type
         consent:
           $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AuthorizationDetailsInsuranceConsent'
@@ -3495,7 +3495,7 @@ components:
       properties:
         type:
           type: string
-          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\\.[0-9]+$
+          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\.[0-9]+$
           description: The Rich Authorization Request (RAR) type
         consent:
           $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AEServiceInitiationAuthorizationDetailProperties'
@@ -3835,7 +3835,7 @@ components:
             The value matches the value of the request_uri returned by the post call to the PAR endpoint.
         rarType:
           type: string
-          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\\.[0-9]+$
+          pattern: ^urn:openfinanceuae:(?:account-access|insurance|service-initiation)-consent:v[0-9]+\.[0-9]+$
           description: |-
             The authorization detail type of the RAR request that resulted in this consent.
             This value matches the Type of the authorization_details element of the RAR request.
