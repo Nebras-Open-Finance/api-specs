@@ -154,8 +154,8 @@ components:
       in: header
       required: false
       description: |-
-        The time when the User last logged in with the TPP.
-        All dates in the HTTP headers are represented as RFC 7231 Full Dates. An example is below:
+        The time when the User last logged in with the TPP. 
+        All dates in the HTTP headers are represented as RFC 7231 Full Dates. An example is below: 
         Sun, 10 Sep 2017 19:43:31 UTC
       schema:
         type: string

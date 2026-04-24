@@ -30,6 +30,13 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.1.5
+
+
+    * Changed the `UAEAccountInformationAPI.AEActiveCurrencyAndAmount_SimpleType` `pattern` regex, which was 
+      over-escaped in YAML and failed to validate decimal monetary values.
+
+
     ### v2.1.4
 
 
@@ -63,7 +70,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.1.4
+  version: v2.1.5
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -3528,7 +3535,7 @@ components:
         systems in UAE.
     UAEAccountInformationAPI.AEActiveCurrencyAndAmount_SimpleType:
       type: string
-      pattern: ^\\d{1,13}$|^\\d{1,13}\\.\\d{1,5}$
+      pattern: ^\d{1,13}$|^\d{1,13}\.\d{1,5}$
       description: >-
         A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
         with ISO 4217.
