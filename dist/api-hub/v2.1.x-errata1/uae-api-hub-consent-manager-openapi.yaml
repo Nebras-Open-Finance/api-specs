@@ -34,17 +34,16 @@ info:
 
     ### v2.1.7
 
-    * Fixed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal monetary values.
+    * Added `SME` to `AEExternalAccountTypeCode`.
 
-    * Removed the unused `AEBankServiceInitiationRichAuthorizationRequests.AERiskExternalAccountIdentificationCode` schema, which duplicated `AERiskExternalAccountIdentificationCode` and was never referenced.
 
-    * Added `SME` to `AEAccountTypeCode` and collapsed the duplicate `AEExternalAccountTypeCode` into it. The two schemas carried the same intent but different enums (`[Retail, Corporate]` vs `[Retail, SME, Corporate]`), causing the same `AccountType: SME` value to validate against the RAR `request` body but fail against the stored `consentBody` in the same payload. Also unblocks SME creditor classification on `AECreditorIndicators`.
+    * Changed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal 
+      monetary values.
 
-    * Collapsed the duplicate `OnBehalfOf` schema into `AEOnBehalfOf`. The Insurance RAR now references the same `OnBehalfOf` schema as Bank Data Sharing and the consent body paths, eliminating drift risk between two structurally equivalent definitions.
 
-    * Collapsed the duplicate `EventNotification` schema into `AEEventNotification`. Both defined the same Webhook subscription shape; refs in the consent-events paths now point to the AE-prefixed canonical name, removing drift risk.
+    * Removed the unused `AEBankServiceInitiationRichAuthorizationRequests.AERiskExternalAccountIdentificationCode` 
+      schema, which duplicated `AERiskExternalAccountIdentificationCode` and was never referenced.
 
-    * Collapsed the duplicate `Amount` schema into `AEActiveOrHistoricAmount`. Both defined the same monetary-amount string pattern; the single ref in the Service Initiation `RemittanceAmount` path now points to the AE-prefixed canonical name.
 
     ### v2.1.6
 
@@ -2743,7 +2742,7 @@ components:
         consent:
           $ref: '#/components/schemas/AuthorizationDetailsDataSharingConsent'
         subscription:
-          $ref: '#/components/schemas/AEEventNotification'
+          $ref: '#/components/schemas/EventNotification'
     InsuranceAuthorizationDetails:
       type: object
       properties:
@@ -2755,7 +2754,7 @@ components:
         consent:
           $ref: '#/components/schemas/AuthorizationDetailsInsuranceConsent'
         subscription:
-          $ref: '#/components/schemas/AEEventNotification'
+          $ref: '#/components/schemas/EventNotification'
     ServiceInitiationAuthorizationDetails:
       type: object
       properties:
@@ -2767,7 +2766,7 @@ components:
         consent:
           $ref: '#/components/schemas/AEServiceInitiationAuthorizationDetailProperties'
         subscription:
-          $ref: '#/components/schemas/AEEventNotification'
+          $ref: '#/components/schemas/EventNotification'
     AEServiceInitiationAuthorizationDetailProperties:
       type: object
       required:
@@ -3283,9 +3282,15 @@ components:
         Currency:
           $ref: '#/components/schemas/CurrencyCode'
         Amount:
-          $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          $ref: '#/components/schemas/Amount'
       description: The Currency and Amount relating to the Payment
       additionalProperties: false
+    Amount:
+      description: >-
+        A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
+        with ISO 4217.
+      type: string
+      pattern: ^\d{1,16}\.\d{2}$
     CurrencyCode:
       description: >-
         A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as
@@ -4316,7 +4321,7 @@ components:
             Specified date and time the permissions will expire. All date-time fields in responses must include the
             timezone. An example is below: 2017-04-05T10:43:07+00:00
         OnBehalfOf:
-          $ref: '#/components/schemas/AEOnBehalfOf'
+          $ref: '#/components/schemas/OnBehalfOf'
         ConsentId:
           $ref: '#/components/schemas/AEConsentId'
         Permissions:
@@ -4377,13 +4382,70 @@ components:
         AccountType:
           type: array
           items:
-            $ref: '#/components/schemas/AEAccountTypeCode'
+            $ref: '#/components/schemas/AEExternalAccountTypeCode'
         AccountSubType:
           type: array
           items:
             $ref: '#/components/schemas/AEAccountSubTypeCode'
         OnBehalfOf:
           $ref: '#/components/schemas/AEOnBehalfOf'
+      additionalProperties: false
+    AEExternalAccountTypeCode:
+      description: Specifies the type of account (Retail, SME or Corporate).
+      type: string
+      enum:
+        - Retail
+        - SME
+        - Corporate
+    OnBehalfOf:
+      type: object
+      description: On Behalf Of
+      properties:
+        TradingName:
+          type: string
+          description: Trading Name
+          example: Acme Accounting Trading Name
+        LegalName:
+          type: string
+          description: Legal Name
+          example: Acme Accounting Legal Name
+        IdentifierType:
+          type: string
+          description: Identifier Type
+          enum:
+            - Other
+        Identifier:
+          type: string
+          description: Identifier
+          example: abcd1234
+      additionalProperties: false
+    EventNotification:
+      type: object
+      description: |
+        A Webhook Subscription Schema
+      required:
+        - Webhook
+      properties:
+        Webhook:
+          description: |
+            A Webhook Schema
+          type: object
+          required:
+            - Url
+            - IsActive
+          properties:
+            Url:
+              description: |
+                The TPP Callback URL being registered with the LFI
+              type: string
+              example: https://api.tpp.com/webhook/callbackUrl
+            IsActive:
+              description: >
+                The TPP specifying whether the LFI should send (IsActive true) or not send (IsActive false) Webhook
+                Notifications to the TPP's Webhook URL
+              type: boolean
+              example: false
+          additionalProperties: false
       additionalProperties: false
     HealthCheckCertResponse:
       type: object
