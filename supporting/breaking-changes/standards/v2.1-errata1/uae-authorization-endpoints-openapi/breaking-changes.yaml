@@ -1,0 +1,54 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rules:
+    - response-body-one-of-added
+    - response-body-type-changed
+    - response-required-property-removed
+  endpoints:
+    - method: POST
+      path: /token
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    This change aligns the specification with the actual behaviour of the
+    API Hub implementation. No functional change is being made to the API.
+
+    In v2.1, POST /token defined a single flat response body as type: object
+    with required properties access_token, authorization_details, expires_in,
+    and token_type. However, the live API Hub returns different response
+    shapes depending on which OAuth 2.0 grant type was used: the
+    authorization_code, refresh_token, and client_credentials grants each
+    carry slightly different semantics and payload contents, and the flat
+    object modelled in v2.1 did not capture this.
+
+    This discrepancy between the spec and the production implementation has
+    caused confusion for consumers integrating against v2.1 literally, since
+    the actual response shape does not match the documented contract.
+
+    In v2.1-errata1, this is corrected by modelling the response as a oneOf
+    across three grant-type-specific schemas:
+    AEAuthorizationCodeGrantTokenResponseProperties,
+    AERefreshTokenGrantTokenResponseProperties, and
+    AEClientCredentialsGrantTokenResponseProperties. The previously required
+    top-level properties are now owned by the relevant grant-specific
+    subschemas rather than the outer response body.
+
+    This is a documentation-level change only. No behavioural change is
+    being introduced; consumers that have integrated against the actual API
+    Hub behaviour remain unaffected. The errata simply brings the
+    specification into line with the response shapes that consumers
+    already observe in production.

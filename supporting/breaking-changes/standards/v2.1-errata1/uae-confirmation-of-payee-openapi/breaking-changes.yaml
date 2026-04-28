@@ -1,0 +1,64 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rule: response-property-type-changed
+  endpoints:
+    - method: POST
+      path: /confirmation
+    - method: POST
+      path: /discovery
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    This change aligns the specification with the actual behaviour of the
+    signed-message payloads exchanged on this API. No functional change is
+    being made to the API.
+
+    In v2.1, every `*BodySigned` schema (the signed JWT wrappers for
+    request and response bodies on /confirmation and /discovery) declared
+    the `aud` claim as `type: array, items: type: string`. In practice,
+    every JWT observed on this API — TPP-originated requests produced by
+    the O3 message-signature utility, and Hub/LFI-originated responses for
+    both success (200) and error (400/403/500) statuses — emits `aud` as a
+    single URI string, not an array.
+
+    This matches the architecture of the API: every signed message has
+    exactly one recipient. Requests are addressed to a specific
+    authorisation server (e.g. the Hub auth server, or a discovered LFI
+    auth server); responses are addressed to a specific TPP client
+    identifier. There is no use case for multi-audience JWTs in this
+    surface area.
+
+    It also matches RFC 7519 §4.1.3, which explicitly permits the `aud`
+    claim to be a single case-sensitive string containing a StringOrURI
+    value when the JWT has a single audience. The previous array-only
+    modelling was too strict and did not reflect the single-audience
+    messaging pattern that the API actually uses.
+
+    In v2.1-errata1, `aud` is redefined as `type: string` across all seven
+    `*BodySigned` schemas in uae-confirmation-of-payee-openapi:
+    AEError400ResponseBodySigned, AEError403ResponseBodySigned,
+    AEError500ResponseBodySigned, DiscoverConfirmationSourceRequestBodySigned,
+    DiscoverConfirmationSourceResponseBodySigned,
+    NameConfirmationRequestBodySigned, and NameConfirmationResponseBodySigned.
+
+    This is a documentation-level change only. Consumers that have
+    integrated against the actual wire format remain unaffected — the
+    errata brings the specification into line with what they already
+    observe. Any consumer that had strict-validated against the previous
+    array-only contract would have been unable to decode real traffic from
+    the Model Bank, and so no such consumer can exist in working form
+    today.

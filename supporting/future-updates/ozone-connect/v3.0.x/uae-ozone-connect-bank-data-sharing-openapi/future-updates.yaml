@@ -1,0 +1,94 @@
+# Recommended changes to defer to the next major version of this spec.
+#
+# Entries here are non-urgent design improvements that would be breaking in a
+# pre-v3.0.x errata context but are sensible to apply when the v3.0.x line is
+# cut. Each entry describes the proposed change, why it is being deferred, and
+# the migration impact on implementers.
+
+- change: Enrich `trustFramework` enum, rename `FI` to `cbuae_kyc`, align CoP enum
+  schemas:
+    - CbuaeVerifiedClaim.verification.trustFramework
+    - CbuaeVerifiedCopClaim.verification.trustFramework
+  endpoints:
+    - method: GET
+      path: /customer
+    - method: GET
+      path: /accounts/{accountId}/customer
+    - method: GET
+      path: /customers/action/cop-query
+  proposedBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    In v2.1.x, `CbuaeVerifiedClaim.verification.trustFramework` carries
+    `[FI]` and `CbuaeVerifiedCopClaim.verification.trustFramework`
+    carries `[UAE.FI]`. Both mean the same thing — "the LFI performed
+    KYC/AML under UAE law using its own processes" — but the inconsistent
+    vocabulary across the two schemas is a modelling artefact.
+
+    Three changes are proposed for v3.0.x:
+
+    1. **Add `uae_pass` and `emirates_id` to both enums.** UAE Pass (the
+       national digital identity service) and Emirates ID (physical card
+       / chip reading) are distinct verification paths and should be
+       individually reportable instead of collapsed into a single
+       catch-all. Additive and non-breaking on its own, but bundled into
+       the major-version transition alongside the rename below.
+
+    2. **Rename `FI` to `cbuae_kyc`.** Aligns the generic catch-all with
+       the OIDC for Identity Assurance trust framework registry naming
+       convention (snake_case, regulator-prefixed identifiers like
+       `de_aml`, `uk_tfida`, `nist_800_63A`). Same semantics, better
+       interoperability.
+
+    3. **Align `CbuaeVerifiedCopClaim.verification.trustFramework` with
+       `CbuaeVerifiedClaim.verification.trustFramework`.** Remove the
+       CoP-specific `UAE.FI` value so both schemas share a single enum.
+       LFIs emitting `UAE.FI` today would switch to `cbuae_kyc`.
+
+    Resulting v3.0.x enum on both schemas:
+    `[cbuae_kyc, uae_pass, emirates_id]`.
+
+    Migration impact: LFIs emitting `FI` on the regular customer flow or
+    `UAE.FI` on CoP would both switch to `cbuae_kyc`. New values are
+    opt-in. Formal enum-value removal is acceptable at a major version
+    boundary.
+
+    This change should be kept in lockstep with the corresponding entry
+    in `supporting/future-updates/standards/v3.0/uae-account-information-openapi/`
+    so the Hub can continue passing Ozone Connect values through to the
+    TPP-facing surface without translation.
+
+- change: Drop deprecated `OTHER` branch from `AEExternalFinancialInstitutionIdentificationCode`
+  schemas:
+    - AEExternalFinancialInstitutionIdentificationCode
+  endpoints:
+    - method: GET
+      path: /accounts/{accountId}/beneficiaries
+    - method: GET
+      path: /accounts/{accountId}/scheduled-payments
+    - method: GET
+      path: /accounts/{accountId}/standing-orders
+    - method: GET
+      path: /accounts/{accountId}/transactions
+  proposedBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `AEExternalFinancialInstitutionIdentificationCode` is currently an
+    `anyOf` with a non-deprecated branch allowing `[BICFI, Other]` and a
+    deprecated branch allowing `[BICFI, OTHER]` (uppercase). The
+    uppercase variant predates the case-normalised vocabulary and is
+    retained only so older LFI implementations remain valid.
+
+    The Standards-side counterpart (`AEExternalFinancialInstitutionIdentificationCode`
+    in `uae-account-information-openapi`) only accepts `[BICFI, Other]`.
+    Because the Hub forwards LFI responses without translation, an LFI
+    still emitting `OTHER` produces a payload that fails Standards
+    schema validation at the TPP. Same failure shape as the
+    pre-errata1 `TrustFrameworkCode` mismatch.
+
+    Proposed for v3.0.x:
+
+    1. **Remove the deprecated branch.** Collapse the `anyOf` to a
+       single `enum: [BICFI, Other]` matching the Standards spec exactly.
+
+    Migration impact: any LFI still emitting the uppercase `OTHER` must
+    switch to `Other` before adopting v3.0.x. Formal removal of a
+    deprecated enum value is acceptable at a major version boundary.

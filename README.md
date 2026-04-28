@@ -2,7 +2,7 @@
 
 This repository contains the official API specifications used by Third Party Providers (TPPs) and Licensed Financial Institutions (LFIs) participating in the UAE Open Finance ecosystem.
 
-The OpenAPI YAML files in this repository are the **source of truth**. Excel workbooks are provided alongside them as a convenience for analysis and data-mapping exercises.
+The OpenAPI YAML files in this repository are the **source of truth**.
 
 ## Branches
 
@@ -15,8 +15,6 @@ New implementers should work from the latest version on `main`.
 
 We recommend [Redocly](https://redocly.github.io/redoc/) for a clean, navigable rendering of any spec file. Paste the raw GitHub URL of a YAML file directly into the Redocly viewer.
 
-Excel workbooks can be opened directly in Excel, Numbers, or any compatible spreadsheet tool.
-
 ## Repository Structure
 
 
@@ -28,15 +26,14 @@ dist/
 ```
 
 
-Each category contains one folder per version. Inside every version folder you will find two sibling folders:
+Each category contains one folder per version, and each version folder contains the OpenAPI 3.x YAML files directly:
 
 ```
 dist/standards/vX.Y/
-├── openapi/   # OpenAPI 3.x YAML — the source of truth
-└── excel/     # The same API surface (endpoints, fields, descriptions) in spreadsheet form
+├── uae-account-information-openapi.yaml
+├── uae-atm-openapi.yaml
+└── ...
 ```
-
-The `excel/` folder is generated from, and kept consistent with, the OpenAPI YAML. If the two ever disagree, **the YAML is correct**.
 
 ### API Hub (`dist/api-hub/`)
 
@@ -88,7 +85,48 @@ Specifications follow a `vMAJOR.MINOR` scheme. When you see `v2.1` in this repos
 - `dist/api-hub/v2.1.x/` and `dist/ozone-connect/v2.1.x/` hold the v2.1 line for the Hub-to-LFI and LFI-to-Hub interfaces.
 - `dist/standards/v2.1/` holds the v2.1 line for the TPP-facing interface.
 
-Errata releases (for example `dist/standards/v2.1-errata1/`) contain targeted corrections to a published version without incrementing the version number. **Where an errata folder exists, the files inside it supersede the corresponding base version.**
+### How changes are introduced
+
+The update mechanism differs between categories:
+
+- **`standards/`** — Targeted corrections to a published version land in an errata release (for example `dist/standards/v2.1-errata1/`) without incrementing the `vMAJOR.MINOR`. **Where an errata folder exists, the files inside it supersede the corresponding base version.**
+- **`api-hub/` and `ozone-connect/`** — Changes are made directly to the spec in the `vMAJOR.MINOR.x/` folder. Each change uplifts the file's `info.version` third segment (for example `v2.1.4` → `v2.1.5`) and adds a bullet to the changelog in `info.description` describing what changed. There are no separate errata folders for these categories.
+
+## Governance folders
+
+`supporting/` holds everything that sits alongside the specs without being part of the published surface — tests, accepted breaking changes, and a forward-looking design backlog.
+
+### `supporting/breaking-changes/`
+
+Records breaking changes that have been **knowingly accepted** within an errata release. Each entry names the oasdiff rule, the affected endpoints, a sign-off, and a rationale. Enforced by [supporting/tests/standards/no-breaking-changes.test.js](supporting/tests/standards/no-breaking-changes.test.js): any breaking change flagged by oasdiff must have a matching entry here, or the test fails. This keeps the bar high without blocking corrections when the team genuinely decides a change is worth making.
+
+Structure mirrors `dist/`:
+
+```text
+supporting/breaking-changes/
+└── standards/
+    └── vX.Y-errataN/
+        └── <spec-basename>/
+            └── breaking-changes.yaml
+```
+
+### `supporting/future-updates/`
+
+Records **recommended changes to defer to the next major version**. Entries are non-urgent design improvements that would be breaking inside a pre-vN.0 errata context but are sensible to apply when the major is cut. Each entry describes the proposed change, affected schemas/endpoints, a proposer, and a rationale. Not enforced by tests — purely a forward-looking design backlog.
+
+Structure mirrors `supporting/breaking-changes/`, scoped to the target major version:
+
+```text
+supporting/future-updates/
+├── standards/
+│   └── v3.0/
+│       └── <spec-basename>/
+│           └── future-updates.yaml
+└── ozone-connect/
+    └── v3.0.x/
+        └── <spec-basename>/
+            └── future-updates.yaml
+```
 
 ## License
 
