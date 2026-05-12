@@ -30,10 +30,16 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.1.6
+
+
+    * Aligned the `Risk` object with Standards: tightened `AERisk` and its descendants with `additionalProperties: false` throughout, matching the strictness on the Standards PAR side. `SupplementaryData` blocks remain open extension points (`properties: {}`) and `AEAccountTypeCode` already carried `Retail / SME / Corporate`.
+
+
     ### v2.1.5
 
 
-    * Changed the `UAEAccountInformationAPI.AEActiveCurrencyAndAmount_SimpleType` `pattern` regex, which was 
+    * Changed the `UAEAccountInformationAPI.AEActiveCurrencyAndAmount_SimpleType` `pattern` regex, which was
       over-escaped in YAML and failed to validate decimal monetary values.
 
 
@@ -70,7 +76,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.1.5
+  version: v2.1.6
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -1046,6 +1052,7 @@ components:
                     - HardwareOTPKey
                     - TrustedDevice
                     - Other
+              additionalProperties: false
             KnowledgeFactor:
               type: object
               description: The User's knowledge, that only the User knows
@@ -1062,6 +1069,7 @@ components:
                     - EmailOTP
                     - OTPPush
                     - Other
+              additionalProperties: false
             InherenceFactor:
               type: object
               description: The User's inherance, that is unique to the User's physical characteristics
@@ -1079,6 +1087,7 @@ components:
                     - FIDOBiometric
                     - DeviceBiometrics
                     - Other
+              additionalProperties: false
             ChallengeOutcome:
               type: string
               description: >-
@@ -1099,6 +1108,7 @@ components:
             ChallengeDateTime:
               type: string
               format: date-time
+          additionalProperties: false
         UserName:
           type: object
           description: The Name of the User initiating the Payment
@@ -1109,6 +1119,7 @@ components:
             ar:
               type: string
               description: Arabic value of the string
+          additionalProperties: false
         GeoLocation:
           type: object
           description: GPS to identify and track the whereabouts of the connected electronic device.
@@ -1122,6 +1133,7 @@ components:
             Longitude:
               type: string
               description: longitude
+          additionalProperties: false
         DeviceInformation:
           type: object
           description: Detailed device information
@@ -1177,6 +1189,7 @@ components:
                   type: string
                   description: Device manufacturer
                   maxLength: 50
+              additionalProperties: false
             DeviceLanguage:
               type: string
               description: Device language
@@ -1201,6 +1214,7 @@ components:
                   enum:
                     - Portrait
                     - Landscape
+              additionalProperties: false
             BatteryStatus:
               type: object
               properties:
@@ -1210,6 +1224,7 @@ components:
                   maximum: 100
                 IsCharging:
                   type: boolean
+              additionalProperties: false
             TouchSupport:
               type: object
               properties:
@@ -1218,6 +1233,7 @@ components:
                 MaxTouchPoints:
                   type: integer
                   minimum: 0
+              additionalProperties: false
             MotionSensors:
               type: object
               properties:
@@ -1230,6 +1246,7 @@ components:
                   type: boolean
                 Gyroscope:
                   type: boolean
+              additionalProperties: false
             DeviceEnvironmentContext:
               type: array
               description: List of device environment context
@@ -1238,6 +1255,7 @@ components:
                 enum:
                   - VPNDetected
                   - EmulatorDetected
+          additionalProperties: false
         BiometricCapabilities:
           type: object
           description: Device biometric capabilities
@@ -1256,6 +1274,7 @@ components:
                   - Iris
                   - VoicePrint
                   - Other
+          additionalProperties: false
         AppInformation:
           type: object
           description: Mobile application specific information
@@ -1269,6 +1288,7 @@ components:
             BuildNumber:
               type: string
               description: Application build number
+          additionalProperties: false
         BrowserInformation:
           type: object
           description: Browser-specific information
@@ -1292,6 +1312,7 @@ components:
             PixelRatio:
               type: number
               description: Device pixel ratio for scaling
+          additionalProperties: false
         UserBehavior:
           type: object
           description: User behavior indicators
@@ -1311,6 +1332,8 @@ components:
                 Frequency:
                   type: number
                   description: Number of scroll events per minute
+              additionalProperties: false
+          additionalProperties: false
         AccountRiskIndicators:
           type: object
           description: Risk indicators related to the account
@@ -1344,6 +1367,8 @@ components:
                   type: integer
                   description: Total transactions made by the account in the past year
                   minimum: 0
+              additionalProperties: false
+          additionalProperties: false
         SupplementaryData:
           type: object
           description: >
@@ -1354,6 +1379,7 @@ components:
 
             like their typing speed and typing patterns.
           properties: {}
+      additionalProperties: false
     AETransactionIndicators:
       type: object
       description: |
@@ -1418,6 +1444,7 @@ components:
               type: integer
               description: Number of failed payment attempts in the last 24 hours
               minimum: 0
+          additionalProperties: false
         MerchantRisk:
           type: object
           description: Risk indicator details provided by the merchant
@@ -1456,11 +1483,13 @@ components:
                 - PartialMatch
                 - NoMatch
                 - NotApplicable
+          additionalProperties: false
         SupplementaryData:
           type: object
           description: |
             Additional information that cannot be captured in the structured fields and/or any other specific block
           properties: {}
+      additionalProperties: false
     AECreditorIndicators:
       type: object
       description: |
@@ -1524,6 +1553,7 @@ components:
           description: |
             Additional information that cannot be captured in the structured fields and/or any other specific block
           properties: {}
+      additionalProperties: false
     AEAccountTypeCode:
       type: string
       enum:
@@ -1618,8 +1648,10 @@ components:
                 ar:
                   type: string
                   description: Arabic value of the string
+              additionalProperties: false
             NationalAddress:
               $ref: '#/components/schemas/AEAddress'
+          additionalProperties: false
         TransactionIndicators:
           $ref: '#/components/schemas/AETransactionIndicators'
         CreditorIndicators:

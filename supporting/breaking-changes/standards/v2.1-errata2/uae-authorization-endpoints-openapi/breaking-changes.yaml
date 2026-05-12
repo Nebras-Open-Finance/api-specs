@@ -52,3 +52,34 @@
     Hub behaviour remain unaffected. The errata simply brings the
     specification into line with the response shapes that consumers
     already observe in production.
+
+- rule: request-property-enum-value-removed
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    This change aligns the `CreditorIndicators.AccountType` enum inside the
+    Bank Service Initiation Rich Authorization Request (RAR) Risk object
+    with the equivalent field in the Payments spec and with the api-hub's
+    `AEAccountTypeCode` schema, all of which describe the same logical
+    attribute.
+
+    In v2.1, `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType`
+    declared `[CurrentAccount, Savings, CreditCard, Mortgage, Finance]`
+    inline — a product/account-category enum. The equivalent field in
+    `uae-bank-initiation-openapi.yaml` (where the TPP sends the same
+    Risk object in POST /payments) referenced `AEAccountTypeCode`, which
+    declared `[Retail, Corporate]` — a customer-segment enum. A TPP
+    therefore could not send the same `Risk.CreditorIndicators.AccountType`
+    value in PAR and in POST /payments and stay schema-valid in both.
+
+    In v2.1-errata2, both sides converge on `[Retail, SME, Corporate]`,
+    matching the api-hub `AEAccountTypeCode` which already carried that
+    value set (with `SME` added in api-hub v2.1.7). The old product-category
+    values are removed; consumers should use the customer-segment values
+    going forward.
+
+    A parity test under `supporting/tests/standards/` now enforces that
+    every field of the Risk object is schema-equivalent between the PAR
+    and Payments specs, so this class of divergence cannot recur silently.

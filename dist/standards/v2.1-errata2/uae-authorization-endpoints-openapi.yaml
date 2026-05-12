@@ -169,6 +169,8 @@ components:
             type: array
             items:
               type: string
+              minLength: 1
+              maxLength: 70
             minItems: 1
             maxItems: 7
           BuildingNumber:
@@ -1217,11 +1219,10 @@ components:
         AccountType:
           type: string
           enum:
-            - CurrentAccount
-            - Savings
-            - CreditCard
-            - Mortgage
-            - Finance
+            - Retail
+            - SME
+            - Corporate
+          description: Specifies the type of account (Retail, SME or Corporate).
         IsCreditorPrePopulated:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEIsCreditorPrePopulated'
         TradingName:
@@ -1261,7 +1262,7 @@ components:
         SupplementaryData:
           type: object
           description: Additional information that cannot be captured in the structured fields and/or any other specific block
-          additionalProperties: false
+          properties: {}
       description: Creditor Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorProperties:
@@ -1589,7 +1590,7 @@ components:
             data
 
             like their typing speed and typing patterns.
-          additionalProperties: false
+          properties: {}
       description: Debtor (User) Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEDomesticCreditor:
@@ -1970,7 +1971,7 @@ components:
         SupplementaryData:
           type: object
           description: Additional information that cannot be captured in the structured fields and/or any other specific block
-          additionalProperties: false
+          properties: {}
       description: Transaction Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AuthorizationExpirationDateTime:
