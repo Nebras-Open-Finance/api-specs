@@ -169,6 +169,8 @@ components:
             type: array
             items:
               type: string
+              minLength: 1
+              maxLength: 70
             minItems: 1
             maxItems: 7
           BuildingNumber:
@@ -1217,11 +1219,10 @@ components:
         AccountType:
           type: string
           enum:
-            - CurrentAccount
-            - Savings
-            - CreditCard
-            - Mortgage
-            - Finance
+            - Retail
+            - SME
+            - Corporate
+          description: Specifies the type of account (Retail, SME or Corporate).
         IsCreditorPrePopulated:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEIsCreditorPrePopulated'
         TradingName:
@@ -1258,10 +1259,6 @@ components:
         IsCreditorConfirmed:
           type: boolean
           description: Creditor account details have been confirmed successfully using Confirmation of Payee
-        SupplementaryData:
-          type: object
-          description: Additional information that cannot be captured in the structured fields and/or any other specific block
-          additionalProperties: false
       description: Creditor Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorProperties:
@@ -1579,16 +1576,6 @@ components:
                   minimum: 0
               additionalProperties: false
           description: Risk indicators related to the account
-          additionalProperties: false
-        SupplementaryData:
-          type: object
-          description: >-
-            Additional information that cannot be captured in the structured fields and/or any other specific block
-
-            This may include information that is not available in the structured fields, such as a user's behavioural
-            data
-
-            like their typing speed and typing patterns.
           additionalProperties: false
       description: Debtor (User) Indicators
       additionalProperties: false
@@ -1966,10 +1953,6 @@ components:
                 - NoMatch
                 - NotApplicable
           description: Risk indicator details provided by the merchant
-          additionalProperties: false
-        SupplementaryData:
-          type: object
-          description: Additional information that cannot be captured in the structured fields and/or any other specific block
           additionalProperties: false
       description: Transaction Indicators
       additionalProperties: false

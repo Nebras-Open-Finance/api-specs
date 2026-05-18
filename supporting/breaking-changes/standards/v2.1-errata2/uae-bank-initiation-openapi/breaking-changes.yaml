@@ -1,0 +1,139 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rules:
+    - request-body-additional-properties-removed
+    - request-property-additional-properties-removed
+  endpoints:
+    - method: POST
+      path: /payment-consents
+    - method: POST
+      path: /payments
+    - method: POST
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    This change tightens the `Risk` object's nested object schemas by
+    adding `additionalProperties: false` throughout the Risk tree on the
+    Payments side, mirroring the strictness already present on the PAR
+    side (`uae-authorization-endpoints-openapi.yaml`).
+
+    In v2.1, the Payments `AERisk` schema and its descendants
+    (`AEDebtorIndicators`, `AETransactionIndicators`, `AECreditorIndicators`,
+    and the inline `DestinationDeliveryAddress`) were silently permissive:
+    unknown properties sent by a TPP were accepted without complaint. The
+    PAR-side equivalent (`AEBankServiceInitiationRichAuthorizationRequests.AERisk`)
+    has always rejected unknown properties via `additionalProperties: false`.
+
+    A TPP therefore could not send the same Risk object to PAR and to
+    POST /payments with confidence — fields the Hub accepted at /payments
+    would be rejected at /par. This was a fraud-relevant divergence
+    (Risk is the input to risk/fraud scoring) that the new
+    Risk-parity test under `supporting/tests/standards/` now enforces.
+
+    The previously-present `SupplementaryData` objects under
+    `DebtorIndicators`, `TransactionIndicators`, and `CreditorIndicators`
+    are removed entirely in this same revision (see the
+    `request-property-removed` entry below) — the Risk tree is now
+    fully closed end-to-end with no extension point on either the PAR
+    or Payments side.
+
+    Impact: TPPs that have been sending extra, undeclared properties in
+    Risk to POST /payments, POST /file-payments, or POST /payment-consents
+    will receive validation errors in v2.1-errata2. The remedy is to
+    remove the extra properties.
+
+- rule: request-property-enum-value-removed
+  endpoints:
+    - method: POST
+      path: /payment-consents
+    - method: POST
+      path: /payments
+    - method: POST
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `AEAccountTypeCode` (used by `Risk.CreditorIndicators.AccountType`)
+    previously declared `[Retail, Corporate]`. In v2.1-errata2 it is
+    aligned with the api-hub's `AEAccountTypeCode` and the Standards PAR
+    surface to `[Retail, SME, Corporate]`. This is technically an enum
+    expansion (additive on the value set), but is recorded here for
+    traceability of the cross-spec alignment work — see the matching
+    entry under `uae-authorization-endpoints-openapi/` and the rationale
+    there for the full context.
+
+- rules:
+    - request-property-min-length-set
+    - request-property-max-length-set
+  endpoints:
+    - method: POST
+      path: /payment-consents
+    - method: POST
+      path: /payments
+    - method: POST
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `Risk.DestinationDeliveryAddress.NationalAddress.AddressLine.items`
+    on the PAR side now carries `minLength: 1` / `maxLength: 70`,
+    matching the constraints already present on the Payments side. This
+    entry covers the converse direction for completeness — Payments has
+    long enforced these bounds, but the parity test surfaced them as a
+    divergence with PAR and the cross-spec convergence is being recorded
+    here.
+
+- rule: request-property-removed
+  endpoints:
+    - method: POST
+      path: /payment-consents
+    - method: POST
+      path: /payments
+    - method: POST
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `SupplementaryData` property has been removed from every
+    `*Indicators` schema inside the Payments-side Risk object —
+    `AERisk.DebtorIndicators`, `AERisk.TransactionIndicators`, and
+    `AECreditorIndicators`.
+
+    In v2.1, each of these schemas carried a `SupplementaryData` object
+    intended as a free-form extension point. In practice it was never
+    used as a structured slot for additional Risk signals: it conflicted
+    with the new strict `additionalProperties: false` posture being
+    introduced everywhere else in the Risk tree (see the first entry
+    in this file), and the matching PAR-side Risk schemas
+    (`AEBankServiceInitiationRichAuthorizationRequests.*Indicators.SupplementaryData`)
+    carried the same redundant extension point.
+
+    Removing `SupplementaryData` everywhere in the Risk tree leaves
+    Risk fully closed end-to-end: a TPP cannot send undeclared content
+    inside the Risk object via PAR, Payments, or the Ozone Connect
+    forwarding surfaces. This is enforced by the parity test under
+    `supporting/tests/latest/`, which compares every Risk surface
+    field-for-field; the removal applies symmetrically on all surfaces
+    so parity is preserved. The matching entry under
+    `uae-authorization-endpoints-openapi/` covers the PAR side.
+
+    Impact: TPPs that have been populating
+    `Risk.{Debtor,Transaction,Creditor}Indicators.SupplementaryData`
+    inside POST /payments, POST /file-payments, or POST /payment-consents
+    will receive validation errors in v2.1-errata2. The property carried
+    no defined semantics and no LFI was contractually required to act on
+    it, so removal is not expected to impact functional behaviour; any
+    custom risk signalling that relied on it must now be expressed
+    through the structured Risk fields.

@@ -1,0 +1,122 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rules:
+    - response-body-one-of-added
+    - response-body-type-changed
+    - response-required-property-removed
+  endpoints:
+    - method: POST
+      path: /token
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    This change aligns the specification with the actual behaviour of the
+    API Hub implementation. No functional change is being made to the API.
+
+    In v2.1, POST /token defined a single flat response body as type: object
+    with required properties access_token, authorization_details, expires_in,
+    and token_type. However, the live API Hub returns different response
+    shapes depending on which OAuth 2.0 grant type was used: the
+    authorization_code, refresh_token, and client_credentials grants each
+    carry slightly different semantics and payload contents, and the flat
+    object modelled in v2.1 did not capture this.
+
+    This discrepancy between the spec and the production implementation has
+    caused confusion for consumers integrating against v2.1 literally, since
+    the actual response shape does not match the documented contract.
+
+    In v2.1-errata1, this is corrected by modelling the response as a oneOf
+    across three grant-type-specific schemas:
+    AEAuthorizationCodeGrantTokenResponseProperties,
+    AERefreshTokenGrantTokenResponseProperties, and
+    AEClientCredentialsGrantTokenResponseProperties. The previously required
+    top-level properties are now owned by the relevant grant-specific
+    subschemas rather than the outer response body.
+
+    This is a documentation-level change only. No behavioural change is
+    being introduced; consumers that have integrated against the actual API
+    Hub behaviour remain unaffected. The errata simply brings the
+    specification into line with the response shapes that consumers
+    already observe in production.
+
+- rule: request-property-enum-value-removed
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    This change aligns the `CreditorIndicators.AccountType` enum inside the
+    Bank Service Initiation Rich Authorization Request (RAR) Risk object
+    with the equivalent field in the Payments spec and with the api-hub's
+    `AEAccountTypeCode` schema, all of which describe the same logical
+    attribute.
+
+    In v2.1, `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType`
+    declared `[CurrentAccount, Savings, CreditCard, Mortgage, Finance]`
+    inline — a product/account-category enum. The equivalent field in
+    `uae-bank-initiation-openapi.yaml` (where the TPP sends the same
+    Risk object in POST /payments) referenced `AEAccountTypeCode`, which
+    declared `[Retail, Corporate]` — a customer-segment enum. A TPP
+    therefore could not send the same `Risk.CreditorIndicators.AccountType`
+    value in PAR and in POST /payments and stay schema-valid in both.
+
+    In v2.1-errata2, both sides converge on `[Retail, SME, Corporate]`,
+    matching the api-hub `AEAccountTypeCode` which already carried that
+    value set (with `SME` added in api-hub v2.1.7). The old product-category
+    values are removed; consumers should use the customer-segment values
+    going forward.
+
+    A parity test under `supporting/tests/standards/` now enforces that
+    every field of the Risk object is schema-equivalent between the PAR
+    and Payments specs, so this class of divergence cannot recur silently.
+
+- rule: request-property-removed
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `SupplementaryData` property has been removed from every
+    `*Indicators` schema inside the Bank Service Initiation Rich
+    Authorization Request (RAR) Risk object on the PAR side —
+    `AEBankServiceInitiationRichAuthorizationRequests.AEDebtorIndicators`,
+    `.AETransactionIndicators`, and `.AECreditorIndicators`.
+
+    In v2.1, each of these schemas carried a `SupplementaryData` object
+    intended as a free-form extension point. In practice it was never
+    used as a structured slot for additional Risk signals: it conflicted
+    with the strict `additionalProperties: false` posture taken
+    everywhere else in the Risk tree, and the matching Payments-side
+    Risk schemas (`AERisk.*Indicators.SupplementaryData`) carried the
+    same redundant extension point.
+
+    Removing `SupplementaryData` everywhere in the Risk tree leaves
+    Risk fully closed end-to-end: a TPP cannot send undeclared content
+    inside the Risk object via PAR, Payments, or the Ozone Connect
+    forwarding surfaces. This is enforced by the parity test under
+    `supporting/tests/latest/`, which compares every Risk surface
+    field-for-field; the removal applies symmetrically on all surfaces
+    so parity is preserved.
+
+    Impact: TPPs that have been populating
+    `Risk.{Debtor,Transaction,Creditor}Indicators.SupplementaryData`
+    inside PAR `authorization_details` will receive validation errors
+    in v2.1-errata2. The property carried no defined semantics and
+    no LFI was contractually required to act on it, so removal is
+    not expected to impact functional behaviour; any custom risk
+    signalling that relied on it must now be expressed through the
+    structured Risk fields.
