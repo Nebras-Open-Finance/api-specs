@@ -2190,16 +2190,6 @@ components:
                   minimum: 0
               additionalProperties: false
           additionalProperties: false
-        SupplementaryData:
-          type: object
-          description: >
-            Additional information that cannot be captured in the structured fields and/or any other specific block
-
-            This may include information that is not available in the structured fields, such as a user's behavioural
-            data
-
-            like their typing speed and typing patterns.
-          properties: {}
       additionalProperties: false
     AETransactionIndicators:
       type: object
@@ -2305,11 +2295,6 @@ components:
                 - NoMatch
                 - NotApplicable
           additionalProperties: false
-        SupplementaryData:
-          type: object
-          description: |
-            Additional information that cannot be captured in the structured fields and/or any other specific block
-          properties: {}
       additionalProperties: false
     AECreditorIndicators:
       type: object
@@ -2369,11 +2354,6 @@ components:
         IsCreditorConfirmed:
           description: Creditor account details have been confirmed successfully using Confirmation of Payee
           type: boolean
-        SupplementaryData:
-          type: object
-          description: |
-            Additional information that cannot be captured in the structured fields and/or any other specific block
-          properties: {}
       additionalProperties: false
     AEAccountTypeCode:
       description: Specifies the type of account (Retail, SME or Corporate).
