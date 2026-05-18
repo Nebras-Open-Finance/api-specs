@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: UAE Account Information API
   description: '## UAE Open Finance Account Information API Specification'
-  version: v2.1-errata1
+  version: v2.1-errata2
 servers:
   - url: /open-finance/account-information/v2.1
 tags:

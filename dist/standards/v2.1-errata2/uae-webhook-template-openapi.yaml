@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: UAE Webhook Template
-  version: v2.1-errata1
+  version: v2.1-errata2
   description: >-
     OpenAPI description provided **as a template** for guidance in implementing Webhooks under the UAE Open Finance
     Programme.
