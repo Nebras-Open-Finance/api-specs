@@ -3222,8 +3222,6 @@ components:
       additionalProperties: false
     AESupplementaryData:
       type: object
-      properties: {}
-      additionalProperties: false
       description: Additional information that can not be captured in the structured fields and/or any other specific block.
     AEBranchAndFinancialInstitutionIdentification6_2:
       type: object

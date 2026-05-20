@@ -42,7 +42,7 @@ info:
 
     ### v2.1.5
 
-    * Aligned the `Risk` object with Standards: updated `AEAccountTypeCode` and the inline `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType` enum to `Retail / SME / Corporate` (was `Retail / Corporate` and a divergent `CurrentAccount / Savings / CreditCard / Mortgage / Finance` respectively), tightened `AERisk` and its descendants with `additionalProperties: false` on the payment-initiation side, removed the `SupplementaryData` blocks from every `*Indicators` schema on both the payment-initiation and RAR shapes (the Risk tree is now fully closed; no extension point remains), and added `minLength: 1` / `maxLength: 70` to the `AddressLine` items.
+    * Aligned the `Risk` object with Standards: updated `AEAccountTypeCode` and the inline `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType` enum to `Retail / SME / Corporate` (was `Retail / Corporate` and a divergent `CurrentAccount / Savings / CreditCard / Mortgage / Finance` respectively), tightened `AERisk` and its descendants with `additionalProperties: false` on the payment-initiation side, carved out the three RAR-shape `SupplementaryData` blocks (`AEBankServiceInitiationRichAuthorizationRequests.AE*Indicators.SupplementaryData`) to be open extension points, and added `minLength: 1` / `maxLength: 70` to the `AddressLine` items.
 
 
     ### v2.1.4
@@ -2724,6 +2724,15 @@ components:
                   minimum: 0
               additionalProperties: false
           additionalProperties: false
+        SupplementaryData:
+          type: object
+          description: >
+            Additional information that cannot be captured in the structured fields and/or any other specific block
+
+            This may include information that is not available in the structured fields, such as a user's behavioural
+            data
+
+            like their typing speed and typing patterns.
       additionalProperties: false
     AETransactionIndicators:
       type: object
@@ -2829,6 +2838,10 @@ components:
                 - NoMatch
                 - NotApplicable
           additionalProperties: false
+        SupplementaryData:
+          type: object
+          description: |
+            Additional information that cannot be captured in the structured fields and/or any other specific block
       additionalProperties: false
     AECreditorIndicators:
       type: object
@@ -2890,6 +2903,10 @@ components:
           type: boolean
         ConfirmationOfPayeeResponse:
           $ref: '#/components/schemas/AEConfirmationOfPayeeResponse'
+        SupplementaryData:
+          type: object
+          description: |
+            Additional information that cannot be captured in the structured fields and/or any other specific block
       additionalProperties: false
     AEIsCreditorPrePopulated:
       description: Is Creditor populated
@@ -3893,6 +3910,12 @@ components:
               additionalProperties: false
           description: Risk indicators related to the account
           additionalProperties: false
+        SupplementaryData:
+          type: object
+          description: |-
+            Additional information that cannot be captured in the structured fields and/or any other specific block
+            This may include information that is not available in the structured fields, such as a user's behavioural data
+            like their typing speed and typing patterns.
       description: Debtor (User) Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AETransactionIndicators:
@@ -3986,6 +4009,9 @@ components:
                 - NotApplicable
           description: Risk indicator details provided by the merchant
           additionalProperties: false
+        SupplementaryData:
+          type: object
+          description: Additional information that cannot be captured in the structured fields and/or any other specific block
       description: Transaction Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators:
@@ -4034,6 +4060,9 @@ components:
         IsCreditorConfirmed:
           type: boolean
           description: Creditor account details have been confirmed successfully using Confirmation of Payee
+        SupplementaryData:
+          type: object
+          description: Additional information that cannot be captured in the structured fields and/or any other specific block
       description: Creditor Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEIsCreditorPrePopulated:
