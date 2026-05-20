@@ -69,6 +69,20 @@ const ANYOF_RESTRUCTURE_RULES = new Set([
 // error referencing one of them is suppressed regardless of rule.
 const LFI_VALIDATED_SCHEMAS = new Set(['AEJWEPaymentPII', 'AEPaymentConsentPII']);
 
+// oasdiff classifies property removals as WARN, not ERR, so `--fail-on ERR`
+// lets them through. But removing a property breaks an LFI built against the
+// published contract: a removed request property is rejected once its schema
+// is `additionalProperties: false`, and a removed response property is now
+// always absent for readers. This config file promotes those rules to ERR.
+//
+// It also makes property *renames* fail the test. oasdiff has no concept of a
+// rename — it reports the old name removed and the new name added as two
+// unrelated changes — so the removal half is what catches the rename (e.g. the
+// v2.x `rejectReasonCode` -> `RejectReasonCode` change on the payment-log
+// endpoints). The file must contain only `<rule> <level>` lines: oasdiff
+// rejects comments and the whole config is then ignored.
+const severityLevelsFile = path.join(__dirname, 'oasdiff-severity-levels.txt');
+
 const apiHubDir = path.join(distDir, 'api-hub');
 const acceptedChangesRoot = path.join(repoRoot, 'supporting', 'breaking-changes', 'api-hub');
 
@@ -132,6 +146,62 @@ function isAnyOfRestructureNoise(errorLine) {
   return ANYOF_RESTRUCTURED_PROPERTIES.has(leaf);
 }
 
+// Resolves a local `#/...` JSON reference against the parsed spec document.
+function resolveRef(spec, ref) {
+  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
+  return ref.slice(2).split('/').reduce((node, key) => (node ? node[key] : undefined), spec);
+}
+
+// Collects every property name defined by a schema, descending through
+// `anyOf` / `oneOf` / `allOf` branches and resolving `$ref`s. It does NOT
+// descend into the sub-schemas of individual properties, so the result is
+// exactly the set of property names valid at this schema's own level.
+function collectSchemaPropertyNames(schema, spec, names = new Set(), seenRefs = new Set()) {
+  if (!schema || typeof schema !== 'object') return names;
+  if (schema.$ref) {
+    if (seenRefs.has(schema.$ref)) return names;
+    seenRefs.add(schema.$ref);
+    return collectSchemaPropertyNames(resolveRef(spec, schema.$ref), spec, names, seenRefs);
+  }
+  if (schema.properties) {
+    for (const key of Object.keys(schema.properties)) names.add(key);
+  }
+  for (const branchKey of ['anyOf', 'oneOf', 'allOf']) {
+    if (Array.isArray(schema[branchKey])) {
+      for (const branch of schema[branchKey]) {
+        collectSchemaPropertyNames(branch, spec, names, seenRefs);
+      }
+    }
+  }
+  return names;
+}
+
+// The JSON request body schema of an operation, or null if it has none.
+function requestBodySchema(spec, method, pathTemplate) {
+  const operation = spec?.paths?.[pathTemplate]?.[method.toLowerCase()];
+  const content = operation?.requestBody?.content;
+  if (!content) return null;
+  return (content['application/json'] || Object.values(content)[0])?.schema || null;
+}
+
+// True when a `request-property-removed` is reported only because the
+// operation's request body was restructured into an `anyOf` of per-type
+// schemas (e.g. `PATCH /consents/{consentId}`: the flat `cbuaePatchBody`
+// became a per-consent-type `anyOf`). The property is not gone — it now
+// lives inside one or more branches, so every previously-valid request
+// still validates. We confirm this by checking the property name still
+// exists in the revision spec's request body schema; a property genuinely
+// removed from every branch is absent here and stays reported.
+function isRelocatedRequestProperty(errorLine, revisionSpec) {
+  const parsed = parseErrorLine(errorLine);
+  if (!parsed || parsed.rule !== 'request-property-removed') return false;
+  const propMatch = errorLine.match(/`([^`]+)`/);
+  if (!propMatch) return false;
+  const schema = requestBodySchema(revisionSpec, parsed.method, parsed.path);
+  if (!schema) return false;
+  return collectSchemaPropertyNames(schema, revisionSpec).has(propMatch[1]);
+}
+
 // True when the error references a schema whose contents the LFI validates
 // (see LFI_VALIDATED_SCHEMAS above), so the change is not a Hub-contract break.
 function isLfiValidatedSchema(errorLine) {
@@ -162,16 +232,19 @@ function assertNoBreakingChanges(baseFile, revisionFile, revisionDirName, specFi
   const result = spawnSync(
     'oasdiff',
     ['breaking', toOasdiffPath(baseFile), toOasdiffPath(revisionFile),
+      '--severity-levels', toOasdiffPath(severityLevelsFile),
       '--fail-on', 'ERR', '--color', 'never', '--format', 'singleline'],
     { encoding: 'utf8', cwd: repoRoot, maxBuffer: 50 * 1024 * 1024 }
   );
   if (result.status === 0) return;
   if (result.status === 1) {
     const accepted = loadAcceptedChanges(revisionDirName, specFileName);
+    const revisionSpec = YAML.parse(fs.readFileSync(revisionFile, 'utf8'));
     const allErrors = result.stdout.split('\n')
       .filter(line => line.startsWith('error'))
       .filter(line => !isIgnoredPath(line))
       .filter(line => !isAnyOfRestructureNoise(line))
+      .filter(line => !isRelocatedRequestProperty(line, revisionSpec))
       .filter(line => !isLfiValidatedSchema(line));
     const unaccepted = allErrors.filter(line => !isAccepted(line, accepted));
     if (unaccepted.length === 0) return;

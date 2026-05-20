@@ -46,6 +46,9 @@ info:
     * Closed the three `ConsentManager.AE*ConsentUpdateProperties` schemas with `additionalProperties: false`. The `PATCH /consents/{consentId}` request body is an `anyOf` of one schema per consent type (Bank Data Sharing, Bank Service Initiation, Insurance Data Sharing); without this, unknown properties were silently accepted, so a field belonging to one consent type could be patched onto another. The schemas now enforce the per-type field separation they describe.
 
 
+    * Reverted the payment-log reject reason code to match the v2.0.x Consent Manager: the top-level property is `rejectReasonCode` (not `RejectReasonCode`) on the `GET /payment-log` response and `PATCH /payment-log/{id}` request body, and the `code` / `message` fields inside `CbuaePaymentLogRejectReasonCode` items are lower-case again (not `Code` / `Message`). The PascalCase variants were introduced in error and broke LFIs built against the v2.0.x payment-log contract.
+
+
     ### v2.1.7
 
     * Added `SME` to `AEExternalAccountTypeCode`.
@@ -604,7 +607,7 @@ paths:
                                 An ISO date-time representing when the consent status was last updated
                             OpenFinanceBilling:
                               $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
-                            RejectReasonCode:
+                            rejectReasonCode:
                               $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
                         signedResponse:
                           type: string
@@ -1401,10 +1404,10 @@ components:
           sanitized accordingly.
         type: object
         required:
-          - Code
-          - Message
+          - code
+          - message
         properties:
-          Code:
+          code:
             description: >-
               Error code that follows the namespaced pattern standardised for the Open Finance Framework. AANI reason
               codes should be used as standard, and be applied in scenarios where payment instructions are rejected at
@@ -1414,7 +1417,7 @@ components:
                 pattern: ^(AANI|FTS|LFI)\.[A-Za-z0-9]+$
               - $ref: '#/components/schemas/standardErrorCodePattern'
             example: AANI.AM04
-          Message:
+          message:
             description: Error message describing the rejection reason
             type: string
             minLength: 1
@@ -1455,7 +1458,7 @@ components:
             - The `paymentTransactionId` must be populated if the payment is processed by the LFI.
           minLength: 1
           maxLength: 40
-        paymentResponse.RejectReasonCode:
+        paymentResponse.rejectReasonCode:
           $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
     AEServiceInitiationOpenFinancePaymentBillingPatch:
       type: object
