@@ -40,9 +40,14 @@ info:
     **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
     for deprecated properties.**
 
+    ### v2.1.5
+
+    * Aligned the `Risk` object with Standards: updated `AEAccountTypeCode` and the inline `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType` enum to `Retail / SME / Corporate` (was `Retail / Corporate` and a divergent `CurrentAccount / Savings / CreditCard / Mortgage / Finance` respectively), tightened `AERisk` and its descendants with `additionalProperties: false` on the payment-initiation side, carved out the three RAR-shape `SupplementaryData` blocks (`AEBankServiceInitiationRichAuthorizationRequests.AE*Indicators.SupplementaryData`) to be open extension points, and added `minLength: 1` / `maxLength: 70` to the `AddressLine` items.
+
+
     ### v2.1.4
 
-    * Changed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal 
+    * Changed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal
       monetary values.
 
     ### v2.1.3
@@ -70,7 +75,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
     * Removed support for single future-dated payment consents that are warehoused at the LFI.
-  version: v2.1.4
+  version: v2.1.5
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -929,8 +934,9 @@ components:
       type: string
       enum:
         - Retail
+        - SME
         - Corporate
-      description: Specifies the type of account (Retail or Corporate).
+      description: Specifies the type of account (Retail, SME or Corporate).
     AEBaseConsentId:
       type: string
       minLength: 1
@@ -2357,8 +2363,10 @@ components:
                 ar:
                   type: string
                   description: Arabic value of the string
+              additionalProperties: false
             NationalAddress:
               $ref: '#/components/schemas/AEAddress'
+          additionalProperties: false
         TransactionIndicators:
           $ref: '#/components/schemas/AETransactionIndicators'
         CreditorIndicators:
@@ -2399,6 +2407,7 @@ components:
                     - HardwareOTPKey
                     - TrustedDevice
                     - Other
+              additionalProperties: false
             KnowledgeFactor:
               type: object
               description: The User's knowledge, that only the User knows
@@ -2415,6 +2424,7 @@ components:
                     - EmailOTP
                     - OTPPush
                     - Other
+              additionalProperties: false
             InherenceFactor:
               type: object
               description: The User's inherance, that is unique to the User's physical characteristics
@@ -2432,6 +2442,7 @@ components:
                     - FIDOBiometric
                     - DeviceBiometrics
                     - Other
+              additionalProperties: false
             ChallengeOutcome:
               type: string
               description: >-
@@ -2452,6 +2463,7 @@ components:
             ChallengeDateTime:
               type: string
               format: date-time
+          additionalProperties: false
         UserName:
           type: object
           description: The Name of the User initiating the Payment
@@ -2462,6 +2474,7 @@ components:
             ar:
               type: string
               description: Arabic value of the string
+          additionalProperties: false
         GeoLocation:
           type: object
           description: GPS to identify and track the whereabouts of the connected electronic device.
@@ -2475,6 +2488,7 @@ components:
             Longitude:
               type: string
               description: longitude
+          additionalProperties: false
         DeviceInformation:
           type: object
           description: Detailed device information
@@ -2530,6 +2544,7 @@ components:
                   type: string
                   description: Device manufacturer
                   maxLength: 50
+              additionalProperties: false
             DeviceLanguage:
               type: string
               description: Device language
@@ -2554,6 +2569,7 @@ components:
                   enum:
                     - Portrait
                     - Landscape
+              additionalProperties: false
             BatteryStatus:
               type: object
               properties:
@@ -2563,6 +2579,7 @@ components:
                   maximum: 100
                 IsCharging:
                   type: boolean
+              additionalProperties: false
             TouchSupport:
               type: object
               properties:
@@ -2571,6 +2588,7 @@ components:
                 MaxTouchPoints:
                   type: integer
                   minimum: 0
+              additionalProperties: false
             MotionSensors:
               type: object
               properties:
@@ -2583,6 +2601,7 @@ components:
                   type: boolean
                 Gyroscope:
                   type: boolean
+              additionalProperties: false
             DeviceEnvironmentContext:
               type: array
               description: List of device environment context
@@ -2591,6 +2610,7 @@ components:
                 enum:
                   - VPNDetected
                   - EmulatorDetected
+          additionalProperties: false
         BiometricCapabilities:
           type: object
           description: Device biometric capabilities
@@ -2609,6 +2629,7 @@ components:
                   - Iris
                   - VoicePrint
                   - Other
+          additionalProperties: false
         AppInformation:
           type: object
           description: Mobile application specific information
@@ -2622,6 +2643,7 @@ components:
             BuildNumber:
               type: string
               description: Application build number
+          additionalProperties: false
         BrowserInformation:
           type: object
           description: Browser-specific information
@@ -2645,6 +2667,7 @@ components:
             PixelRatio:
               type: number
               description: Device pixel ratio for scaling
+          additionalProperties: false
         UserBehavior:
           type: object
           description: User behavior indicators
@@ -2664,6 +2687,8 @@ components:
                 Frequency:
                   type: number
                   description: Number of scroll events per minute
+              additionalProperties: false
+          additionalProperties: false
         AccountRiskIndicators:
           type: object
           description: Risk indicators related to the account
@@ -2697,6 +2722,8 @@ components:
                   type: integer
                   description: Total transactions made by the account in the past year
                   minimum: 0
+              additionalProperties: false
+          additionalProperties: false
         SupplementaryData:
           type: object
           description: >
@@ -2706,7 +2733,7 @@ components:
             data
 
             like their typing speed and typing patterns.
-          properties: {}
+      additionalProperties: false
     AETransactionIndicators:
       type: object
       description: |
@@ -2771,6 +2798,7 @@ components:
               type: integer
               description: Number of failed payment attempts in the last 24 hours
               minimum: 0
+          additionalProperties: false
         MerchantRisk:
           type: object
           description: Risk indicator details provided by the merchant
@@ -2809,11 +2837,12 @@ components:
                 - PartialMatch
                 - NoMatch
                 - NotApplicable
+          additionalProperties: false
         SupplementaryData:
           type: object
           description: |
             Additional information that cannot be captured in the structured fields and/or any other specific block
-          properties: {}
+      additionalProperties: false
     AECreditorIndicators:
       type: object
       description: |
@@ -2878,7 +2907,7 @@ components:
           type: object
           description: |
             Additional information that cannot be captured in the structured fields and/or any other specific block
-          properties: {}
+      additionalProperties: false
     AEIsCreditorPrePopulated:
       description: Is Creditor populated
       type: boolean
@@ -2980,6 +3009,8 @@ components:
                 type: array
                 items:
                   type: string
+                  minLength: 1
+                  maxLength: 70
                 minItems: 1
                 maxItems: 7
               BuildingNumber:
@@ -3885,7 +3916,6 @@ components:
             Additional information that cannot be captured in the structured fields and/or any other specific block
             This may include information that is not available in the structured fields, such as a user's behavioural data
             like their typing speed and typing patterns.
-          additionalProperties: false
       description: Debtor (User) Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AETransactionIndicators:
@@ -3982,7 +4012,6 @@ components:
         SupplementaryData:
           type: object
           description: Additional information that cannot be captured in the structured fields and/or any other specific block
-          additionalProperties: false
       description: Transaction Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators:
@@ -3991,11 +4020,10 @@ components:
         AccountType:
           type: string
           enum:
-            - CurrentAccount
-            - Savings
-            - CreditCard
-            - Mortgage
-            - Finance
+            - Retail
+            - SME
+            - Corporate
+          description: Specifies the type of account (Retail, SME or Corporate).
         IsCreditorPrePopulated:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEIsCreditorPrePopulated'
         TradingName:
@@ -4035,7 +4063,6 @@ components:
         SupplementaryData:
           type: object
           description: Additional information that cannot be captured in the structured fields and/or any other specific block
-          additionalProperties: false
       description: Creditor Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEIsCreditorPrePopulated:
