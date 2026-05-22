@@ -1,0 +1,66 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rule: request-property-enum-value-removed
+  endpoints:
+    - method: POST
+      path: /consents
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `PersonalLoan` value was removed from the `AccountSubType` enum on the
+    account-access consent request.
+
+    `PersonalLoan` was never a live account sub-type — no LFI offered it and no
+    consent has ever been created against it. Removing it is not a breaking
+    change for any real consumer; it only tightens the contract to the set of
+    sub-types that are actually supported.
+
+- rule: request-property-max-length-decreased
+  endpoints:
+    - method: POST
+      path: /consents
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `maxLength` of `ControlParameters/ConsentSchedule/FilePayment/FileReference`
+    was decreased to 35.
+
+    File Payments were not live in the previous version — no LFI accepted file
+    payment consents and none have ever been created. Tightening `FileReference`
+    to its intended length before the feature goes live affects no existing
+    consumer.
+
+- rule: request-body-type-changed
+  endpoints:
+    - method: PATCH
+      path: /consents/{consentId}
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `PATCH /consents/{consentId}` request body was remodelled from the
+    single permissive `cbuaePatchBody` object into `ConsentManager.AEConsentUpdateProperties`,
+    an `anyOf` of one schema per consent type (Bank Data Sharing, Bank Service
+    Initiation, Insurance Data Sharing).
+
+    oasdiff reports `request-body-type-changed` because `type: object` no
+    longer sits at the top level of the body schema — it now lives inside each
+    `anyOf` branch. This is a structural artifact of the rewrap, not a value
+    rejection on its own.
+
+    The rewrap is deliberate and is the correct modelling: the old schema
+    accepted nonsensical cross-type combinations (e.g. payment-only fields such
+    as `ExchangeRate` or `ConnectToken` on an insurance consent). Each branch
+    is now closed with `additionalProperties: false`, so the per-consent-type
+    field separation is enforced.

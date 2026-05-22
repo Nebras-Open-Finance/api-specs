@@ -32,6 +32,23 @@ info:
     So, for example, `.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.1.8
+
+    * Aligned `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType` enum with Standards (Retail / SME / Corporate), replacing the previous product-category enum (CurrentAccount / Savings / CreditCard / Mortgage / Finance) that diverged from the Standards PAR + Payments specs.
+
+
+    * Aligned the `Risk` object with Standards: tightened `AERisk` and its descendants on the payment-initiation side with `additionalProperties: false` throughout, carved out the three `SupplementaryData` blocks on the RAR-shape (`AEBankServiceInitiationRichAuthorizationRequests.AE*Indicators.SupplementaryData`) to be open extension points (no `additionalProperties: false`), and added `minLength: 1` / `maxLength: 70` to `AddressLine` items inside the legacy `AEAddress` variant.
+
+
+    * Added `ReadStatements` and `ReadProductFinanceRates` to `AEAccountAccessConsentPermissionCodes`, which were present in the v2.1 Standards Bank Data Sharing permission set but missing from the Consent Manager. The Consent Manager must accept every permission code from all supported Standards versions.
+
+
+    * Closed the three `ConsentManager.AE*ConsentUpdateProperties` schemas with `additionalProperties: false`. The `PATCH /consents/{consentId}` request body is an `anyOf` of one schema per consent type (Bank Data Sharing, Bank Service Initiation, Insurance Data Sharing); without this, unknown properties were silently accepted, so a field belonging to one consent type could be patched onto another. The schemas now enforce the per-type field separation they describe.
+
+
+    * Reverted the payment-log reject reason code to match the v2.0.x Consent Manager: the top-level property is `rejectReasonCode` (not `RejectReasonCode`) on the `GET /payment-log` response and `PATCH /payment-log/{id}` request body, and the `code` / `message` fields inside `CbuaePaymentLogRejectReasonCode` items are lower-case again (not `Code` / `Message`). The PascalCase variants were introduced in error and broke LFIs built against the v2.0.x payment-log contract.
+
+
     ### v2.1.7
 
     * Added `SME` to `AEExternalAccountTypeCode`.
@@ -70,7 +87,7 @@ info:
       line with changes in v2.1 Pushed Authorization Requests.
 
 
-  version: v2.1.7
+  version: v2.1.8
 tags:
   - name: consents
   - name: consent-groups
@@ -590,7 +607,7 @@ paths:
                                 An ISO date-time representing when the consent status was last updated
                             OpenFinanceBilling:
                               $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
-                            RejectReasonCode:
+                            rejectReasonCode:
                               $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
                         signedResponse:
                           type: string
@@ -1250,6 +1267,7 @@ components:
       type: object
       required:
       - authorizationChannel
+      additionalProperties: false
       properties:
         psuIdentifiers:
           $ref: '#/components/schemas/psuIdentifiers'
@@ -1276,6 +1294,7 @@ components:
       type: object
       required:
       - authorizationChannel
+      additionalProperties: false
       properties:
         psuIdentifiers:
           $ref: '#/components/schemas/psuIdentifiers'
@@ -1317,6 +1336,7 @@ components:
       type: object
       required:
       - authorizationChannel
+      additionalProperties: false
       properties:
         psuIdentifiers:
           $ref: '#/components/schemas/psuIdentifiers'
@@ -1384,10 +1404,10 @@ components:
           sanitized accordingly.
         type: object
         required:
-          - Code
-          - Message
+          - code
+          - message
         properties:
-          Code:
+          code:
             description: >-
               Error code that follows the namespaced pattern standardised for the Open Finance Framework. AANI reason
               codes should be used as standard, and be applied in scenarios where payment instructions are rejected at
@@ -1397,7 +1417,7 @@ components:
                 pattern: ^(AANI|FTS|LFI)\.[A-Za-z0-9]+$
               - $ref: '#/components/schemas/standardErrorCodePattern'
             example: AANI.AM04
-          Message:
+          message:
             description: Error message describing the rejection reason
             type: string
             minLength: 1
@@ -1438,7 +1458,7 @@ components:
             - The `paymentTransactionId` must be populated if the payment is processed by the LFI.
           minLength: 1
           maxLength: 40
-        paymentResponse.RejectReasonCode:
+        paymentResponse.rejectReasonCode:
           $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
     AEServiceInitiationOpenFinancePaymentBillingPatch:
       type: object
@@ -1794,10 +1814,12 @@ components:
         - ReadDirectDebits
         - ReadStandingOrdersBasic
         - ReadStandingOrdersDetail
+        - ReadStatements
         - ReadConsents
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadProductFinanceRates
       description: |-
         Specifies the permitted account access policy data types.
         This is a list of the data groups being consented by the User, and requested for authorization with the LFI.
@@ -3484,6 +3506,7 @@ components:
                     - HardwareOTPKey
                     - TrustedDevice
                     - Other
+              additionalProperties: false
             KnowledgeFactor:
               type: object
               description: The User's knowledge, that only the User knows
@@ -3500,6 +3523,7 @@ components:
                     - EmailOTP
                     - OTPPush
                     - Other
+              additionalProperties: false
             InherenceFactor:
               type: object
               description: The User's inherance, that is unique to the User's physical characteristics
@@ -3517,6 +3541,7 @@ components:
                     - FIDOBiometric
                     - DeviceBiometrics
                     - Other
+              additionalProperties: false
             ChallengeOutcome:
               type: string
               description: >-
@@ -3537,6 +3562,7 @@ components:
             ChallengeDateTime:
               type: string
               format: date-time
+          additionalProperties: false
         UserName:
           type: object
           description: The Name of the User initiating the Payment
@@ -3547,6 +3573,7 @@ components:
             ar:
               type: string
               description: Arabic value of the string
+          additionalProperties: false
         GeoLocation:
           type: object
           description: GPS to identify and track the whereabouts of the connected electronic device.
@@ -3560,6 +3587,7 @@ components:
             Longitude:
               type: string
               description: longitude
+          additionalProperties: false
         DeviceInformation:
           type: object
           description: Detailed device information
@@ -3615,6 +3643,7 @@ components:
                   type: string
                   description: Device manufacturer
                   maxLength: 50
+              additionalProperties: false
             DeviceLanguage:
               type: string
               description: Device language
@@ -3639,6 +3668,7 @@ components:
                   enum:
                     - Portrait
                     - Landscape
+              additionalProperties: false
             BatteryStatus:
               type: object
               properties:
@@ -3648,6 +3678,7 @@ components:
                   maximum: 100
                 IsCharging:
                   type: boolean
+              additionalProperties: false
             TouchSupport:
               type: object
               properties:
@@ -3656,6 +3687,7 @@ components:
                 MaxTouchPoints:
                   type: integer
                   minimum: 0
+              additionalProperties: false
             MotionSensors:
               type: object
               properties:
@@ -3668,6 +3700,7 @@ components:
                   type: boolean
                 Gyroscope:
                   type: boolean
+              additionalProperties: false
             DeviceEnvironmentContext:
               type: array
               description: List of device environment context
@@ -3676,6 +3709,7 @@ components:
                 enum:
                   - VPNDetected
                   - EmulatorDetected
+          additionalProperties: false
         BiometricCapabilities:
           type: object
           description: Device biometric capabilities
@@ -3694,6 +3728,7 @@ components:
                   - Iris
                   - VoicePrint
                   - Other
+          additionalProperties: false
         AppInformation:
           type: object
           description: Mobile application specific information
@@ -3707,6 +3742,7 @@ components:
             BuildNumber:
               type: string
               description: Application build number
+          additionalProperties: false
         BrowserInformation:
           type: object
           description: Browser-specific information
@@ -3730,6 +3766,7 @@ components:
             PixelRatio:
               type: number
               description: Device pixel ratio for scaling
+          additionalProperties: false
         UserBehavior:
           type: object
           description: User behavior indicators
@@ -3749,6 +3786,8 @@ components:
                 Frequency:
                   type: number
                   description: Number of scroll events per minute
+              additionalProperties: false
+          additionalProperties: false
         AccountRiskIndicators:
           type: object
           description: Risk indicators related to the account
@@ -3782,6 +3821,8 @@ components:
                   type: integer
                   description: Total transactions made by the account in the past year
                   minimum: 0
+              additionalProperties: false
+          additionalProperties: false
         SupplementaryData:
           type: object
           description: >
@@ -3791,7 +3832,7 @@ components:
             data
 
             like their typing speed and typing patterns.
-          properties: {}
+      additionalProperties: false
     AERisk:
       additionalProperties: false
       description: >
@@ -3822,8 +3863,10 @@ components:
                 ar:
                   type: string
                   description: Arabic value of the string
+              additionalProperties: false
             NationalAddress:
               $ref: '#/components/schemas/AEAddress'
+          additionalProperties: false
         TransactionIndicators:
           $ref: '#/components/schemas/AETransactionIndicators'
         CreditorIndicators:
@@ -3892,6 +3935,7 @@ components:
               type: integer
               description: Number of failed payment attempts in the last 24 hours
               minimum: 0
+          additionalProperties: false
         MerchantRisk:
           type: object
           description: Risk indicator details provided by the merchant
@@ -3930,11 +3974,12 @@ components:
                 - PartialMatch
                 - NoMatch
                 - NotApplicable
+          additionalProperties: false
         SupplementaryData:
           type: object
           description: |
             Additional information that cannot be captured in the structured fields and/or any other specific block
-          properties: {}
+      additionalProperties: false
     AECreditorIndicators:
       type: object
       description: |
@@ -3999,7 +4044,7 @@ components:
           type: object
           description: |
             Additional information that cannot be captured in the structured fields and/or any other specific block
-          properties: {}
+      additionalProperties: false
     AEIsCreditorPrePopulated:
       description: Is Creditor populated
       type: boolean
@@ -4101,6 +4146,8 @@ components:
                 type: array
                 items:
                   type: string
+                  minLength: 1
+                  maxLength: 70
                 minItems: 1
                 maxItems: 7
               BuildingNumber:
@@ -5312,7 +5359,6 @@ components:
             Additional information that cannot be captured in the structured fields and/or any other specific block
             This may include information that is not available in the structured fields, such as a user's behavioural data
             like their typing speed and typing patterns.
-          additionalProperties: false
       description: Debtor (User) Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AETransactionIndicators:
@@ -5409,7 +5455,6 @@ components:
         SupplementaryData:
           type: object
           description: Additional information that cannot be captured in the structured fields and/or any other specific block
-          additionalProperties: false
       description: Transaction Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators:
@@ -5418,11 +5463,10 @@ components:
         AccountType:
           type: string
           enum:
-            - CurrentAccount
-            - Savings
-            - CreditCard
-            - Mortgage
-            - Finance
+            - Retail
+            - SME
+            - Corporate
+          description: Specifies the type of account (Retail, SME or Corporate).
         IsCreditorPrePopulated:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEIsCreditorPrePopulated'
         TradingName:
@@ -5462,7 +5506,6 @@ components:
         SupplementaryData:
           type: object
           description: Additional information that cannot be captured in the structured fields and/or any other specific block
-          additionalProperties: false
       description: Creditor Indicators
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEIsCreditorPrePopulated:
