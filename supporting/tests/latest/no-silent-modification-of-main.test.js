@@ -8,6 +8,31 @@ const { findLatestSpecs, relativeToRepo, repoRoot } = require('../helpers');
 
 const BRANCH = 'main';
 
+// Re-wrapping prose to a column budget (supporting/scripts/format-specs.js) is a
+// pure formatting change, not a content change, and must not require an
+// info.version bump. It shifts line breaks inside block scalars, which changes
+// the parsed string. So before comparing, collapse intra-paragraph whitespace in
+// every string value while preserving blank-line paragraph breaks: a re-wrapped
+// paragraph then compares equal to its origin, but any word- or paragraph-level
+// edit (and every structural change) is still caught.
+function normalizeWhitespace(str) {
+  return str
+    .split(/\n[ \t]*\n/)
+    .map(para => para.replace(/\s+/g, ' ').trim())
+    .join('\n');
+}
+
+function normalizeForFormatting(node) {
+  if (typeof node === 'string') return normalizeWhitespace(node);
+  if (Array.isArray(node)) return node.map(normalizeForFormatting);
+  if (node && typeof node === 'object') {
+    const out = {};
+    for (const [key, value] of Object.entries(node)) out[key] = normalizeForFormatting(value);
+    return out;
+  }
+  return node;
+}
+
 function deriveRepoSlug() {
   const url = execSync('git remote get-url origin', { encoding: 'utf8', cwd: repoRoot }).trim();
   const match = url.match(/github\.com[:/](.+?)(?:\.git)?$/);
@@ -59,8 +84,8 @@ describe(`No silent modification of a version already on ${BRANCH}`, () => {
       if (mainVersion !== currentVersion) return;
 
       assert.ok(
-        util.isDeepStrictEqual(current, mainDoc),
-        `${rel} differs from ${BRANCH} but info.version is still "${currentVersion}". That version is already on ${BRANCH} (i.e. published); bump info.version to register this change.`
+        util.isDeepStrictEqual(normalizeForFormatting(current), normalizeForFormatting(mainDoc)),
+        `${rel} differs from ${BRANCH} (beyond prose re-wrapping) but info.version is still "${currentVersion}". That version is already on ${BRANCH} (i.e. published); bump info.version to register this change.`
       );
     });
   }

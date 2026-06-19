@@ -671,7 +671,8 @@ paths:
 
         The API must return the products linked to the account identified by the `accountId` path parameter.
 
-        If no products are found for the account, the call must return a success status code `200` with an empty `data` array.
+        If no products are found for the account, the call must return a success status code `200` with an empty `data`
+        array.
       operationId: findProducts
       parameters:
         - $ref: '#/components/parameters/providerId'

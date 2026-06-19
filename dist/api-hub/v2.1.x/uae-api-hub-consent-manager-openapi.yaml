@@ -2891,21 +2891,23 @@ components:
         - description: >
             **DEPRECATED AT v2.1**
 
-            A reason or reference in relation to a payment, set to facilitate a structured Creditor reference consisting of:
+            A reason or reference in relation to a payment, set to facilitate a structured Creditor reference consisting
+            of:
 
 
             * TPP ID and BIC for the Debtor Account, followed by freeform text to a maximum of 120 characters.
 
 
-            The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4 UUID.
+            The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4
+            UUID.
 
 
-            A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11 characters
-            in length.
+            A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11
+            characters in length.
 
 
-            If the value of the concatenated string exceeds 120 characters, the TPP must first omit or truncate the freeform
-            element of the reference.
+            If the value of the concatenated string exceeds 120 characters, the TPP must first omit or truncate the
+            freeform element of the reference.
           type: string
           minLength: 1
           maxLength: 120
@@ -2923,7 +2925,8 @@ components:
         - description: >
             **DEPRECATED AT v2.1**
 
-            A reason or reference in relation to a payment, set to facilitate a structured Debtor reference consisting of:
+            A reason or reference in relation to a payment, set to facilitate a structured Debtor reference consisting
+            of:
 
 
             * For payments to Merchants: TPP ID, Merchant ID, BIC for the Creditor Account, followed by freeform text to a
@@ -2934,15 +2937,16 @@ components:
             characters.
 
 
-            The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4 UUID.
+            The TPP ID value will match the organization ID value from the Trust Framework, and therefore will be a v4
+            UUID.
 
 
-            The Merchant ID wil be as per the existing Aani Core rules for the Merchant identification, and will incorporate
-            the Trade License number for the Merchant.
+            The Merchant ID wil be as per the existing Aani Core rules for the Merchant identification, and will
+            incorporate the Trade License number for the Merchant.
 
 
-            A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11 characters
-            in length.
+            A BIC is specific according to the standard format for ISO 20022, and can therefore be either 8 or 11
+            characters in length.
 
 
             If the value of the concatenated string exceeds 120 characters, the TPP must omit or truncate the freeform
@@ -4886,8 +4890,8 @@ components:
           description: The Debtor Account, which can be provided in both English and Arabic. Omitted if not held by the TPP.
           additionalProperties: false
       description: >-
-        Details of the Debtor Account when provided at the TPP. Omitted if not available at the TPP or the User chooses to
-        select the Debtor Account at the LFI.
+        Details of the Debtor Account when provided at the TPP. Omitted if not available at the TPP or the User chooses
+        to select the Debtor Account at the LFI.
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEDomesticCreditor:
       type: object
@@ -4933,8 +4937,8 @@ components:
         PostalAddress:
           $ref: '#/components/schemas/AEAddress'
       description: >-
-        Properties of the Creditor Agent, which provides information on the Financial Institution that holds the Creditor
-        Account.
+        Properties of the Creditor Agent, which provides information on the Financial Institution that holds the
+        Creditor Account.
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorProperties:
       type: object
@@ -5356,8 +5360,8 @@ components:
         SupplementaryData:
           type: object
           description: |-
-            Additional information that cannot be captured in the structured fields and/or any other specific block
-            This may include information that is not available in the structured fields, such as a user's behavioural data
+            Additional information that cannot be captured in the structured fields and/or any other specific block This
+            may include information that is not available in the structured fields, such as a user's behavioural data
             like their typing speed and typing patterns.
       description: Debtor (User) Indicators
       additionalProperties: false
@@ -5553,8 +5557,8 @@ components:
         CreditorAccount:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAccountProperties'
       description: >-
-        Identification elements for a Creditor for an international payment instruction. Please note that Confirmation of
-        Payee is **NOT** required or expected for International Payments, as non-domestic Creditor accounts are not
+        Identification elements for a Creditor for an international payment instruction. Please note that Confirmation
+        of Payee is **NOT** required or expected for International Payments, as non-domestic Creditor accounts are not
         supported.
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAccountProperties:
