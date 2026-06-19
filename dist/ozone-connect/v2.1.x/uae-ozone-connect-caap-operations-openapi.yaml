@@ -765,6 +765,10 @@ paths:
 
         The API Hub will ensure that one of these conditions is met consistently, but LFIs should reject API operations
         that do not meet either requirement.
+
+        This operation duplicates those provided in Bank Data Sharing, with properties that are specific to the
+        implementation of CAAP. **CAAP users MUST implement this version of the `get /accounts` operation and MUST NOT
+        implement the equivalent operation from Bank Data Sharing.**
       operationId: caapFindAccounts
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
@@ -805,7 +809,12 @@ paths:
       tags:
         - accounts
       summary: Retrieve an account
-      description: Return the account details for the account indicated by the value of the `accountId` parameter.
+      description: |
+        Return the account details for the account indicated by the value of the `accountId` parameter.
+
+        This operation duplicates those provided in Bank Data Sharing, with properties that are specific to the
+        implementation of CAAP. **CAAP users MUST implement this version of the `get /accounts/{accountId}` operation and
+        MUST NOT implement the equivalent operation from Bank Data Sharing.**
       operationId: caapFindByAccountId
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
@@ -843,7 +852,13 @@ paths:
     get:
       operationId: CaapEmploymentInsuranceReadInsurancePoliciesOperation
       summary: Retrieve employment insurance policies
-      description: Retrieve all insurance policies to which access has been granted by the User
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that are
+        specific to the implementation of CAAP. **CAAP users MUST implement this version of the
+        `get /employment-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
         - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
@@ -882,7 +897,13 @@ paths:
     get:
       operationId: CaapHealthInsuranceReadInsurancePoliciesOperation
       summary: Retrieve health insurance policies
-      description: Retrieve all insurance policies to which access has been granted by the User
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that are
+        specific to the implementation of CAAP. **CAAP users MUST implement this version of the
+        `get /health-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
         - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
@@ -921,7 +942,13 @@ paths:
     get:
       operationId: CaapHomeInsuranceReadInsurancePoliciesOperation
       summary: Retrieve home insurance policies
-      description: Retrieve all insurance policies to which access has been granted by the User
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that are
+        specific to the implementation of CAAP. **CAAP users MUST implement this version of the
+        `get /home-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
         - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
@@ -960,7 +987,13 @@ paths:
     get:
       operationId: CaapLifeInsuranceReadInsurancePoliciesOperation
       summary: Retrieve life insurance policies
-      description: Retrieve all insurance policies to which access has been granted by the User
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that are
+        specific to the implementation of CAAP. **CAAP users MUST implement this version of the
+        `get /life-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
         - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
@@ -999,7 +1032,13 @@ paths:
     get:
       operationId: CaapMotorInsuranceReadInsurancePoliciesOperation
       summary: Retrieve motor insurance policies
-      description: Retrieve all insurance policies to which access has been granted by the User
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that are
+        specific to the implementation of CAAP. **CAAP users MUST implement this version of the
+        `get /motor-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
         - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
@@ -1038,7 +1077,13 @@ paths:
     get:
       operationId: CaapRentersInsuranceReadInsurancePoliciesOperation
       summary: Retrieve renters insurance policies
-      description: Retrieve all insurance policies to which access has been granted by the User
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that are
+        specific to the implementation of CAAP. **CAAP users MUST implement this version of the
+        `get /renters-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
         - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
@@ -1077,7 +1122,13 @@ paths:
     get:
       operationId: CaapTravelInsuranceReadInsurancePoliciesOperation
       summary: Retrieve travel insurance policies
-      description: Retrieve all insurance policies to which access has been granted by the User
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that are
+        specific to the implementation of CAAP. **CAAP users MUST implement this version of the
+        `get /travel-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
       parameters:
         - $ref: '#/components/parameters/OzoneConnect.providerId'
         - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
