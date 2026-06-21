@@ -32,6 +32,15 @@ info:
     standard version 2.0.
 
 
+    ### v2.1.4
+
+
+    * Removed the CAAP-specific header `o3-is-caap-consent-operation` from the `get /{insurance-type}-insurance-policies`
+      operations, the CAAP-conditional `PolicyEndDate`, `ProductName`, `BodyType`, and `PlateNumber` properties from the
+      insurance policy schemas, and related CAAP-conditional language. CAAP variants of these endpoints have been moved
+      to the CAAP Operations OpenAPI description.
+
+
     ### v2.1.3
 
 
@@ -61,7 +70,7 @@ info:
     * Initial version that delivers v2.1 requirements (see separate, detailed changelog for changes from last v2.1.x
     version).
 
-  version: v2.1.3
+  version: v2.1.4
 tags:
   - name: Employment Insurance
     description: Employment Insurance Operations
@@ -145,7 +154,6 @@ paths:
         - $ref: '#/components/parameters/OzoneConnect.consentId'
         - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
         - $ref: '#/components/parameters/InsurancePolicyIds'
-        - $ref: '#/components/parameters/IsCaapConsentOperation'
         - $ref: '#/components/parameters/OzoneConnect.page'
         - $ref: '#/components/parameters/OzoneConnect.page-size'
       responses:
@@ -857,7 +865,6 @@ paths:
         - $ref: '#/components/parameters/OzoneConnect.consentId'
         - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
         - $ref: '#/components/parameters/InsurancePolicyIds'
-        - $ref: '#/components/parameters/IsCaapConsentOperation'
         - $ref: '#/components/parameters/OzoneConnect.page'
         - $ref: '#/components/parameters/OzoneConnect.page-size'
       responses:
@@ -1553,7 +1560,6 @@ paths:
         - $ref: '#/components/parameters/OzoneConnect.consentId'
         - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
         - $ref: '#/components/parameters/InsurancePolicyIds'
-        - $ref: '#/components/parameters/IsCaapConsentOperation'
         - $ref: '#/components/parameters/OzoneConnect.page'
         - $ref: '#/components/parameters/OzoneConnect.page-size'
       responses:
@@ -1956,7 +1962,6 @@ paths:
         - $ref: '#/components/parameters/OzoneConnect.consentId'
         - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
         - $ref: '#/components/parameters/InsurancePolicyIds'
-        - $ref: '#/components/parameters/IsCaapConsentOperation'
         - $ref: '#/components/parameters/OzoneConnect.page'
         - $ref: '#/components/parameters/OzoneConnect.page-size'
       responses:
@@ -3149,7 +3154,6 @@ paths:
         - $ref: '#/components/parameters/OzoneConnect.consentId'
         - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
         - $ref: '#/components/parameters/InsurancePolicyIds'
-        - $ref: '#/components/parameters/IsCaapConsentOperation'
         - $ref: '#/components/parameters/OzoneConnect.page'
         - $ref: '#/components/parameters/OzoneConnect.page-size'
       responses:
@@ -3755,7 +3759,6 @@ paths:
         - $ref: '#/components/parameters/OzoneConnect.consentId'
         - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
         - $ref: '#/components/parameters/InsurancePolicyIds'
-        - $ref: '#/components/parameters/IsCaapConsentOperation'
         - $ref: '#/components/parameters/OzoneConnect.page'
         - $ref: '#/components/parameters/OzoneConnect.page-size'
       responses:
@@ -4556,7 +4559,6 @@ paths:
         - $ref: '#/components/parameters/OzoneConnect.consentId'
         - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
         - $ref: '#/components/parameters/InsurancePolicyIds'
-        - $ref: '#/components/parameters/IsCaapConsentOperation'
         - $ref: '#/components/parameters/OzoneConnect.page'
         - $ref: '#/components/parameters/OzoneConnect.page-size'
       responses:
@@ -5196,31 +5198,11 @@ components:
       in: query
       required: true
       description: >-
-        A common-separated list of insurance policy identifiers. Used to retrieve all insurance policies authorized by
+        A comma-separated list of insurance policy identifiers. Used to retrieve all insurance policies authorized by
         the User, which matches the `insurancePolicyIds` data for a given Consent at Consent Manager.
-
-
-        This parameter is **mandatory**. However, where `o3-is-caap-consent-operation` is `true` an empty value will be
-        sent, as insurance policy selection has not been completed at CAAP.
-
-
-        LFIs using CAAP **MUST** follow the guidance in `o3-is-caap-consent-operation` parameter.
       schema:
         type: string
       explode: false
-    IsCaapConsentOperation:
-      name: o3-is-caap-consent-operation
-      in: header
-      required: false
-      description: >-
-        Flag to indicate that query originates from CAAP and is invoked to get available insurance policies to allow the
-        User to authorize access to one-or-more insurance policies.
-
-
-        LFIs must return all eligible policies when value is `true` to facilitate User selection of policies in the CAAP
-        application.
-      schema:
-        type: boolean
     OzoneConnect.apiOperation:
       name: o3-api-operation
       in: header
@@ -16101,15 +16083,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AEInsurancePolicyProperties'
-          description: >-
-            List of available of insurance policies. The following optional properties **MUST** be returned when the
-            header field `o3-is-caap-consent-operation` is set to `true`:
-
-
-            * `PolicyEndDate`.
-
-
-            * `ProductName`
+          description: List of available insurance policies.
     AEInsurancePolicyProperties:
       type: object
       required:
@@ -16134,13 +16108,6 @@ components:
           type: string
           format: date
           description: Policy start date
-        PolicyEndDate:
-          type: string
-          format: date
-          description: Policy end date
-        ProductName:
-          type: string
-          description: Business name of the policy product as provided externally to the customer.
     AELifeInsurancePolicies1:
       type: object
       required:
@@ -16150,15 +16117,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AELifeInsurancePolicyProperties'
-          description: >-
-            List of available of insurance policies. The following optional properties **MUST** be returned when the
-            header field `o3-is-caap-consent-operation` is set to `true`:
-
-
-            * `PolicyEndDate`.
-
-
-            * `ProductName`
+          description: List of available insurance policies.
     AELifeInsurancePolicyProperties:
       type: object
       required:
@@ -16183,13 +16142,6 @@ components:
           type: string
           format: date
           description: Policy start date
-        PolicyEndDate:
-          type: string
-          format: date
-          description: Policy end date
-        ProductName:
-          type: string
-          description: Business name of the policy product as provided externally to the customer.
     AEMotorInsurancePolicies1:
       type: object
       required:
@@ -16199,21 +16151,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AEMotorInsurancePolicyProperties'
-          description: >-
-            List of available of insurance policies. The following optional properties **MUST** be returned when the
-            header field `o3-is-caap-consent-operation` is set to `true`:
-
-
-            * `PolicyEndDate`.
-
-
-            * `ProductName`.
-
-
-            * `BodyType`.
-
-
-            * `PlateNumber`.
+          description: List of available insurance policies.
     AEMotorInsurancePolicyProperties:
       type: object
       required:
@@ -16238,35 +16176,6 @@ components:
           type: string
           format: date
           description: Policy start date
-        PolicyEndDate:
-          type: string
-          format: date
-          description: Policy end date
-        ProductName:
-          type: string
-          description: Business name of the policy product as provided externally to the customer.
-        BodyType:
-          type: string
-          enum:
-            - Saloon
-            - 4WD
-            - Pickup
-            - Truck
-            - TrailerHead
-            - Trailer
-            - Water
-            - Fuel Tanker
-            - Buses
-            - Dumper
-            - Agriculture
-            - Forklift
-            - Heavy Equipment
-            - Motorcycle
-            - Others
-          description: 'The type motor vehicle like saloon, Station/SUV, coupe '
-        PlateNumber:
-          type: string
-          description: Vehicle registration plate number
     AEReadInsurancePolicies1:
       type: object
       required:

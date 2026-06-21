@@ -5,7 +5,9 @@
   "description": "Nebras Open Finance API Specifications",
   "scripts": {
     "test": "node --test supporting/tests/**/*.test.js",
-    "test:fast": "node --test supporting/tests/all/valid-openapi-yaml.test.js supporting/tests/latest/*.test.js supporting/tests/standards/*.test.js supporting/tests/api-hub/*.test.js supporting/tests/ozone-connect/*.test.js"
+    "test:fast": "node --test supporting/tests/all/valid-openapi-yaml.test.js supporting/tests/latest/*.test.js supporting/tests/standards/*.test.js supporting/tests/api-hub/*.test.js supporting/tests/ozone-connect/*.test.js",
+    "format": "node supporting/scripts/format-specs.js",
+    "format:check": "node supporting/scripts/format-specs.js --check"
   },
   "devDependencies": {
     "@redocly/cli": "^2.27.1",

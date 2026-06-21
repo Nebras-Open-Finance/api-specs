@@ -3990,7 +3990,7 @@ components:
         Representing the checks done in relation to the evidence
 
         OpenID Connect for Identity Assurance 1.0:
-        [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element)                
+        [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element)
       additionalProperties: false
     AEPartyIdentityEvidenceAttachment:
       type: object
@@ -4227,7 +4227,7 @@ components:
         in the evidence element, this element is used to cross reference the evidence to the AssuranceLevel followed
 
         OpenID Connect for Identity Assurance 1.0:
-        [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element)                
+        [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-verification-element)
       additionalProperties: false
     Claims:
       type: object
@@ -4650,7 +4650,7 @@ components:
             The type of evidence allowed for providing verification.
 
             OpenID Connect for Identity Assurance 1.0:
-            [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element)                
+            [https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html#name-evidence-element)
           anyOf:
             - $ref: '#/components/schemas/AEPartyIdentityEvidenceTypeDocument'
             - $ref: '#/components/schemas/AEPartyIdentityEvidenceTypeElectronicRecord'
