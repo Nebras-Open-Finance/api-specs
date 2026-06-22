@@ -129,3 +129,40 @@
     `RelationshipToSender`, `DateOfBirth`, `Nationality`, `SourceOfFunds` /
     `SourceOfIncome`, identity `Evidence`, and organisation identifiers such
     as `AnyBIC` / `LEI`). Domestic Creditor schemas are unchanged.
+
+- rules:
+    - request-property-became-required
+    - request-property-max-length-decreased
+  endpoints:
+    - method: POST
+      path: /payment-consents
+    - method: POST
+      path: /payments
+    - method: POST
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The international Creditor Agent's `PostalAddress`
+    (`PersonalIdentifiableInformation.Initiation.CreditorAgent.PostalAddress`
+    in the International Payment PII variant) is aligned onto the same address
+    schema as the international Creditor, as part of the SWIFT SR2026 work.
+    Both now reference a single shared `AEInternationalAddress` (renamed from
+    `AEInternationalCreditorAddress`); the Creditor Agent previously
+    referenced the legacy `AEAddress`.
+
+    Relative to `AEAddress`, `AEInternationalAddress` makes `TownName` required
+    and tightens its `maxLength` from 140 to 70 (the ISO 20022
+    `PostalAddress27` `Max70Text` bound), which oasdiff reports as
+    `request-property-became-required` and
+    `request-property-max-length-decreased` on the Creditor Agent `TownName`.
+
+    Rationale: ISO 20022 models both a party address (`Cdtr`) and a financial
+    institution address (`CdtrAgt/FinInstnId`) with the same `PostalAddress27`
+    type, so a single shared schema is the more standards-faithful design and
+    removes the divergence between the two international address shapes. The
+    agent `PostalAddress` remains optional, so a BIC-only Creditor Agent is
+    unaffected.
+
+    Impact: a TPP that supplies an international Creditor Agent address must
+    now include `TownName` and keep it within 70 characters. See the matching
+    entry under `uae-authorization-endpoints-openapi/` for POST /par.

@@ -33,7 +33,7 @@ info:
     ### v2.1.7
 
 
-    * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for SWIFT SR2026. The Creditor party is now a `oneOf` of Individual and Organization variants (discriminated by `IdentityType`): individual attributes (`FirstName` / `MiddleName` / `LastName`, `RelationshipToSender`, `DateOfBirth`, `Occupation`, `Nationality`, `Gender`, `CountryOfBirth`, `SourceOfIncome`, `SourceOfFunds`, `Evidence`), organisation identifiers (`AnyBIC`, `LEI`, `Identification` + `SchemeName`), shared `MobileNumber` / `Email`, and an object-valued `Name` (`en` / `ls`). Added SWIFT SR2026 fields to the Creditor `PostalAddress` (`PostCode`, `Room`, `Department`, `SubDepartment`, `TownLocationName`, and now-mandatory `TownName`), a `CreditorAgent.Branch` object, and `CreditorAccount.AccountType` (Savings / Current / Checking / Prepaid). Domestic Creditor schemas are unchanged.
+    * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for SWIFT SR2026. The Creditor party is now a `oneOf` of Individual and Organization variants (discriminated by `IdentityType`): individual attributes (object-valued `FirstName` / `MiddleName` / `LastName` (`en` / `ls`), `RelationshipToSender`, `DateOfBirth`, `Occupation`, `Nationality`, `Gender`, `CountryOfBirth`, `SourceOfIncome`, `SourceOfFunds`, `Evidence`), organisation identifiers (`AnyBIC`, `LEI`, `Identification` + `SchemeName`), shared `MobileNumber` / `Email`, and an object-valued `Name` (`en` / `ls`). Added SWIFT SR2026 fields to the international `PostalAddress` (`PostCode`, `Room`, `Department`, `SubDepartment`, `TownLocationName`, and now-mandatory `TownName`) — now a single `AEInternationalAddress` schema shared by both the Creditor and the Creditor Agent (the Creditor Agent previously used the legacy `AEAddress`) — a `CreditorAgent.Branch` object, and `CreditorAccount.AccountType` (Savings / Current / Checking / Prepaid). Domestic Creditor schemas are unchanged.
 
 
     ### v2.1.6
@@ -4599,20 +4599,50 @@ components:
         Name:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorName'
         FirstName:
-          type: string
-          minLength: 1
-          maxLength: 35
-          description: The Creditor's first (given) name.
+          type: object
+          properties:
+            en:
+              type: string
+              minLength: 1
+              maxLength: 35
+              description: English value of the Creditor's first (given) name.
+            ls:
+              type: string
+              minLength: 1
+              maxLength: 35
+              description: Local script value of the Creditor's first (given) name.
+          description: The Creditor's first (given) name, represented in English (`en`) and/or local script (`ls`).
+          additionalProperties: false
         MiddleName:
-          type: string
-          minLength: 1
-          maxLength: 35
-          description: The Creditor's middle name.
+          type: object
+          properties:
+            en:
+              type: string
+              minLength: 1
+              maxLength: 35
+              description: English value of the Creditor's middle name.
+            ls:
+              type: string
+              minLength: 1
+              maxLength: 35
+              description: Local script value of the Creditor's middle name.
+          description: The Creditor's middle name, represented in English (`en`) and/or local script (`ls`).
+          additionalProperties: false
         LastName:
-          type: string
-          minLength: 1
-          maxLength: 35
-          description: The Creditor's last (family) name.
+          type: object
+          properties:
+            en:
+              type: string
+              minLength: 1
+              maxLength: 35
+              description: English value of the Creditor's last (family) name.
+            ls:
+              type: string
+              minLength: 1
+              maxLength: 35
+              description: Local script value of the Creditor's last (family) name.
+          description: The Creditor's last (family) name, represented in English (`en`) and/or local script (`ls`).
+          additionalProperties: false
         RelationshipToSender:
           type: string
           enum:
@@ -4675,7 +4705,7 @@ components:
           pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
           description: The Creditor's email address.
         PostalAddress:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAddress'
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress'
         Evidence:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorEvidence'
       description: Identification elements for an individual (natural person) international Creditor.
@@ -4724,7 +4754,7 @@ components:
           pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
           description: The Creditor's email address.
         PostalAddress:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAddress'
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress'
       description: Identification elements for an organisation international Creditor.
       additionalProperties: false
 
@@ -4826,7 +4856,7 @@ components:
           minLength: 1
           maxLength: 140
         PostalAddress:
-          $ref: '#/components/schemas/AEAddress'
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress'
         Branch:
           type: object
           required:
@@ -4851,10 +4881,10 @@ components:
         Institution that holds the Creditor Account.
       additionalProperties: false
 
-    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAddress:
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress:
       description: >-
-        One-or-more addresses related to the international Creditor, based on the ISO 20022 `PostalAddress27`
-        definition and extended for SWIFT SR2026.
+        One-or-more addresses related to an international Creditor or Creditor Agent, based on the ISO 20022
+        `PostalAddress27` definition and extended for SWIFT SR2026.
       type: array
       minItems: 1
       items:

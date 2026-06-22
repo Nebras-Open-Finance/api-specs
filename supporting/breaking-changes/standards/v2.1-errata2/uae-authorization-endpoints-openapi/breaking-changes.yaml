@@ -134,3 +134,37 @@
     accordingly. The previously valid flat Creditor object (carrying only
     `Name` and `PostalAddress`) maps onto the new variants, which retain those
     properties.
+
+- rules:
+    - request-property-became-required
+    - request-property-max-length-decreased
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The international Creditor Agent's `PostalAddress`
+    (`PersonalIdentifiableInformation.Initiation.Creditor[*].CreditorAgent.PostalAddress`
+    in the International Payment PII variant) is aligned onto the same address
+    schema as the international Creditor itself, as part of the SWIFT SR2026
+    work. Both now reference a single shared `AEInternationalAddress` (renamed
+    from `AEInternationalCreditorAddress`); the Creditor Agent previously
+    referenced the legacy `AEAddress`.
+
+    Relative to `AEAddress`, the shared `AEInternationalAddress` makes
+    `TownName` required and tightens its `maxLength` from 140 to 70 (the ISO
+    20022 `PostalAddress27` `Max70Text` bound). oasdiff reports these as
+    `request-property-became-required` and
+    `request-property-max-length-decreased` on the Creditor Agent `TownName`.
+
+    Rationale: ISO 20022 models both a party address (`Cdtr`) and a financial
+    institution address (`CdtrAgt/FinInstnId`) with the same `PostalAddress27`
+    type, so a single shared schema is the more standards-faithful design and
+    removes the divergence between the two international address shapes. The
+    agent `PostalAddress` itself remains optional (only `SchemeName` and
+    `Identification` are required on the Creditor Agent), so a BIC-only agent
+    is unaffected.
+
+    Impact: a TPP that supplies an international Creditor Agent address must
+    now include `TownName` and keep it within 70 characters. The equivalent
+    change is recorded under `uae-bank-initiation-openapi/` for POST /payments.
