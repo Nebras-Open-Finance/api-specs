@@ -40,6 +40,11 @@ info:
     **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
     for deprecated properties.**
 
+    ### v2.1.6
+
+    * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for SWIFT SR2026. The Creditor party is now a `oneOf` of Individual and Organization variants (discriminated by `IdentityType`): individual attributes (`FirstName` / `MiddleName` / `LastName`, `RelationshipToSender`, `DateOfBirth`, `Occupation`, `Nationality`, `Gender`, `CountryOfBirth`, `SourceOfIncome`, `SourceOfFunds`, `Evidence`), organisation identifiers (`AnyBIC`, `LEI`, `Identification` + `SchemeName`), shared `MobileNumber` / `Email`, and an object-valued `Name` (`en` / `ls`). Added SWIFT SR2026 fields to the Creditor `PostalAddress` (`PostCode`, `Room`, `Department`, `SubDepartment`, `TownLocationName`, and now-mandatory `TownName`), a `CreditorAgent.Branch` object, and `CreditorAccount.AccountType` (Savings / Current / Checking / Prepaid). Domestic Creditor schemas are unchanged.
+
+
     ### v2.1.5
 
     * Aligned the `Risk` object with Standards: updated `AEAccountTypeCode` and the inline `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType` enum to `Retail / SME / Corporate` (was `Retail / Corporate` and a divergent `CurrentAccount / Savings / CreditCard / Mortgage / Finance` respectively), tightened `AERisk` and its descendants with `additionalProperties: false` on the payment-initiation side, carved out the three RAR-shape `SupplementaryData` blocks (`AEBankServiceInitiationRichAuthorizationRequests.AE*Indicators.SupplementaryData`) to be open extension points, and added `minLength: 1` / `maxLength: 70` to the `AddressLine` items.
@@ -75,7 +80,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
     * Removed support for single future-dated payment consents that are warehoused at the LFI.
-  version: v2.1.5
+  version: v2.1.6
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -4108,9 +4113,9 @@ components:
         - CreditorAccount
       properties:
         CreditorAgent:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AECreditorAgentProperties'
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAgentProperties'
         Creditor:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AECreditorProperties'
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorParty'
         CreditorAccount:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAccountProperties'
       description: >-
@@ -4118,6 +4123,420 @@ components:
         of Payee is **NOT** required or expected for International Payments, as non-domestic Creditor accounts are not
         supported.
       additionalProperties: false
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorParty:
+      oneOf:
+        - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalIndividualCreditor'
+        - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalOrganisationCreditor'
+      discriminator:
+        propertyName: IdentityType
+        mapping:
+          Individual: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalIndividualCreditor'
+          Organization: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalOrganisationCreditor'
+      description: >-
+        Party to which an amount of money is due, for an international payment. The Creditor is either an Individual
+        (natural person) or an Organization, selected by the `IdentityType` discriminator.
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorName:
+      type: object
+      properties:
+        en:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: English value of the Creditor name.
+        ls:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Local script value of the Creditor name.
+      description: The Creditor name, represented in English (`en`) and/or local script (`ls`).
+      additionalProperties: false
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalIndividualCreditor:
+      type: object
+      required:
+        - IdentityType
+      properties:
+        IdentityType:
+          type: string
+          enum:
+            - Individual
+          description: Discriminator indicating the Creditor is an individual (natural person).
+        Name:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorName'
+        FirstName:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: The Creditor's first (given) name.
+        MiddleName:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: The Creditor's middle name.
+        LastName:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: The Creditor's last (family) name.
+        RelationshipToSender:
+          type: string
+          enum:
+            - Self
+            - Spouse
+            - Parent
+            - Child
+            - Sibling
+            - Relative
+            - Friend
+            - Dependent
+            - Employer
+            - Employee
+            - Business
+            - Other
+          description: The Creditor's relationship to the sender (Debtor).
+        DateOfBirth:
+          type: string
+          format: date
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          description: The Creditor's date of birth, in YYYY-MM-DD format.
+        Occupation:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: The Creditor's occupation. Free-text, as values are driven by varying regulator requirements.
+        Nationality:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: The Creditor's nationality, as an ISO 3166-1 alpha-2 country code.
+        Gender:
+          type: string
+          enum:
+            - Male
+            - Female
+            - Other
+          description: The Creditor's gender.
+        CountryOfBirth:
+          type: string
+          pattern: ^[A-Z]{2}$
+          description: The Creditor's country of birth, as an ISO 3166-1 alpha-2 country code.
+        SourceOfIncome:
+          type: string
+          minLength: 1
+          maxLength: 256
+          description: The Creditor's source of income.
+        SourceOfFunds:
+          type: string
+          minLength: 1
+          maxLength: 256
+          description: >-
+            The Creditor's source of funds. Free-text; populated where Enhanced Due Diligence (e.g. by a
+            correspondent bank) requires further information about the transaction.
+        MobileNumber:
+          type: string
+          pattern: ^\+?[0-9]{1,20}$
+          description: The Creditor's mobile number, in MSISDN format.
+        Email:
+          type: string
+          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
+          description: The Creditor's email address.
+        PostalAddress:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAddress'
+        Evidence:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorEvidence'
+      description: Identification elements for an individual (natural person) international Creditor.
+      additionalProperties: false
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalOrganisationCreditor:
+      type: object
+      required:
+        - IdentityType
+      properties:
+        IdentityType:
+          type: string
+          enum:
+            - Organization
+          description: Discriminator indicating the Creditor is an organisation.
+        Name:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorName'
+        AnyBIC:
+          type: string
+          pattern: ^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$
+          description: The organisation's Business Identifier Code (BIC), per ISO 9362.
+        LEI:
+          type: string
+          pattern: ^[A-Z0-9]{18}[0-9]{2}$
+          description: The organisation's Legal Entity Identifier (LEI), per ISO 17442.
+        Identification:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: >-
+            Other organisation identifier, used in the edge cases where neither `AnyBIC` nor `LEI` is available.
+            The identification scheme is given in `SchemeName`.
+        SchemeName:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: >-
+            Name of the identification scheme used for `Identification` (e.g. TradeLicence, TaxID, DUNS). Free-text,
+            as there is no definitive scheme list for these edge cases.
+        MobileNumber:
+          type: string
+          pattern: ^\+?[0-9]{1,20}$
+          description: The Creditor's mobile number, in MSISDN format.
+        Email:
+          type: string
+          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
+          description: The Creditor's email address.
+        PostalAddress:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAddress'
+      description: Identification elements for an organisation international Creditor.
+      additionalProperties: false
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorEvidence:
+      type: array
+      minItems: 1
+      description: >-
+        Identity documents evidencing the Creditor's identity. Applicable to individual Creditors.
+      items:
+        type: object
+        properties:
+          Type:
+            type: string
+            enum:
+              - Passport
+              - DrivingPermit
+              - IdCard
+              - ResidencePermit
+            description: The type of identity document.
+          DocumentNumber:
+            type: string
+            minLength: 1
+            maxLength: 35
+            description: The document number.
+          PersonalNumber:
+            type: string
+            minLength: 1
+            maxLength: 35
+            description: A personal number contained in the document.
+          SerialNumber:
+            type: string
+            minLength: 1
+            maxLength: 35
+            description: A serial number contained in the document.
+          CalendarType:
+            type: string
+            enum:
+              - IslamicCalendar
+              - GregorianCalendar
+            description: The calendar used for the document's issuance and expiry dates.
+          DateOfIssuance:
+            type: string
+            format: date-time
+            description: The date and time the document was issued.
+          DateOfExpiry:
+            type: string
+            format: date-time
+            description: The date and time the document expires.
+          Issuer:
+            type: object
+            required:
+              - Name
+              - CountryCode
+              - Jurisdiction
+            properties:
+              Name:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: Name of the authority that issued the document.
+              CountryCode:
+                type: string
+                pattern: ^[A-Z]{2}$
+                description: Country that issued the document, as an ISO 3166-1 alpha-2 country code.
+              Jurisdiction:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: The jurisdiction under which the document was issued.
+            description: >-
+              The authority that issued the document. When the `Issuer` object is present, `Name`, `CountryCode` and
+              `Jurisdiction` are mandatory.
+            additionalProperties: false
+        additionalProperties: false
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAgentProperties:
+      type: object
+      required:
+        - SchemeName
+        - Identification
+      properties:
+        SchemeName:
+          type: string
+          description: >
+            The identification scheme for uniquely identifying the Agent.
+
+            * BICFI: The BIC/SWIFT Code
+
+            * Other: Identifier based on non-SWIFT payment system or local market scheme.
+          enum:
+            - BICFI
+            - Other
+        Identification:
+          description: Identifier that can be the BIC/SWIFT code or target payment scheme identifier.
+          type: string
+        Name:
+          description: Name by which an agent is known and which is usually used to identify that agent.
+          type: string
+          minLength: 1
+          maxLength: 140
+        PostalAddress:
+          $ref: '#/components/schemas/AEAddress'
+        Branch:
+          type: object
+          required:
+            - Identification
+          properties:
+            Identification:
+              type: string
+              minLength: 1
+              maxLength: 35
+              description: Identification of the specific branch of the financial institution.
+            Name:
+              type: string
+              minLength: 1
+              maxLength: 140
+              description: Name of the specific branch of the financial institution.
+          description: >-
+            The specific branch of the financial institution that holds the Creditor Account. When the `Branch`
+            object is present, `Identification` is mandatory.
+          additionalProperties: false
+      description: >-
+        Properties of the Creditor Agent for an international payment, which provides information on the Financial
+        Institution that holds the Creditor Account.
+      additionalProperties: false
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAddress:
+      description: >-
+        One-or-more addresses related to the international Creditor, based on the ISO 20022 `PostalAddress27`
+        definition and extended for SWIFT SR2026.
+      type: array
+      minItems: 1
+      items:
+        type: object
+        required:
+          - AddressType
+          - AddressLine
+          - TownName
+          - Country
+        properties:
+          AddressType:
+            description: The type of address.
+            type: string
+            enum:
+              - Billing
+              - Business
+              - Correspondence
+              - DeliveryTo
+              - MailTo
+              - POBox
+              - Postal
+              - Permanent
+              - Residential
+              - Statement
+              - Other
+          Department:
+            description: Identification of a division of a large organisation or building.
+            type: string
+            minLength: 1
+            maxLength: 70
+          SubDepartment:
+            description: Identification of a sub-division of a large organisation or building.
+            type: string
+            minLength: 1
+            maxLength: 70
+          AddressLine:
+            description: >-
+              Information that locates and identifies a specific address for a transaction entry, that is presented in
+              free format text.
+            type: array
+            minItems: 1
+            maxItems: 7
+            items:
+              type: string
+              minLength: 1
+              maxLength: 70
+          BuildingNumber:
+            description: The unit, apartment, or villa number within a building or community
+            type: string
+            minLength: 1
+            maxLength: 16
+          Room:
+            description: Building room number.
+            type: string
+            minLength: 1
+            maxLength: 16
+          BuildingName:
+            description: Name of the building or house.
+            type: string
+            minLength: 1
+            maxLength: 140
+          Floor:
+            description: Floor or storey within a building.
+            type: string
+            minLength: 1
+            maxLength: 70
+          PostBox:
+            description: The P.O. Box number assigned to the recipient for mail delivery.
+            type: string
+            minLength: 1
+            maxLength: 16
+          PostCode:
+            description: Identifier consisting of a group of letters and/or numbers added to a postal address.
+            type: string
+            minLength: 1
+            maxLength: 16
+          StreetName:
+            description: The name of the street or road where the property is located.
+            type: string
+            minLength: 1
+            maxLength: 140
+          TownLocationName:
+            description: Specific location name within the town.
+            type: string
+            minLength: 1
+            maxLength: 70
+          TownName:
+            description: Name of a built-up area, such as a town or city.
+            type: string
+            minLength: 1
+            maxLength: 70
+          DistrictName:
+            description: The district, community, or neighbourhood where the property is located.
+            type: string
+            minLength: 1
+            maxLength: 140
+          CountrySubDivision:
+            description: Country subdivision, such as state or province. Where the address is in the UAE this is the
+              Emirate where the address is registered.
+            anyOf:
+              - type: string
+                enum:
+                - AbuDhabi
+                - Ajman
+                - Dubai
+                - Fujairah
+                - RasAlKhaimah
+                - Sharjah
+                - UmmAlQuwain
+              - type: string
+          Country:
+            description: The country associated with the address, represented using the ISO 3166-1 alpha-2 country code.
+            type: string
+            pattern: ^[A-Z]{2}$
+        additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAccountProperties:
       type: object
       required:
@@ -4136,6 +4555,16 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AETradingName'
         Type:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AECreditorAccountTypeCodes'
+        AccountType:
+          type: string
+          enum:
+            - Savings
+            - Current
+            - Checking
+            - Prepaid
+          description: >-
+            The type of the Creditor account. This is distinct from `Type`, which classifies the payee segment
+            (e.g. Individual, Merchant).
       description: Unambiguous identification of the account of the creditor to which a credit entry will be posted.
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorExternalAccountIdentificationCode:

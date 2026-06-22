@@ -94,3 +94,38 @@
     long enforced these bounds, but the parity test surfaced them as a
     divergence with PAR and the cross-spec convergence is being recorded
     here.
+
+- rule: request-property-removed
+  endpoints:
+    - method: POST
+      path: /payment-consents
+    - method: POST
+      path: /payments
+    - method: POST
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Recorded for completeness and traceability. oasdiff classifies this
+    change as a warning, not an ERR, so the breaking-changes test does not
+    require the entry; it is documented here alongside the equivalent
+    ERR-level record under `uae-authorization-endpoints-openapi/`.
+
+    The international Creditor party
+    (`PersonalIdentifiableInformation.Initiation.Creditor` in the
+    International Payment PII variant) is restructured from a single flat
+    `object` into a `oneOf` of an Individual and an Organization variant,
+    discriminated by `IdentityType`, for SWIFT SR2026 alignment. Because the
+    Payments-side PII models the Creditor as a single object — the PAR side
+    (`uae-authorization-endpoints-openapi.yaml`) models it as an array — oasdiff
+    reports the change here as removal of the previous direct `Creditor.Name`
+    and `Creditor.PostalAddress` properties rather than as a property type
+    change. Removing optional request properties is backward compatible: both
+    properties continue to exist inside the new Individual and Organization
+    variants, so a TPP sending the previous flat Creditor object remains
+    valid.
+
+    Impact: TPPs gain the structured Individual / Organization beneficiary
+    attributes required for cross-border payments (name parts,
+    `RelationshipToSender`, `DateOfBirth`, `Nationality`, `SourceOfFunds` /
+    `SourceOfIncome`, identity `Evidence`, and organisation identifiers such
+    as `AnyBIC` / `LEI`). Domestic Creditor schemas are unchanged.

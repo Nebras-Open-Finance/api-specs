@@ -83,3 +83,54 @@
     A parity test under `supporting/tests/standards/` now enforces that
     every field of the Risk object is schema-equivalent between the PAR
     and Payments specs, so this class of divergence cannot recur silently.
+
+- rule: request-property-min-length-increased
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `AddressLine.items` on the PAR side now carries `minLength: 1`, matching
+    the constraint already present on the Payments side. This affects the
+    `AddressLine` arrays under the Creditor `PostalAddress`, the
+    CreditorAgent `PostalAddress`, and `Risk.DestinationDeliveryAddress`
+    `NationalAddress`, in both the Domestic and International Payment PII
+    variants.
+
+    This is the converse direction of the alignment already recorded under
+    `uae-bank-initiation-openapi/` (rationale there): Payments has long
+    enforced `minLength: 1` / `maxLength: 70` on address lines, while the PAR
+    side left `minLength` unset (effectively 0). v2.1-errata2 brings PAR into
+    line so a TPP can send the same address to PAR and to POST /payments and
+    stay schema-valid in both. The `maxLength: 70` additions on the same
+    properties are reported by oasdiff only as warnings and are not listed
+    here.
+
+    Impact: a TPP that sent an empty-string address line to POST /par will
+    now receive a validation error; the remedy is to omit the empty line.
+
+- rule: request-property-type-changed
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The international Creditor party
+    (`PersonalIdentifiableInformation.Initiation.Creditor[*].Creditor` in the
+    International Payment PII variant) changes from a single flat `object` to
+    a `oneOf` of an Individual and an Organization variant, discriminated by
+    `IdentityType`, as part of the SWIFT SR2026 alignment. oasdiff reports the
+    restructure as a type change on the `Creditor` property.
+
+    This adds the structured beneficiary attributes required for cross-border
+    payments (name parts, `RelationshipToSender`, `DateOfBirth`, `Nationality`,
+    `SourceOfFunds`/`SourceOfIncome`, identity `Evidence`, organisation
+    identifiers such as `AnyBIC`/`LEI`, and an object-valued `Name`). The
+    equivalent restructure is applied to the Payments, Consent Manager and
+    Ozone Connect specs. Domestic Creditor schemas are unchanged.
+
+    Impact: a TPP populating the international Creditor must now send either a
+    valid Individual or Organization object and set `IdentityType`
+    accordingly. The previously valid flat Creditor object (carrying only
+    `Name` and `PostalAddress`) maps onto the new variants, which retain those
+    properties.
