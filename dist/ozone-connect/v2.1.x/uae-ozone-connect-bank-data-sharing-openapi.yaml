@@ -61,6 +61,14 @@ info:
     **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
     for deprecated properties.**
 
+    ### v2.1.11
+
+
+    * Removed CAAP-specific headers (`o3-is-caap-consent-operation`, `o3-caap-consent-use-case`), the `availableBalance`
+      property on `CbuaeAccount`, and related CAAP-conditional language. CAAP variants of these endpoints have been
+      moved to the CAAP Operations OpenAPI description. `accountIds` is now unconditionally required on `get /accounts`.
+
+
     ### v2.1.10
 
 
@@ -109,7 +117,7 @@ info:
     * Changed `paymentModes` to optional.
 
 
-  version: v2.1.10
+  version: v2.1.11
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -145,17 +153,7 @@ paths:
       tags:
         - accounts
       summary: Retrieve accounts
-      description: |
-        Return the list of accounts that either:
-      
-        * Match the value of the `accountIds` parameter.
-
-        * Are in scope for Bank Data Sharing and must be displayed to the User in CAAP, where 
-          `o3-is-caap-consent-operation` is set to `true` and `accountIds` not sent.
-
-        The API Hub will ensure that one of these conditions is met consistently, but LFIs should reject API operations
-        that do not meet either requirement. LFIs that do not implement CAAP **MUST** consider the `accountIds` 
-        parameter to be mandatory.
+      description: Return the list of accounts that match the value of the `accountIds` parameter.
       operationId: findAccounts
       parameters:
         - $ref: '#/components/parameters/providerId'
@@ -171,17 +169,13 @@ paths:
         - $ref: '#/components/parameters/psuIdentifier'
         - name: accountIds
           in: query
-          description: >-
-            Comma separated ids of the accounts to be returned, **MUST** be supplied when o3-is-caap-consent-operation
-            is false or omitted.
+          description: Comma separated ids of the accounts to be returned.
           schema:
             type: string
             minLength: 1
-          required: false
+          required: true
         - $ref: '#/components/parameters/page'
         - $ref: '#/components/parameters/page-size'
-        - $ref: '#/components/parameters/isCaapConsentOperation'
-        - $ref: '#/components/parameters/caapConsentUseCase'
       responses:
         '200':
           description: successful operation
@@ -224,8 +218,6 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/isCaapConsentOperation'
-        - $ref: '#/components/parameters/caapConsentUseCase'
       responses:
         '200':
           description: successful operation
@@ -679,7 +671,8 @@ paths:
 
         The API must return the products linked to the account identified by the `accountId` path parameter.
 
-        If no products are found for the account, the call must return a success status code `200` with an empty `data` array.
+        If no products are found for the account, the call must return a success status code `200` with an empty `data`
+        array.
       operationId: findProducts
       parameters:
         - $ref: '#/components/parameters/providerId'
@@ -1001,38 +994,6 @@ components:
             identifies the account resource.
         servicer:
           $ref: '#/components/schemas/AEBranchAndFinancialInstitutionIdentification5_0'
-        availableBalance:
-          description: >
-            Required where CAAP is implemented by an LFI and the value of the header field 
-            `o3-is-caap-consent-operation` is set to true. Omitted by non-CAAP users. Provides the available balance on 
-            the account for use in CAAP consent user journey. LFIs must provide the `balanceType` value equivalent to 
-            that which their customer would see in a internet or mobile banking payment journey.
-            This property is specified as an array to future proof against changes to the CAAP customer experience, 
-            where more than one balance in the consent authorization screen may be required.
-          minItems: 1
-          items:
-            type: object
-            required:
-              - creditDebitIndicator
-              - balanceType
-              - timestamp
-              - amount
-            properties:
-              creditDebitIndicator:
-                $ref: '#/components/schemas/AECreditDebitIndicator'
-              balanceType:
-                $ref: '#/components/schemas/CbuaeBalanceType'
-              timestamp:
-                $ref: '#/components/schemas/AEBalanceCheckDateTime'
-              amount:
-                $ref: '#/components/schemas/OBActiveOrHistoricCurrencyAndAmount_8'
-              creditLines:
-                description: Credit line available to the customer for the given balance, provided to allow the
-                  available overdraft to be provided in the consent authorization user experience.
-                type: array
-                minItems: 1
-                items:
-                  $ref: '#/components/schemas/CbuaeCreditLine'
 
         # Extended Product Data Enhancement
 
@@ -4941,46 +4902,6 @@ components:
         default: 100
         type: integer
       style: form
-    isCaapConsentOperation:
-      name: o3-is-caap-consent-operation
-      in: header
-      description: |
-        Flag to indicate that query originates from CAAP and is invoked to get available accounts.
-
-        LFIs must return all eligible accounts and/or populate all CAAP-specific response properties when the value is 
-        `true` to facilitate User selection or Consent operations.
-
-        This parameter is **NOT** required for non-CAAP use cases. LFIs who do not use CAAP for User Authentication and
-        Authorization should ignore this parameter.
-      required: false
-      schema:
-        type: boolean
-    caapConsentUseCase:
-      name: o3-caap-consent-use-case
-      in: header
-      description: >
-        Value that indicates the use case for a given CAAP consent request, sent when a list of eligible accounts is
-        required for a consent authorized through CAAP, or specific properties are required for a Consent operation.
-
-        Supported values are:
-
-        - `accounts`: Consent for a Bank Data Sharing use case.
-
-        - `payments`: Consent for a Bank Service Initiation use case.
-
-
-        LFIs **MUST** return the accounts that are eligible based on the use case and their understanding of the
-        Open Finance Framework requirements.
-
-
-        This parameter is **NOT** required for non-CAAP use cases. LFIs who do not use CAAP for User Authentication and
-        Authorization should ignore this parameter.
-      required: false
-      schema:
-        type: string
-        enum:
-          - accounts
-          - payments
   securitySchemes:
     OzoneConnectApiKey:
       description: >-

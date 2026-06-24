@@ -1,11 +1,11 @@
 openapi: 3.0.0
 info:
-  title: Ozone Connect - UAE User Operations API Description
+  title: Ozone Connect - UAE CAAP Operations API Description
   description: >
-    ## Ozone Connect - UAE User Operations API Description
+    ## Ozone Connect - UAE CAAP Operations API Description
 
 
-    This document provides an API description in [OpenAPI](https://spec.openapis.org/oas/v3.0.1.html) for User
+    This document provides an API description in [OpenAPI](https://spec.openapis.org/oas/v3.0.1.html) for CAAP
     Operations API for Ozone Connect that support interactions with services hosted on the API Hub.
 
 
@@ -32,9 +32,25 @@ info:
     standard version 2.0.
 
 
+    ### v2.1.4
+
+
+    * Renamed API from User Operations to CAAP Operations.
+
+
+    * Added `get /accounts` and `get /accounts/{accountId}` operations (previously on Bank Data Sharing), carrying the
+      CAAP-specific `o3-is-caap-consent-operation` and `o3-caap-consent-use-case` headers and the `availableBalance`
+      property on the account.
+
+
+    * Added `get /{insurance-type}-insurance-policies` operations for Employment, Health, Home, Life, Motor, Renters,
+      and Travel insurance (previously on Insurance), carrying the CAAP-specific `o3-is-caap-consent-operation` header
+      and CAAP-only response properties (`PolicyEndDate`, `ProductName`, `BodyType`, `PlateNumber`).
+
+
     ### v2.1.3
 
-    * Changed `pattern` regexes on the `AEActiveOrHistoricAmount`, `ControlSum`, and `Amount` schemas, which were 
+    * Changed `pattern` regexes on the `AEActiveOrHistoricAmount`, `ControlSum`, and `Amount` schemas, which were
       over-escaped in YAML and failed to validate decimal monetary values.
 
 
@@ -51,7 +67,7 @@ info:
 
 
     * Added initial version for compatibility with v2.1-rc2 of standards.
-  version: v2.1.3
+  version: v2.1.4
 tags:
   - name: User Verification
     description: Operations that allow a User to be verified in the API Hub
@@ -65,6 +81,22 @@ tags:
       institution.
   - name: Consent Validation
     description: Operations that allow a Consent to be validated at the financial institution.
+  - name: accounts
+    description: Operations to support returning accounts data with CAAP-specific properties for Consent operations
+  - name: Employment Insurance
+    description: Employment Insurance Operations
+  - name: Health Insurance
+    description: Health Insurance Operations
+  - name: Home Insurance
+    description: Home Insurance Operations
+  - name: Life Insurance
+    description: Life Insurance Operations
+  - name: Motor Insurance
+    description: Motor Insurance Operations
+  - name: Renters Insurance
+    description: Renters Insurance Operations
+  - name: Travel Insurance
+    description: Travel Insurance Operations
 paths:
   /consent/actions/augment:
     post:
@@ -718,6 +750,419 @@ paths:
                   $ref: '#/components/schemas/OzoneConnectInitializeUserRegistrationRequestBody'
               required:
                 - data
+  /accounts:
+    get:
+      tags:
+        - accounts
+      summary: Retrieve accounts
+      description: |
+        Return the list of accounts that either:
+
+        * Match the value of the `accountIds` parameter.
+
+        * Are in scope for Bank Data Sharing and must be displayed to the User in CAAP, where
+          `o3-is-caap-consent-operation` is set to `true` and `accountIds` not sent.
+
+        The API Hub will ensure that one of these conditions is met consistently, but LFIs should reject API operations
+        that do not meet either requirement.
+
+        This operation duplicates those provided in Bank Data Sharing, with properties that are specific to the
+        implementation of CAAP. **CAAP users MUST implement this version of the `get /accounts` operation and MUST NOT
+        implement the equivalent operation from Bank Data Sharing.**
+      operationId: caapFindAccounts
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.aspspId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/accountIds'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/caapConsentUseCase'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+  /accounts/{accountId}:
+    get:
+      tags:
+        - accounts
+      summary: Retrieve an account
+      description: |
+        Return the account details for the account indicated by the value of the `accountId` parameter.
+
+        This operation duplicates those provided in Bank Data Sharing, with properties that are specific to the
+        implementation of CAAP. **CAAP users MUST implement this version of the `get /accounts/{accountId}` operation
+        and MUST NOT implement the equivalent operation from Bank Data Sharing.**
+      operationId: caapFindByAccountId
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.aspspId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/accountId'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/caapConsentUseCase'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+  /employment-insurance-policies:
+    get:
+      operationId: CaapEmploymentInsuranceReadInsurancePoliciesOperation
+      summary: Retrieve employment insurance policies
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that
+        are specific to the implementation of CAAP. **CAAP users MUST implement this version of the `get
+        /employment-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/InsurancePolicyIds'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadInsurancePolicies1'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - Employment Insurance
+  /health-insurance-policies:
+    get:
+      operationId: CaapHealthInsuranceReadInsurancePoliciesOperation
+      summary: Retrieve health insurance policies
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that
+        are specific to the implementation of CAAP. **CAAP users MUST implement this version of the `get
+        /health-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/InsurancePolicyIds'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadInsurancePolicies1'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - Health Insurance
+  /home-insurance-policies:
+    get:
+      operationId: CaapHomeInsuranceReadInsurancePoliciesOperation
+      summary: Retrieve home insurance policies
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that
+        are specific to the implementation of CAAP. **CAAP users MUST implement this version of the `get
+        /home-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/InsurancePolicyIds'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadInsurancePolicies1'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - Home Insurance
+  /life-insurance-policies:
+    get:
+      operationId: CaapLifeInsuranceReadInsurancePoliciesOperation
+      summary: Retrieve life insurance policies
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that
+        are specific to the implementation of CAAP. **CAAP users MUST implement this version of the `get
+        /life-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/InsurancePolicyIds'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadLifeInsurancePolicies1'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - Life Insurance
+  /motor-insurance-policies:
+    get:
+      operationId: CaapMotorInsuranceReadInsurancePoliciesOperation
+      summary: Retrieve motor insurance policies
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that
+        are specific to the implementation of CAAP. **CAAP users MUST implement this version of the `get
+        /motor-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/InsurancePolicyIds'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadMotorInsurancePolicies1'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - Motor Insurance
+  /renters-insurance-policies:
+    get:
+      operationId: CaapRentersInsuranceReadInsurancePoliciesOperation
+      summary: Retrieve renters insurance policies
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that
+        are specific to the implementation of CAAP. **CAAP users MUST implement this version of the `get
+        /renters-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/InsurancePolicyIds'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadInsurancePolicies1'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - Renters Insurance
+  /travel-insurance-policies:
+    get:
+      operationId: CaapTravelInsuranceReadInsurancePoliciesOperation
+      summary: Retrieve travel insurance policies
+      description: |
+        Retrieve all insurance policies to which access has been granted by the User
+
+        This operation duplicates those provided in the Ozone Connect Insurance API description, with properties that
+        are specific to the implementation of CAAP. **CAAP users MUST implement this version of the `get
+        /travel-insurance-policies` operation and MUST NOT implement the equivalent operation from Ozone Connect
+        Insurance.**
+      parameters:
+        - $ref: '#/components/parameters/OzoneConnect.providerId'
+        - $ref: '#/components/parameters/OzoneConnect.callerOrgId'
+        - $ref: '#/components/parameters/OzoneConnect.callerClientId'
+        - $ref: '#/components/parameters/OzoneConnect.callerSoftwareStatementId'
+        - $ref: '#/components/parameters/OzoneConnect.apiUri'
+        - $ref: '#/components/parameters/OzoneConnect.apiOperation'
+        - $ref: '#/components/parameters/OzoneConnect.callerInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.ozoneInteractionId'
+        - $ref: '#/components/parameters/OzoneConnect.consentId'
+        - $ref: '#/components/parameters/OzoneConnect.psuIdentifier'
+        - $ref: '#/components/parameters/InsurancePolicyIds'
+        - $ref: '#/components/parameters/isCaapConsentOperation'
+        - $ref: '#/components/parameters/OzoneConnect.page'
+        - $ref: '#/components/parameters/OzoneConnect.page-size'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AEReadInsurancePolicies1'
+        '400':
+          $ref: '#/components/responses/error400Response'
+        '403':
+          $ref: '#/components/responses/error403Response'
+        '409':
+          $ref: '#/components/responses/error409Response'
+        '500':
+          $ref: '#/components/responses/error500Response'
+        default:
+          $ref: '#/components/responses/errorResponse'
+      tags:
+        - Travel Insurance
 components:
   parameters:
     OzoneConnect.apiOperation:
@@ -778,6 +1223,114 @@ components:
       description: Identifier for the financial institution that the request is targeted to
       schema:
         type: string
+    OzoneConnect.aspspId:
+      name: o3-aspsp-id
+      in: header
+      required: true
+      deprecated: true
+      description: >-
+        Identifier for the financial institution that the request is targeted to. This header is deprecated and will be
+        removed in a future version of Ozone Connect. Use `o3-provider-id` instead.
+      schema:
+        type: string
+    OzoneConnect.consentId:
+      name: o3-consent-id
+      in: header
+      required: true
+      description: The consentId for which this call is being made
+      schema:
+        type: string
+    OzoneConnect.psuIdentifier:
+      name: o3-psu-identifier
+      in: header
+      required: true
+      description: A Base64 encoded representation of the psuIdentifier JSON object.
+      schema:
+        type: string
+    OzoneConnect.page:
+      name: page
+      in: query
+      required: true
+      description: Page of results to request (standard pagination)
+      schema:
+        type: integer
+        default: 1
+    OzoneConnect.page-size:
+      name: page-size
+      in: query
+      required: true
+      description: Page size to request. Default is 100 to comply with the Operating Guidelines for the Open Finance Framework.
+      schema:
+        type: integer
+        default: 100
+    isCaapConsentOperation:
+      name: o3-is-caap-consent-operation
+      in: header
+      required: false
+      description: |
+        Flag to indicate that query originates from CAAP and is invoked to get available accounts or policies.
+
+        LFIs must return all eligible accounts/policies and/or populate all CAAP-specific response properties when the
+        value is `true` to facilitate User selection or Consent operations.
+      schema:
+        type: boolean
+    caapConsentUseCase:
+      name: o3-caap-consent-use-case
+      in: header
+      required: false
+      description: >
+        Value that indicates the use case for a given CAAP consent request, sent when a list of eligible accounts is
+        required for a consent authorized through CAAP, or specific properties are required for a Consent operation.
+
+        Supported values are:
+
+        - `accounts`: Consent for a Bank Data Sharing use case.
+
+        - `payments`: Consent for a Bank Service Initiation use case.
+
+
+        LFIs **MUST** return the accounts that are eligible based on the use case and their understanding of the
+        Open Finance Framework requirements.
+      schema:
+        type: string
+        enum:
+          - accounts
+          - payments
+    accountId:
+      name: accountId
+      in: path
+      description: Id of the account to be queried
+      required: true
+      schema:
+        type: string
+    accountIds:
+      name: accountIds
+      in: query
+      description: >-
+        Comma separated ids of the accounts to be returned. **MUST** be supplied when `o3-is-caap-consent-operation` is
+        `false` or omitted. May be empty when `o3-is-caap-consent-operation` is `true`, since account selection has not
+        been completed at CAAP.
+      schema:
+        type: string
+        minLength: 1
+      required: false
+    InsurancePolicyIds:
+      name: insurancePolicyIds
+      in: query
+      required: true
+      description: >-
+        A comma-separated list of insurance policy identifiers. Used to retrieve all insurance policies authorized by
+        the User, which matches the `insurancePolicyIds` data for a given Consent at Consent Manager.
+
+
+        This parameter is **mandatory**. However, where `o3-is-caap-consent-operation` is `true` an empty value will be
+        sent, as insurance policy selection has not been completed at CAAP.
+
+
+        LFIs using CAAP **MUST** follow the guidance in `o3-is-caap-consent-operation` parameter.
+      schema:
+        type: string
+      explode: false
   schemas:
     AECustomErrorCode:
       type: string
@@ -3947,6 +4500,819 @@ components:
       description: >-
         Properties of the CAAP Consent Validation operation at the LFI. Includes decrypted PII, where applicable, to be
         used in the CAAP User journey.
+    AccountsResponse:
+      type: object
+      description: |
+        A descriptor for an account.
+        This is a composite object that may be expanded in the future to support
+        additional account types for new API standards and account types.
+      example:
+        data:
+          - id: string
+            accountType: Retail
+            accountSubType: CurrentAccount
+            currency: GBP
+            status: Active
+            accountHolderName: string
+            servicer:
+              schemeName: BICFI
+              identification: string
+            accountNumbers:
+              - name: string
+                schemeName: IBAN
+                identification: string
+            product:
+              id: string
+              productName: string
+              bundleName: string
+        meta: {}
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CbuaeAccount'
+          description: Primary data for the resource
+        meta:
+          $ref: '#/components/schemas/Meta'
+    AccountResponse:
+      type: object
+      description: |
+        A descriptor for an account.
+        This is a composite object that may be expanded in the future to support
+        additional account types for new API standards and account types.
+      properties:
+        data:
+          $ref: '#/components/schemas/CbuaeAccount'
+        meta:
+          $ref: '#/components/schemas/Meta'
+    CbuaeAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the account resource
+        product:
+          $ref: '#/components/schemas/ProductIdentifier'
+        multiAuth:
+          type: boolean
+          description: Indicator that labels the account as requiring multiple authorizers
+        businessCustomer:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerIdentifier'
+          description: Provides the customer identifiers for an account when the account is a business account
+        customers:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerIdentifier'
+          minItems: 1
+          description: Provides the customer identifiers for an account when the account is a non-business account
+        accountHolderName:
+          $ref: '#/components/schemas/AccountHolderName'
+        accountHolderShortName:
+          $ref: '#/components/schemas/AccountHolderShortName'
+        status:
+          description: >
+            Specifies the status of account resource in code form.
+
+
+            * Active: The account exist and is in an active state.
+
+
+            * Inactive: The account is deemed not active by the LFI. Please refer to the
+              [CBUAE Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for qualification of Inactive status.
+
+            * Dormant: Please refer to the [CBUAE
+            Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for the definition of Dormant status.
+
+            * Unclaimed: Please refer to the [CBUAE
+            Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for the definition of Unclaimed status.
+
+            * Deceased: The account holder has passed away.
+
+
+            * Suspended: The account has been temporarily deactivated by the LFI for reasons such as
+              suspicious activities or non-compliance with regulations. The account holder might
+              be unable to access funds or perform transactions until the bank's requirements
+              are met, and the suspension is lifted.
+
+            * Closed: The account is closed
+          type: string
+          enum:
+            - Active
+            - Inactive
+            - Dormant
+            - Unclaimed
+            - Deceased
+            - Suspended
+            - Closed
+        statusUpdateDateTime:
+          description: Date and time at which the resource status was updated.
+          type: string
+          format: date-time
+        currency:
+          $ref: '#/components/schemas/TCurrency'
+        accountType:
+          description: Specifies the type of account (Retail, SME or Corporate).
+          type: string
+          enum:
+            - Retail
+            - SME
+            - Corporate
+        accountSubType:
+          $ref: '#/components/schemas/AEExternalAccountSubTypeCode'
+        description:
+          description: Specifies the description of the account sub-type.
+          type: string
+        nickName:
+          description: >-
+            The nickname of the account, assigned by User 1 to provide an additional and easier means of identification
+            of the account at the financial instituation
+          type: string
+        openingDate:
+          description: >-
+            Date on which the account and its related basic services by financial institution started to be operational
+            for User 1
+          type: string
+          format: date-time
+        maturityDate:
+          description: |
+
+            * Fixed Term Savings Account
+              MaturityDate is the date on which the savings mature and the balance can be withdrawn by the User without penalty
+          type: string
+          format: date-time
+        accountNumbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountIdentifiers'
+          minItems: 1
+          description: >-
+            Provides the account numbers that identity the account. This is separate to the `accountId`, which uniquely
+            identifies the account resource.
+        servicer:
+          $ref: '#/components/schemas/AEBranchAndFinancialInstitutionIdentification5_0'
+        availableBalance:
+          description: >
+            Required where CAAP is implemented by an LFI and the value of the header field 
+            `o3-is-caap-consent-operation` is set to true. Omitted by non-CAAP users. Provides the available balance on 
+            the account for use in CAAP consent user journey. LFIs must provide the `balanceType` value equivalent to 
+            that which their customer would see in a internet or mobile banking payment journey.
+            This property is specified as an array to future proof against changes to the CAAP customer experience, 
+            where more than one balance in the consent authorization screen may be required.
+          minItems: 1
+          items:
+            type: object
+            required:
+              - creditDebitIndicator
+              - balanceType
+              - timestamp
+              - amount
+            properties:
+              creditDebitIndicator:
+                $ref: '#/components/schemas/AECreditDebitIndicator'
+              balanceType:
+                $ref: '#/components/schemas/CbuaeBalanceType'
+              timestamp:
+                $ref: '#/components/schemas/AEBalanceCheckDateTime'
+              amount:
+                $ref: '#/components/schemas/OBActiveOrHistoricCurrencyAndAmount_8'
+              creditLines:
+                description: Credit line available to the customer for the given balance, provided to allow the
+                  available overdraft to be provided in the consent authorization user experience.
+                type: array
+                minItems: 1
+                items:
+                  $ref: '#/components/schemas/CbuaeCreditLine'
+
+        # Extended Product Data Enhancement
+
+        isShariaCompliant:
+          $ref: '#/components/schemas/AEShariaFlag'
+
+      required:
+        - id
+      additionalProperties: false
+      description: The properties of an account
+    AccountIdentifiers:
+      type: object
+      description: Provides the details to identify an account.
+      required:
+        - schemeName
+        - identification
+      properties:
+        schemeName:
+          $ref: '#/components/schemas/AEExternalAccountIdentificationCode'
+        identification:
+          $ref: '#/components/schemas/Identification_0'
+        name:
+          $ref: '#/components/schemas/Name_0'
+      additionalProperties: false
+    AEExternalAccountIdentificationCode:
+      description: Name of the identification scheme for the account. Encoded with allowable values published in an external list.
+      type: string
+      enum:
+        - IBAN
+        - AccountNumber
+        - MaskedPAN
+        - MortgageReference
+        - FinanceReference
+    Identification_0:
+      description: >
+        Identification for the account assigned by the financial institution based on the Account Scheme Name. This
+        identification is known by the User 1 account owner. For IBAN, refer to the ISO Standard 13616.
+      type: string
+      minLength: 1
+      maxLength: 400
+    Name_0:
+      description: >-
+        The account name is the name or names of the User 1 account owner(s) represented at an account level, as
+        displayed by the financial institution's online channels. Note: The account name is not the product name or the
+        nickname of the account.
+      type: string
+      minLength: 1
+      maxLength: 70
+    AEBranchAndFinancialInstitutionIdentification5_0:
+      type: object
+      required:
+        - schemeName
+        - identification
+      description: >-
+        Party that manages the account on behalf of the account owner, that is manages the registration and booking of
+        entries on the account, calculates balances on the account and provides information about the account.
+      properties:
+        schemeName:
+          $ref: '#/components/schemas/AEExternalFinancialInstitutionIdentificationCode'
+        identification:
+          $ref: '#/components/schemas/Identification_1'
+      additionalProperties: false
+    Identification_1:
+      description: >
+        * /accounts resource
+
+        Unique and unambiguous identification of the financial institution as the account servicing institution for the
+        Open Finance services.
+
+
+        * /beneficiaries resource
+
+        Unique and unambiguous identification of the Creditor Agency as the servicing institution of the Beneficiary.
+
+
+        * /scheduled-payments resource
+
+        Unique and unambiguous identification of the financial institution as the account servicing institution for the
+        Open Finance services.
+
+
+        * /standing-orders resource
+
+        Unique and unambiguous identification of the financial institution as the account servicing institution for the
+        Open Finance services.
+
+
+        * /transactions resource
+
+        Unique and unambiguous identification of the financial institution as the account servicing institution for the
+        Open Finance services.
+
+        *  Notes:
+
+        Based on the value of the field **IdentificationType**, this entry may be :
+
+        * BICFI: The BIC/SWIFT Code
+
+        * Other: Identification code that is not a BIC/SWIFT code and allows a financial institution to be identified.
+      type: string
+      minLength: 1
+      maxLength: 35
+    AEExternalFinancialInstitutionIdentificationCode:
+      description: >
+        * /accounts resource
+
+        The name of the identification scheme for the financial institution as the account services provider. Encoded
+        with allowable value as published in an external list.
+
+
+        * /beneficiaries resource
+
+        Refers to the Financial Institution that manages the account on behalf of the Beneficiary party, managing
+        registration, booking of entries on the account, calculating balances on the account and providing information
+        about the account. This is the servicing Financial Institution of the Beneficiary account.
+
+
+        * /scheduled-payments resource
+
+        Refers to the identification scheme for uniquely identifying the Creditor Agent.
+
+
+        * /standing-orders resource
+
+        Refers to the identification scheme for uniquely identifying the Creditor Agent.
+
+
+        * /transactions resource
+
+        Refers to the identification scheme for uniquely identifying the Creditor Agent.
+      anyOf:
+        - type: string
+          enum:
+            - BICFI
+            - Other
+        - deprecated: true
+          type: string
+          enum:
+            - BICFI
+            - OTHER
+    ProductIdentifier:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier within the LFI for the product. Must be unique in the organisation.
+        productName:
+          type: string
+          description: Descriptive name for the product.
+        bundleName:
+          description: >-
+            Optional field to indicate if this account is part of a bundle that is providing additional benefit for to
+            the customer
+          type: string
+      description: Provides the details of a given product at the LFI
+    CustomerIdentifier:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier within the LFI for the customer.
+        customerName:
+          type: string
+          description: Name of the customer.
+      required:
+        - id
+        - customerName
+      description: Provides the unique identifier and name for a given customer at the LFI
+    CbuaeBalanceType:
+      type: string
+      enum:
+        - ClosingAvailable
+        - ClosingBooked
+        - ClosingCleared
+        - Expected
+        - ForwardAvailable
+        - Information
+        - InterimAvailable
+        - InterimBooked
+        - InterimCleared
+        - OpeningAvailable
+        - OpeningBooked
+        - OpeningCleared
+        - PreviouslyClosedBooked
+      description: >
+        The type of balance for the account.
+
+        Encoded with allowable values of:
+
+        * 'ClosingAvailable' - end of day balance specifying the amount available to User 1 to withdraw or use.
+
+        * 'ClosingBooked' - end of day balance including value of payments for cheques or payments which have not been
+        cleared yet.
+
+        * 'ClosingCleared' - end of day balance including value of payments for cheques or payments which have been
+        cleared.
+
+        * 'Expected' - intra day balance including value of payments for cheques or payments which have been cleared.
+
+        * 'ForwardAvailable' - intraday balance specifying the amount available to User 1 to withdraw or use considering
+        forward dated payments or other intraday payments or cheques that will be clearing to the account.
+
+        * 'Information' - TBC.
+
+        * 'InterimAvailable' - intraday balance specifying the amount available to User 1 to withdraw or use (most
+        probably real-time.'InterimBooked' - intraday balance including value of payments for cheques or payments which
+        have not been cleared yet.
+
+        * 'InterimCleared' - intraday balance including value of payments for cheques or payments which have been
+        cleared (probably real-time).
+
+        * 'OpeningAvailable' - start of day balance specifying the amount available to User 1 to withdraw or use.
+
+        * 'OpeningBooked' - start of day balance including value of payments for cheques or payments which have not been
+        cleared yet.
+
+        * 'OpeningCleared' - start of day balance including value of payments for cheques or payments which have been
+        cleared.
+
+        * 'PreviouslyClosedBooked' -TBC.
+
+
+        Note: LFIs support different types for presenting account balance, so this list is used to support different LFI
+        systems in UAE.
+    CbuaeCreditLine:
+      description: Set of elements used to provide details on the credit line.
+      type: object
+      required:
+        - included
+        - creditType
+        - amount
+      properties:
+        included:
+          description: Boolean flag to Indicate whether or not a credit line is included in the balance of the account.
+          type: boolean
+        creditType:
+          description: >
+            Type of credit line provided to the account. The enumerations values are defined as follows.
+
+
+            - Available: The amount of credit limit available to the account holder
+
+            - Credit: The amount of a credit limit that has been agreed with the account holder
+
+            - Emergency: The amount of an arranged lending limit that can be borrowed on top of pre-agreed lending, that
+            has been agreed with the account holder
+
+            - Pre-Agreed: The amount of an arranged lending limit that has been agreed with the account holder
+
+            - Temporary: The amount of a temporary lending limit that has been agreed with the account holder
+          type: string
+          enum:
+            - Available
+            - Credit
+            - Emergency
+            - Pre-Agreed
+            - Temporary
+        amount:
+          $ref: '#/components/schemas/OBActiveOrHistoricCurrencyAndAmount_8'
+    OBActiveOrHistoricCurrencyAndAmount_8:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          $ref: '#/components/schemas/AEActiveCurrencyAndAmount_SimpleType'
+        currency:
+          $ref: '#/components/schemas/ActiveOrHistoricCurrencyCode_1'
+      description: The amount and currency code for a given payment or transaction.
+    AEActiveCurrencyAndAmount_SimpleType:
+      description: >-
+        A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
+        with ISO 4217.
+      type: string
+      pattern: ^\d{1,13}$|^\d{1,13}\.\d{1,5}$
+    ActiveOrHistoricCurrencyCode_1:
+      description: >-
+        A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as
+        described in the latest edition of the international standard ISO 4217 'Codes for the representation of
+        currencies and funds'.
+      type: string
+      pattern: ^[A-Z]{3,3}$
+      example: SAR
+    TCurrency:
+      type: string
+      pattern: ^[A-Z]{3,3}$
+      description: Currency code for the account.
+    AccountHolderName:
+      type: string
+      description: >
+        The Account Holder Name is the name or names of the Beneficiary account owner(s) represented at the account
+        level, as displayed by the Creditor Agent's online channels and as provided by the Beneficiary to the customer
+        when adding the Beneficiary in the Beneficiary list.
+
+        Note, the Account Holder Name is not the product name or the nickname of the account.d
+    AccountHolderShortName:
+      type: string
+      description: |
+        The Beneficiary account holder nick name
+    Meta:
+      type: object
+      properties:
+        totalPages:
+          type: number
+          description: |
+            The number of expected pages for the query.
+        totalRecords:
+          type: number
+          description: |
+            The total number of records in the full set.
+      description: Metadata relevant to the resource.
+    AEShariaFlag:
+      description: A flag to denote if the Product is Sharia Compliant
+      type: boolean
+      default: false
+    AEExternalAccountSubTypeCode:
+      description: Specifies the sub type of account (product family group).
+      type: string
+      enum:
+        - CurrentAccount
+        - Savings
+        - CreditCard
+        - Mortgage
+        - Finance
+
+    AECreditDebitIndicator:
+      description: Indicates whether a given balance, transaction, or summarized amount is a credit or a debit.
+      type: string
+      enum:
+        - Credit
+        - Debit
+
+    AEBalanceCheckDateTime:
+      description: Indicates the date (and time) that the account balance was checked
+      type: string
+      format: date-time
+
+    AEReadInsurancePolicies1:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/AEInsurancePolicies1'
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/PaginatedMetadata'
+          description: Metadata related to pagination. Can be omitted if response data is not paginated.
+    AEReadLifeInsurancePolicies1:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/AELifeInsurancePolicies1'
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/PaginatedMetadata'
+          description: Metadata related to pagination. Can be omitted if response data is not paginated.
+    AEReadMotorInsurancePolicies1:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/AEMotorInsurancePolicies1'
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/PaginatedMetadata'
+          description: Metadata related to pagination. Can be omitted if response data is not paginated.
+    AEInsurancePolicies1:
+      type: object
+      required:
+        - Policies
+      properties:
+        Policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePolicyProperties'
+          description: >-
+            List of available of insurance policies. The following optional properties **MUST** be returned when the
+            header field `o3-is-caap-consent-operation` is set to `true`:
+
+
+            * `PolicyEndDate`.
+
+
+            * `ProductName`
+    AELifeInsurancePolicies1:
+      type: object
+      required:
+        - Policies
+      properties:
+        Policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/AELifeInsurancePolicyProperties'
+          description: >-
+            List of available of insurance policies. The following optional properties **MUST** be returned when the
+            header field `o3-is-caap-consent-operation` is set to `true`:
+
+
+            * `PolicyEndDate`.
+
+
+            * `ProductName`
+    AEMotorInsurancePolicies1:
+      type: object
+      required:
+        - Policies
+      properties:
+        Policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEMotorInsurancePolicyProperties'
+          description: >-
+            List of available of insurance policies. The following optional properties **MUST** be returned when the
+            header field `o3-is-caap-consent-operation` is set to `true`:
+
+
+            * `PolicyEndDate`.
+
+
+            * `ProductName`.
+
+
+            * `BodyType`.
+
+
+            * `PlateNumber`.
+    AEInsurancePolicyProperties:
+      type: object
+      required:
+        - InsurancePolicyId
+        - PolicyNumber
+        - PolicyStatus
+        - PolicyStartDate
+      properties:
+        InsurancePolicyId:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurance.AEInsuranceResourceIdentifierType'
+          description: Unique identifier for a given insurance policy
+          example: d330c5bb-0889-4596-86bb-17cc9a4a17b5
+        PolicyNumber:
+          type: string
+          description: The policy number assigned by the LFI.
+        PolicyStatus:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurance.AEInsurancePolicyStatusCodes'
+          description: The current status of the policy.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: Policy start date
+        PolicyEndDate:
+          type: string
+          format: date
+          description: Policy end date
+        ProductName:
+          type: string
+          description: Business name of the policy product as provided externally to the customer.
+    AELifeInsurancePolicyProperties:
+      type: object
+      required:
+        - InsurancePolicyId
+        - PolicyNumber
+        - PolicyStatus
+        - PolicyStartDate
+      properties:
+        InsurancePolicyId:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurance.AEInsuranceResourceIdentifierType'
+          description: Unique identifier for a given insurance policy
+          example: d330c5bb-0889-4596-86bb-17cc9a4a17b5
+        PolicyNumber:
+          type: string
+          description: The policy number assigned by the LFI.
+        PolicyStatus:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurance.AELifeInsurancePolicyStatusCodes'
+          description: The current status of the policy.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: Policy start date
+        PolicyEndDate:
+          type: string
+          format: date
+          description: Policy end date
+        ProductName:
+          type: string
+          description: Business name of the policy product as provided externally to the customer.
+    AEMotorInsurancePolicyProperties:
+      type: object
+      required:
+        - InsurancePolicyId
+        - PolicyNumber
+        - PolicyStatus
+        - PolicyStartDate
+      properties:
+        InsurancePolicyId:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurance.AEInsuranceResourceIdentifierType'
+          description: Unique identifier for a given insurance policy
+          example: d330c5bb-0889-4596-86bb-17cc9a4a17b5
+        PolicyNumber:
+          type: string
+          description: The policy number assigned by the LFI.
+        PolicyStatus:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurance.AEInsurancePolicyStatusCodes'
+          description: The current status of the policy.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: Policy start date
+        PolicyEndDate:
+          type: string
+          format: date
+          description: Policy end date
+        ProductName:
+          type: string
+          description: Business name of the policy product as provided externally to the customer.
+        BodyType:
+          type: string
+          enum:
+            - Saloon
+            - 4WD
+            - Pickup
+            - Truck
+            - TrailerHead
+            - Trailer
+            - Water
+            - Fuel Tanker
+            - Buses
+            - Dumper
+            - Agriculture
+            - Forklift
+            - Heavy Equipment
+            - Motorcycle
+            - Others
+          description: 'The type motor vehicle like saloon, Station/SUV, coupe '
+        PlateNumber:
+          type: string
+          description: Vehicle registration plate number
+    AEInsurance.AEInsuranceResourceIdentifierType:
+      type: string
+      minLength: 1
+      maxLength: 128
+      format: uuid
+      description: Unique identifier for a given insurance policy
+    AEInsurance.AEInsurancePolicyStatusCodes:
+      type: string
+      enum:
+        - New
+        - Renewed
+        - Expired
+        - Lapsed
+        - Cancelled
+        - PaidUp
+        - Converted
+        - Surrendered
+        - DeathClaim
+        - RiderClaim
+      description: |
+        The status of the policy, with the following definitions:
+
+        * `New`: New policy issued
+
+        * `Renewed`: The reissuing of the same policy for a subsequent term
+
+        * `Expired`: Policy has been expired by date
+
+        * `Lapsed`: No longer valid policy
+
+        * `Cancelled`: Policy cancelled by insurer or insured
+
+        * `PaidUp`: Policy paid up in full
+
+        * `Converted`: Policy converted to another plan
+
+        * `Surrendered`: Policy has been surrendered
+
+        * `DeathClaim`: Policy paid due to death (only for Life)
+
+        * `RiderClaim`: Rider paid (only for Life)
+    AEInsurance.AELifeInsurancePolicyStatusCodes:
+      type: string
+      enum:
+        - New
+        - Renewed
+        - Expired
+        - Lapsed
+        - Cancelled
+        - PaidUp
+        - Converted
+        - Surrendered
+        - DeathClaim
+        - RiderClaim
+        - InForce
+    PaginatedMetadata:
+      type: object
+      required:
+        - page
+        - pageSize
+        - totalPages
+        - totalRecords
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          description: The current page number.
+        pageSize:
+          type: integer
+          minimum: 1
+          description: Number of records in the current page.
+        totalPages:
+          type: integer
+          minimum: 1
+          description: Total number of pages available for response.
+        totalRecords:
+          type: integer
+          minimum: 1
+          description: Total number of records across all pages
+      description: Provides information on paginated data
   responses:
     error400Response:
       description: Operation failed due to a invalid request parameter
