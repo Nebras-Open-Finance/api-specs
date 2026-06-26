@@ -34,7 +34,26 @@ info:
 
     ### v2.1.9
 
-    * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for SWIFT SR2026. The Creditor party is now a `oneOf` of Individual and Organization variants (discriminated by `IdentityType`): individual attributes (object-valued `FirstName` / `MiddleName` / `LastName` (`en` / `ls`), `RelationshipToSender`, `DateOfBirth`, `Occupation`, `Nationality`, `Gender`, `CountryOfBirth`, `SourceOfIncome`, `SourceOfFunds`, `Evidence`), organisation identifiers (`AnyBIC`, `LEI`, `Identification` + `SchemeName`), shared `MobileNumber` / `Email`, and an object-valued `Name` (`en` / `ls`). Added SWIFT SR2026 fields to the international `PostalAddress` (`PostCode`, `Room`, `Department`, `SubDepartment`, `TownLocationName`, and now-mandatory `TownName`) — now a single `AEInternationalAddress` schema shared by both the Creditor and the Creditor Agent (the Creditor Agent previously used the legacy `AEAddress`) — a `CreditorAgent.Branch` object, and `CreditorAccount.AccountType` (Savings / Current / Checking / Prepaid). Domestic Creditor schemas are unchanged.
+    * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for
+      SWIFT SR2026: the Creditor party is now a `oneOf` of Individual and Organization variants, discriminated
+      by `IdentityType`.
+
+
+    * The Individual variant carries object-valued `FirstName` / `MiddleName` / `LastName` (`en` / `ar` / `ls`),
+      `RelationshipToSender`, `DateOfBirth`, `Occupation`, `Nationality`, `Gender`, `CountryOfBirth`,
+      `SourceOfIncome`, `SourceOfFunds`, and `Evidence`. The Organization variant carries `AnyBIC`, `LEI`, and
+      `Identification` + `SchemeName`. Both variants share `MobileNumber` / `Email` and an object-valued `Name`
+      (`en` / `ar` / `ls`).
+
+
+    * Added SWIFT SR2026 fields to the international `PostalAddress` (`PostCode`, `Room`, `Department`,
+      `SubDepartment`, `TownLocationName`, and now-mandatory `TownName`). It is now a single
+      `AEInternationalAddress` schema shared by both the Creditor and the Creditor Agent (the Creditor Agent
+      previously used the legacy `AEAddress`).
+
+
+    * Added a `CreditorAgent.Branch` object and `CreditorAccount.AccountType` (Savings / Current / Checking /
+      Prepaid). Domestic Creditor schemas are unchanged.
 
 
     ### v2.1.8
@@ -5588,12 +5607,40 @@ components:
           minLength: 1
           maxLength: 70
           description: English value of the Creditor name.
+        ar:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Arabic value of the Creditor name.
         ls:
           type: string
           minLength: 1
           maxLength: 70
           description: Local script value of the Creditor name.
-      description: The Creditor name, represented in English (`en`) and/or local script (`ls`).
+      description: The Creditor name, represented in English (`en`), Arabic (`ar`) and/or local script (`ls`).
+      additionalProperties: false
+
+    AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorNameComponent:
+      type: object
+      properties:
+        en:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: English value of the name component.
+        ar:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Arabic value of the name component.
+        ls:
+          type: string
+          minLength: 1
+          maxLength: 35
+          description: Local script value of the name component.
+      description: >-
+        A component of the Creditor's name (e.g. first, middle or last name), represented in English (`en`),
+        Arabic (`ar`) and/or local script (`ls`).
       additionalProperties: false
 
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalIndividualCreditor:
@@ -5609,50 +5656,11 @@ components:
         Name:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorName'
         FirstName:
-          type: object
-          properties:
-            en:
-              type: string
-              minLength: 1
-              maxLength: 35
-              description: English value of the Creditor's first (given) name.
-            ls:
-              type: string
-              minLength: 1
-              maxLength: 35
-              description: Local script value of the Creditor's first (given) name.
-          description: The Creditor's first (given) name, represented in English (`en`) and/or local script (`ls`).
-          additionalProperties: false
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorNameComponent'
         MiddleName:
-          type: object
-          properties:
-            en:
-              type: string
-              minLength: 1
-              maxLength: 35
-              description: English value of the Creditor's middle name.
-            ls:
-              type: string
-              minLength: 1
-              maxLength: 35
-              description: Local script value of the Creditor's middle name.
-          description: The Creditor's middle name, represented in English (`en`) and/or local script (`ls`).
-          additionalProperties: false
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorNameComponent'
         LastName:
-          type: object
-          properties:
-            en:
-              type: string
-              minLength: 1
-              maxLength: 35
-              description: English value of the Creditor's last (family) name.
-            ls:
-              type: string
-              minLength: 1
-              maxLength: 35
-              description: Local script value of the Creditor's last (family) name.
-          description: The Creditor's last (family) name, represented in English (`en`) and/or local script (`ls`).
-          additionalProperties: false
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorNameComponent'
         RelationshipToSender:
           type: string
           enum:
@@ -5708,11 +5716,11 @@ components:
             correspondent bank) requires further information about the transaction.
         MobileNumber:
           type: string
-          pattern: ^\+?[0-9]{1,20}$
-          description: The Creditor's mobile number, in MSISDN format.
+          pattern: ^\+[1-9]\d{1,14}$
+          description: The Creditor's mobile number, in E.164 format.
         Email:
           type: string
-          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
+          pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
           description: The Creditor's email address.
         PostalAddress:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress'
@@ -5735,7 +5743,7 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorName'
         AnyBIC:
           type: string
-          pattern: ^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$
+          pattern: ^[A-Z]{6}[A-Z0-9]{2}(?:[A-Z0-9]{3})?$
           description: The organisation's Business Identifier Code (BIC), per ISO 9362.
         LEI:
           type: string
@@ -5757,11 +5765,11 @@ components:
             as there is no definitive scheme list for these edge cases.
         MobileNumber:
           type: string
-          pattern: ^\+?[0-9]{1,20}$
-          description: The Creditor's mobile number, in MSISDN format.
+          pattern: ^\+[1-9]\d{1,14}$
+          description: The Creditor's mobile number, in E.164 format.
         Email:
           type: string
-          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
+          pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
           description: The Creditor's email address.
         PostalAddress:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress'
@@ -5807,12 +5815,14 @@ components:
             description: The calendar used for the document's issuance and expiry dates.
           DateOfIssuance:
             type: string
-            format: date-time
-            description: The date and time the document was issued.
+            format: date
+            pattern: ^\d{4}-\d{2}-\d{2}$
+            description: The date the document was issued, in YYYY-MM-DD format.
           DateOfExpiry:
             type: string
-            format: date-time
-            description: The date and time the document expires.
+            format: date
+            pattern: ^\d{4}-\d{2}-\d{2}$
+            description: The date the document expires, in YYYY-MM-DD format.
           Issuer:
             type: object
             required:
