@@ -75,11 +75,14 @@ function buildPairs(versions) {
     return am !== bm ? am - bm : an - bn;
   });
 
-  // Errata pairs within a minor: base -> errata1, errata1 -> errata2, ...
+  // Errata revisions within a minor. Each errata revision is compared, per
+  // file, against the most recent prior version in the same minor that actually
+  // contains that file (the immediately-preceding errata if present, otherwise
+  // falling back to the base release). `priors` is ordered most-recent-first.
   for (const key of minorKeys) {
     const list = groups.get(key);
     for (let i = 1; i < list.length; i++) {
-      pairs.push({ kind: 'errata', base: list[i - 1], revision: list[i] });
+      pairs.push({ kind: 'errata', revision: list[i], priors: list.slice(0, i).reverse() });
     }
   }
 
@@ -176,15 +179,20 @@ describe('No breaking changes within a major version (standards)', { skip: !oasd
 
   for (const pair of pairs) {
     if (pair.kind === 'errata') {
-      const { base, revision } = pair;
-      const label = `${versionLabel(base.parsed)} -> ${versionLabel(revision.parsed)}`;
+      const { revision, priors } = pair;
       const erratFiles = listSpecFiles(revision.name);
 
       for (const file of erratFiles) {
-        if (!shouldCheckFile(file, base.parsed)) continue;
-        const baseFile = path.join(standardsDir, base.name, file);
-        if (!fs.existsSync(baseFile)) continue; // new file in errata, not breaking
+        // Compare against the most recent prior version in this minor that
+        // contains the file: the immediately-preceding errata if it has the
+        // file, otherwise fall back to the base release. A file absent from
+        // every prior version is new in this errata and not breaking.
+        const baseVersion = priors.find(v => fs.existsSync(path.join(standardsDir, v.name, file)));
+        if (!baseVersion) continue;
+        if (!shouldCheckFile(file, baseVersion.parsed)) continue;
+        const baseFile = path.join(standardsDir, baseVersion.name, file);
         const revisionFile = path.join(standardsDir, revision.name, file);
+        const label = `${versionLabel(baseVersion.parsed)} -> ${versionLabel(revision.parsed)}`;
         it(`${label}: ${file} has no breaking changes`, () => {
           assertNoBreakingChanges(baseFile, revisionFile, revision.name, file);
         });
