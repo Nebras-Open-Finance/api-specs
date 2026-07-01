@@ -614,6 +614,7 @@ components:
       type: string
       minLength: 1
       maxLength: 35
+      pattern: "^[A-Za-z0-9 /?:().,'+-]+$"
       description: >-
         A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of a given
         payment instruction.
@@ -668,6 +669,7 @@ components:
       type: string
       minLength: 1
       maxLength: 35
+      pattern: "^[A-Za-z0-9 /?:().,'+-]+$"
       description: >-
         A Debtor Reference is a note is for the reference of a given User that may be available as additional
         information in relation to a given payment instruction.
