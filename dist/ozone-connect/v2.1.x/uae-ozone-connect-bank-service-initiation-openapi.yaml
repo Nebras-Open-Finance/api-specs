@@ -30,6 +30,15 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.1.8
+
+
+    * Added a character-set `pattern` (`^[A-Za-z0-9 /?:().,'+-]+$`, the ISO 20022 / SWIFT "x" set) to the
+      free-text Creditor and Debtor references (`AECreditorReference` / `AEDebtorReference`), so every LFI
+      knows exactly which characters it must accept and store. Length (`minLength 1` / `maxLength 35`) is
+      unchanged. Per OFP-003.
+
+
     ### v2.1.7
 
 
@@ -101,7 +110,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.1.7
+  version: v2.1.8
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -1776,6 +1785,7 @@ components:
       type: string
       minLength: 1
       maxLength: 35
+      pattern: "^[A-Za-z0-9 /?:().,'+-]+$"
     AEPaymentInstruction:
       type: object
       additionalProperties: false
@@ -2236,6 +2246,7 @@ components:
       type: string
       minLength: 1
       maxLength: 35
+      pattern: "^[A-Za-z0-9 /?:().,'+-]+$"
     RefundGetResponse:
       description: >-
         Response to a request to the Debtor details for a given payment, in order to initiate a refund. Requires the

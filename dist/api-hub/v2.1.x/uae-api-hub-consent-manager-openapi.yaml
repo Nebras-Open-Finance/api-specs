@@ -32,6 +32,14 @@ info:
     So, for example, `.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.1.10
+
+    * Added a character-set `pattern` (`^[A-Za-z0-9 /?:().,'+-]+$`, the ISO 20022 / SWIFT "x" set) to the
+      current (free-text, 35-char) branch of the Creditor and Debtor references
+      (`AEServiceInitiationCreditorReference` / `AEServiceInitiationDebtorReference`), so every LFI knows
+      exactly which characters it must accept and store. The deprecated structured (120-char) branch is
+      unchanged. Per OFP-003.
+
     ### v2.1.9
 
     * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for
@@ -111,7 +119,7 @@ info:
       line with changes in v2.1 Pushed Authorization Requests.
 
 
-  version: v2.1.9
+  version: v2.1.10
 tags:
   - name: consents
   - name: consent-groups
@@ -2944,6 +2952,7 @@ components:
           type: string
           minLength: 1
           maxLength: 35
+          pattern: "^[A-Za-z0-9 /?:().,'+-]+$"
     AEServiceInitiationDebtorReference:
       anyOf:
         - description: >
@@ -2986,6 +2995,7 @@ components:
           type: string
           minLength: 1
           maxLength: 35
+          pattern: "^[A-Za-z0-9 /?:().,'+-]+$"
     AEServiceInitiationConsentControlParameters:
       type: object
       properties:

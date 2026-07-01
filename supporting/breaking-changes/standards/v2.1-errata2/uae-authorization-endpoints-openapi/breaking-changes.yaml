@@ -168,3 +168,36 @@
     Impact: a TPP that supplies an international Creditor Agent address must
     now include `TownName` and keep it within 70 characters. The equivalent
     change is recorded under `uae-bank-initiation-openapi/` for POST /payments.
+
+- rule: request-property-pattern-added
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Per OFP-003 ("Define an allowed character set for Debtor and Creditor
+    References"), a character-set `pattern` is added to the free-text Debtor
+    and Creditor references. In the PAR RARs these are
+    `AEBankServiceInitiation.AECreditorReference` /
+    `AEBankServiceInitiation.AEDebtorReference`, carried in
+    `authorization_details` on POST /par. oasdiff reports
+    `request-property-pattern-added` on the `CreditorReference` and
+    `DebtorReference` properties of the Bank Service Initiation Consent RAR.
+
+    In v2.1 these references were relaxed from the old structured pattern to
+    plain free text (`minLength 1`, `maxLength 35`, no pattern). With no
+    validation at all, an LFI cannot know which characters it will be handed,
+    and each institution was left to guess what its systems can store. OFP-003
+    reintroduces a single, uniform character set — the ISO 20022 / SWIFT "x"
+    set (`^[A-Za-z0-9 /?:().,'+-]+$`) — applied identically wherever the
+    free-text reference is defined (PAR, Bank Service Initiation, Consent
+    Manager, Consent Events, and Ozone Connect). The constraint validates the
+    characters only, not the structure; length and free-text-first are
+    unchanged, and the deprecated structured (120-char) variants are untouched.
+
+    Impact: a TPP that sends a reference containing a character outside the
+    agreed set (e.g. `@`, `#`, `%`, `<`, `>`, `;`, accented Latin, or other
+    scripts) will now receive a request-validation error at the API Hub. The
+    remedy is to sanitise or transliterate the reference to the agreed set
+    before submission. The equivalent change is recorded under
+    `uae-bank-initiation-openapi/` for POST /payments and POST /file-payments.
