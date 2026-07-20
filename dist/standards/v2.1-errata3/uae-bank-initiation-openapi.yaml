@@ -4211,8 +4211,8 @@ components:
         The TPP must not change the request body while using the same x-idempotency-key, changes to the request body 
         will not result any action on the end resource. 
 
-        The API Hub will treat a request as idempotent if it had received the first request with the same x-idempotency-key 
-        from the same TPP in the preceding 24 hours.
+        The API Hub will treat a request as idempotent if it had received the first request with the same
+        x-idempotency-key from the same TPP in the preceding 24 hours.
       required: true
       schema:
         type: string
