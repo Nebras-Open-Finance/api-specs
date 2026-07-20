@@ -702,7 +702,7 @@ components:
       content:
         application/jwt:
           schema:
-            $ref: '#/components/schemas/AEIdempotencyKeyQuery'
+            $ref: '#/components/schemas/AEIdempotencyKeyQuerySigned'
     200NoContent:
       description: 200 OK No Content
       headers:
@@ -808,6 +808,17 @@ components:
           properties:
             message:
               $ref: '#/components/schemas/AEFilePaymentIdResponse'
+          required:
+            - message
+    AEIdempotencyKeyQuerySigned:
+      description: |
+        Idempotency Key Query Response Signed Schema
+      allOf:
+        - $ref: '#/components/schemas/AEJwt'
+        - type: object
+          properties:
+            message:
+              $ref: '#/components/schemas/AEIdempotencyKeyQuery'
           required:
             - message
     AEPaymentRequestSigned:
@@ -1356,11 +1367,9 @@ components:
       properties:
         SchemeName:
           type: string
-          description: >
+          description: |
             The identification scheme for uniquely identifying the Agent.
-
             * BICFI: The BIC/SWIFT Code
-
             * Other: Identifier based on non-SWIFT payment system or local market scheme.
           enum:
             - BICFI
@@ -1594,14 +1603,16 @@ components:
           maxLength: 70
       additionalProperties: false
     AECreditorReference:
-      description: A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of 
-        a given payment instruction.
+      description: >-
+        A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of a given
+        payment instruction.
       type: string
       minLength: 1
       maxLength: 35
     AEDebtorReference:
-      description: A Debtor Reference is a note is for the reference of a given User that may be available as 
-        additional information in relation to a given payment instruction.
+      description: >-
+        A Debtor Reference is a note is for the reference of a given User that may be available as additional
+        information in relation to a given payment instruction.
       type: string
       minLength: 1
       maxLength: 35
@@ -1819,18 +1830,19 @@ components:
             minLength: 1
             maxLength: 140
           CountrySubDivision:
-            description: Country subdivision, such as state or province. Where the address is in the UAE this is the 
-              Emirate where the address is registered.
+            description: >-
+              Country subdivision, such as state or province. Where the address is in the UAE this is the Emirate where
+              the address is registered.
             anyOf:
               - type: string
                 enum:
-                - AbuDhabi
-                - Ajman
-                - Dubai
-                - Fujairah
-                - RasAlKhaimah
-                - Sharjah
-                - UmmAlQuwain
+                  - AbuDhabi
+                  - Ajman
+                  - Dubai
+                  - Fujairah
+                  - RasAlKhaimah
+                  - Sharjah
+                  - UmmAlQuwain
               - type: string
           Country:
             description: The country associated with the address, represented using the ISO 3166-1 alpha-2 country code.
@@ -2585,7 +2597,6 @@ components:
           description: "Number of individual transactions successfully executed by the LFI.\t\nThis is returned by the LFI after the file is fully processed.\n"
       description: Billing parameters specified by the LFI
       additionalProperties: false
-
     AEPushedAuthorizationRequests.AEConsentId:
       type: string
       minLength: 1
@@ -2603,18 +2614,13 @@ components:
 
         It must be provided when long-lived consent parameters are updated/renewed for a current consent that has not
         yet finished.
-
-    ## Authorization Endpoints Schema Objects
-
     AEBankServiceInitiationRichAuthorizationRequests.IsSingleAuthorization:
       type: boolean
       description: Specifies to the LFI that the consent authorization must be completed by a single authorizer at the LFI.
-
     AEBankServiceInitiationRichAuthorizationRequests.AuthorizationExpirationDateTime:
       type: string
       format: date-time
       description: The date and time by which a Consent (in AwaitingAuthorization status) must be Authorized by the User.
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes:
       type: string
       enum:
@@ -2622,7 +2628,6 @@ components:
         - ReadAccountsDetail
         - ReadBalances
         - ReadRefundAccount
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationSingleInstantPayment:
       type: object
       required:
@@ -2640,7 +2645,6 @@ components:
         A single immediate payment consent that MUST be used for a single payment which will be initiated immediately
         after User authorization at the LFI.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEActiveOrHistoricAmount:
       type: string
       pattern: ^\d{1,16}\.\d{2}$
@@ -2648,7 +2652,6 @@ components:
         A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
         with ISO 4217.
       example: '100.00'
-
     AEBankServiceInitiationRichAuthorizationRequests.AEActiveOrHistoricCurrencyCode:
       type: string
       pattern: ^[A-Z]{3,3}$
@@ -2656,7 +2659,6 @@ components:
         A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as
         described in the latest edition of the international standard ISO 4217 'Codes for the representation of
         currencies and funds'.
-
     AEBankServiceInitiationRichAuthorizationRequests.AEPeriodTypeMaximumCumulativeValueOfPayments:
       type: object
       required:
@@ -2669,7 +2671,6 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEActiveOrHistoricCurrencyCode'
       description: The maximum cumulative payment value of all payment initiations per Period Type.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEPeriodType:
       type: string
       enum:
@@ -2692,12 +2693,10 @@ components:
         at 23:59:59 of the last day of that month.|
 
         |Year|A continuous period of time, consisting of 12 months.|
-
     AEBankServiceInitiationRichAuthorizationRequests.AEPeriodStartDate:
       type: string
       format: date
       description: Specifies the start date of when a payment schedule begins.
-
     AEBankServiceInitiationRichAuthorizationRequests.AEMaximumIndividualAmount:
       type: object
       required:
@@ -2710,7 +2709,6 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEActiveOrHistoricCurrencyCode'
       description: This is the Maximum amount a variable payment can take per period.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableOnDemand:
       type: object
       required:
@@ -2743,7 +2741,6 @@ components:
         Payment Controls that apply to all payment instructions in a given period under this payment consent. The
         payments for this consent may be executed on any date, as long as they are within the Controls for a PeriodType.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedOnDemand:
       type: object
       required:
@@ -2778,7 +2775,6 @@ components:
         Payment Controls that apply to all payment instructions in a given period under this payment consent. The
         payments for this consent may be executed on any date, as long as they are within the Controls for a PeriodType
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariablePeriodicSchedule:
       type: object
       required:
@@ -2804,7 +2800,6 @@ components:
         payments for this consent must be executed only on the PeriodStartDate, and dates recurring based on the
         PeriodType.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedPeriodicSchedule:
       type: object
       required:
@@ -2828,7 +2823,6 @@ components:
         payments for this consent must be executed only on the PeriodStartDate, and dates recurring based on the
         PeriodType.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableSchedule:
       type: object
       required:
@@ -2846,7 +2840,6 @@ components:
             - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEMaximumIndividualAmount'
           description: This is the Maximum amount a variable payment can take per period.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableDefinedSchedule:
       type: object
       required:
@@ -2867,7 +2860,6 @@ components:
           maxItems: 53
       description: Payment Schedule denoting a list of pre-defined future dated payments all with variable amounts and dates.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedSchedule:
       type: object
       required:
@@ -2883,7 +2875,6 @@ components:
         Amount:
           $ref: '#/components/schemas/AEStandardModels.AEAmountAndCurrency'
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedDefinedSchedule:
       type: object
       required:
@@ -2903,7 +2894,6 @@ components:
           maxItems: 53
       description: Payment Schedule denoting a list of pre-defined future dated payments all with fixed amounts and dates.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationLongLivedPaymentConsentPeriodicSchedule:
       oneOf:
         - $ref: >-
@@ -2932,7 +2922,6 @@ components:
           VariableOnDemand: >-
             #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableOnDemand
       description: The definition for a schedule
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationLongLivedPaymentConsent:
       type: object
       required:
@@ -2960,7 +2949,6 @@ components:
             #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationLongLivedPaymentConsentPeriodicSchedule
       description: A Consent definition for defining Multi Payments
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AERequestedExecutionDate:
       type: string
       format: date
@@ -2973,7 +2961,6 @@ components:
         TPP.
 
         All dates in the JSON payloads are represented in ISO 8601 date format.
-
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFilePaymentConsent:
       type: object
       required:
@@ -3005,7 +2992,6 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AERequestedExecutionDate'
       description: Bulk/Batch Control Parameters.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationControlParametersProperties:
       type: object
       properties:
@@ -3032,11 +3018,10 @@ components:
             * A Single Payment
 
             * A Multi-Payment
-            
+
             * A Combined Payment (one SinglePayment and one MultiPayment)
           additionalProperties: false
       additionalProperties: false
-
     AEBankServiceInitiationConsentStatusV21.AEBankServiceInitiationConsentProperties:
       type: object
       required:
@@ -3313,7 +3298,6 @@ components:
 
 
         All date-time fields in responses must include the timezone, for example: 2023-04-05T10:43:07+00:00
-
     AEPushedAuthorizationRequests.AEConsentExpirationDateTime:
       type: string
       format: date-time
@@ -3323,7 +3307,6 @@ components:
         All dates in the JSON payloads are represented in ISO 8601 date-time format.
 
         All date-time fields in responses must include the timezone, for example: 2023-04-05T10:43:07+00:00
-
     AEBankServiceInitiation.AECurrencyRequest:
       type: object
       required:
@@ -3471,7 +3454,6 @@ components:
           $ref: '#/components/schemas/AEPushedAuthorizationRequests.AERequestedExecutionDate'
       description: Bulk/Batch Control Parameters.
       additionalProperties: false
-
     AEBankServiceInitiation.AECreditorReference:
       type: string
       minLength: 1
@@ -3479,7 +3461,6 @@ components:
       description: >-
         A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of a given
         payment instruction.
-
     AEPushedAuthorizationRequests.AESponsoredTPPInformation:
       type: object
       required:
@@ -3503,7 +3484,6 @@ components:
 
         - A TPP that is using the integration of another TPP that does have direct Open Finance API integrations.
       additionalProperties: false
-
     AEBankServiceInitiation.AEChargeBearerType1Code:
       type: string
       enum:
@@ -3592,7 +3572,6 @@ components:
           $ref: '#/components/schemas/AEStandardModels.AEActiveOrHistoricAmount'
       description: An Amount qualified by Currency
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorProperties:
       type: object
       properties:
@@ -3604,14 +3583,12 @@ components:
           $ref: '#/components/schemas/AEAddress'
       description: Party to which an amount of money is due.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEIdentification:
       type: string
       minLength: 1
       description: |-
         Identification for the account assigned by the LFI based on the Account Scheme Name.
         This identification is known by the User account owner.
-
     AEBankServiceInitiationRichAuthorizationRequests.AETradingName:
       type: object
       properties:
@@ -3627,7 +3604,6 @@ components:
         The Trading Brand Name (if applicable) for the Creditor.
         Applicable to Payments.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AECreditorAccountTypeCodes:
       type: string
       enum:
@@ -3637,10 +3613,9 @@ components:
         - Charity
         - GovernmentBody
         - Other
-      description: The Creditor (Payee) Type, based on an allowed list. This value is populated by TPPs to inform the 
-        User of the type of Creditor being authorized, which facilitates providing information during the Consent 
-        journey.
-
+      description: >-
+        The Creditor (Payee) Type, based on an allowed list. This value is populated by TPPs to inform the User of the
+        type of Creditor being authorized, which facilitates providing information during the Consent journey.
     AEBankServiceInitiationRichAuthorizationRequests.AEDomesticCreditorAccountProperties:
       type: object
       required:
@@ -3663,7 +3638,6 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AECreditorAccountTypeCodes'
       description: Unambiguous identification of the account of the creditor to which a credit entry will be posted.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEDomesticCreditor:
       type: object
       required:
@@ -3688,7 +3662,6 @@ components:
             If Confirmation of Payee is not performed this property can be omitted
       description: Identification elements for a Creditor for a domestic payment instruction.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAccountProperties:
       type: object
       required:
@@ -3715,11 +3688,10 @@ components:
             - Checking
             - Prepaid
           description: >-
-            The type of the Creditor account. This is distinct from `Type`, which classifies the payee segment
-            (e.g. Individual, Merchant).
+            The type of the Creditor account. This is distinct from `Type`, which classifies the payee segment (e.g.
+            Individual, Merchant).
       description: Unambiguous identification of the account of the creditor to which a credit entry will be posted.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditor:
       type: object
       required:
@@ -3737,7 +3709,6 @@ components:
         of Payee is **NOT** required or expected for International Payments, as non-domestic Creditor accounts are not
         supported.
       additionalProperties: false
-
     AEBankServiceInitiation.AEDomesticPaymentPIIProperties:
       title: Domestic Payment PII Schema Object
       type: object
@@ -3748,7 +3719,6 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEDomesticCreditor'
         Risk:
           $ref: '#/components/schemas/AERisk'
-
     AEBankServiceInitiation.AEInternationalPaymentPIIProperties:
       title: International Payment PII Schema Object
       type: object
@@ -3758,7 +3728,6 @@ components:
         Risk:
           $ref: '#/components/schemas/AERisk'
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorParty:
       oneOf:
         - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalIndividualCreditor'
@@ -3771,7 +3740,6 @@ components:
       description: >-
         Party to which an amount of money is due, for an international payment. The Creditor is either an Individual
         (natural person) or an Organization, selected by the `IdentityType` discriminator.
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorName:
       type: object
       properties:
@@ -3792,7 +3760,6 @@ components:
           description: Local script value of the Creditor name.
       description: The Creditor name, represented in English (`en`), Arabic (`ar`) and/or local script (`ls`).
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorNameComponent:
       type: object
       properties:
@@ -3812,10 +3779,9 @@ components:
           maxLength: 35
           description: Local script value of the name component.
       description: >-
-        A component of the Creditor's name (e.g. first, middle or last name), represented in English (`en`),
-        Arabic (`ar`) and/or local script (`ls`).
+        A component of the Creditor's name (e.g. first, middle or last name), represented in English (`en`), Arabic
+        (`ar`) and/or local script (`ls`).
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalIndividualCreditor:
       type: object
       required:
@@ -3885,8 +3851,8 @@ components:
           minLength: 1
           maxLength: 256
           description: >-
-            The Creditor's source of funds. Free-text; populated where Enhanced Due Diligence (e.g. by a
-            correspondent bank) requires further information about the transaction.
+            The Creditor's source of funds. Free-text; populated where Enhanced Due Diligence (e.g. by a correspondent
+            bank) requires further information about the transaction.
         MobileNumber:
           type: string
           pattern: ^\+[1-9]\d{1,14}$
@@ -3901,7 +3867,6 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorEvidence'
       description: Identification elements for an individual (natural person) international Creditor.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalOrganisationCreditor:
       type: object
       required:
@@ -3927,15 +3892,15 @@ components:
           minLength: 1
           maxLength: 35
           description: >-
-            Other organisation identifier, used in the edge cases where neither `AnyBIC` nor `LEI` is available.
-            The identification scheme is given in `SchemeName`.
+            Other organisation identifier, used in the edge cases where neither `AnyBIC` nor `LEI` is available. The
+            identification scheme is given in `SchemeName`.
         SchemeName:
           type: string
           minLength: 1
           maxLength: 35
           description: >-
-            Name of the identification scheme used for `Identification` (e.g. TradeLicence, TaxID, DUNS). Free-text,
-            as there is no definitive scheme list for these edge cases.
+            Name of the identification scheme used for `Identification` (e.g. TradeLicence, TaxID, DUNS). Free-text, as
+            there is no definitive scheme list for these edge cases.
         MobileNumber:
           type: string
           pattern: ^\+[1-9]\d{1,14}$
@@ -3948,12 +3913,10 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress'
       description: Identification elements for an organisation international Creditor.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorEvidence:
       type: array
       minItems: 1
-      description: >-
-        Identity documents evidencing the Creditor's identity. Applicable to individual Creditors.
+      description: Identity documents evidencing the Creditor's identity. Applicable to individual Creditors.
       items:
         type: object
         properties:
@@ -4022,7 +3985,6 @@ components:
               `Jurisdiction` are mandatory.
             additionalProperties: false
         additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditorAgentProperties:
       type: object
       required:
@@ -4031,11 +3993,9 @@ components:
       properties:
         SchemeName:
           type: string
-          description: >
+          description: |
             The identification scheme for uniquely identifying the Agent.
-
             * BICFI: The BIC/SWIFT Code
-
             * Other: Identifier based on non-SWIFT payment system or local market scheme.
           enum:
             - BICFI
@@ -4066,14 +4026,13 @@ components:
               maxLength: 140
               description: Name of the specific branch of the financial institution.
           description: >-
-            The specific branch of the financial institution that holds the Creditor Account. When the `Branch`
-            object is present, `Identification` is mandatory.
+            The specific branch of the financial institution that holds the Creditor Account. When the `Branch` object
+            is present, `Identification` is mandatory.
           additionalProperties: false
       description: >-
         Properties of the Creditor Agent for an international payment, which provides information on the Financial
         Institution that holds the Creditor Account.
       additionalProperties: false
-
     AEBankServiceInitiationRichAuthorizationRequests.AEInternationalAddress:
       description: >-
         One-or-more addresses related to an international Creditor or Creditor Agent, based on the ISO 20022
@@ -4175,25 +4134,25 @@ components:
             minLength: 1
             maxLength: 140
           CountrySubDivision:
-            description: Country subdivision, such as state or province. Where the address is in the UAE this is the
-              Emirate where the address is registered.
+            description: >-
+              Country subdivision, such as state or province. Where the address is in the UAE this is the Emirate where
+              the address is registered.
             anyOf:
               - type: string
                 enum:
-                - AbuDhabi
-                - Ajman
-                - Dubai
-                - Fujairah
-                - RasAlKhaimah
-                - Sharjah
-                - UmmAlQuwain
+                  - AbuDhabi
+                  - Ajman
+                  - Dubai
+                  - Fujairah
+                  - RasAlKhaimah
+                  - Sharjah
+                  - UmmAlQuwain
               - type: string
           Country:
             description: The country associated with the address, represented using the ISO 3166-1 alpha-2 country code.
             type: string
             pattern: ^[A-Z]{2}$
         additionalProperties: false
-
   parameters:
     authorization:
       in: header
@@ -4252,7 +4211,7 @@ components:
         The TPP must not change the request body while using the same x-idempotency-key, changes to the request body 
         will not result any action on the end resource. 
 
-        The OFP will treat a request as idempotent if it had received the first request with the same x-idempotency-key 
+        The API Hub will treat a request as idempotent if it had received the first request with the same x-idempotency-key 
         from the same TPP in the preceding 24 hours.
       required: true
       schema:
@@ -4282,8 +4241,9 @@ components:
       in: query
       name: baseConsentId
       required: false
-      description: A Base Consent ID value that defines a group of linked consents. This parameter **must not** be 
-        supplied if `combinedConsentGroupId` parameter is supplied.
+      description: >-
+        A Base Consent ID value that defines a group of linked consents. This parameter **must not** be supplied if
+        `combinedConsentGroupId` parameter is supplied.
       schema:
         type: string
       allowEmptyValue: false
@@ -4291,9 +4251,10 @@ components:
     x-consent-id:
       name: x-consent-id
       in: header
-      description: The Consent ID relating to the Payment Initiation Request, required where a given payment 
-        instruction is part of a Combined Consent Group to ensure the payment is correctly executed against the correct
-        consent. TPPs must replay the value they assigned to the consent in the Rich Authorization Request.
+      description: >-
+        The Consent ID relating to the Payment Initiation Request, required where a given payment instruction is part of
+        a Combined Consent Group to ensure the payment is correctly executed against the correct consent. TPPs must
+        replay the value they assigned to the consent in the Rich Authorization Request.
       required: false
       schema:
         type: string
