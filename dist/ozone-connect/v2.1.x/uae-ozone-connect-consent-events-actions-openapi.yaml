@@ -42,6 +42,9 @@ info:
 
     ### v2.1.7
 
+    * Added `ReadStatements` and `ReadProductFinanceRates` to `AEAccountAccessConsentPermissionCodes`, matching the
+      same addition to the Consent Manager. Both codes are in the v2.1 Standards Bank Data Sharing permission set, so
+      the Hub can forward them on a consent event; without them a valid consent failed validation at the LFI.
     * Added a character-set `pattern` (`^[A-Za-z0-9 \/?:().,'+-]+$`, the ISO 20022 / SWIFT "x" set) to the
       current (free-text, 35-char) branch of the Creditor and Debtor references
       (`AEServiceInitiationCreditorReference` / `AEServiceInitiationDebtorReference`), so every LFI knows
@@ -946,10 +949,12 @@ components:
         - ReadDirectDebits
         - ReadStandingOrdersBasic
         - ReadStandingOrdersDetail
+        - ReadStatements
         - ReadConsents
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadProductFinanceRates
       description: |-
         Specifies the permitted account access policy data types.
         This is a list of the data groups being consented by the User, and requested for authorization with the LFI.
