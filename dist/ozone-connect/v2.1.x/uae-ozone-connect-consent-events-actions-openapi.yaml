@@ -45,6 +45,11 @@ info:
     * Added `ReadStatements` and `ReadProductFinanceRates` to `AEAccountAccessConsentPermissionCodes`, matching the
       same addition to the Consent Manager. Both codes are in the v2.1 Standards Bank Data Sharing permission set, so
       the Hub can forward them on a consent event; without them a valid consent failed validation at the LFI.
+    * Added a character-set `pattern` (`^[A-Za-z0-9 \/?:().,'+-]+$`, the ISO 20022 / SWIFT "x" set) to the
+      current (free-text, 35-char) branch of the Creditor and Debtor references
+      (`AEServiceInitiationCreditorReference` / `AEServiceInitiationDebtorReference`), so every LFI knows
+      exactly which characters it must accept and store. The deprecated structured (120-char) branch is
+      unchanged. Per OFP-003.
 
     ### v2.1.6
 
@@ -1798,6 +1803,7 @@ components:
           type: string
           minLength: 1
           maxLength: 35
+          pattern: ^[A-Za-z0-9 \/?:().,'+-]+$
     AEServiceInitiationDebtorReference:
       anyOf:
         - description: >
@@ -1840,6 +1846,7 @@ components:
           type: string
           minLength: 1
           maxLength: 35
+          pattern: ^[A-Za-z0-9 \/?:().,'+-]+$
     AEServiceInitiationConsentControlParameters:
       type: object
       properties:
