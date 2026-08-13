@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: UAE Product API
   description: UAE Open Finance Product API Specification
-  version: v2.2
+  version: v2.2-draft1
 tags:
   - name: Products
     description: Product resource
