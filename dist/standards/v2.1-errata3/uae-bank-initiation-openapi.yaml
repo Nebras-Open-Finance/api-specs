@@ -702,7 +702,7 @@ components:
       content:
         application/jwt:
           schema:
-            $ref: '#/components/schemas/AEIdempotencyKeyQuery'
+            $ref: '#/components/schemas/AEIdempotencyKeyQuerySigned'
     200NoContent:
       description: 200 OK No Content
       headers:
@@ -808,6 +808,17 @@ components:
           properties:
             message:
               $ref: '#/components/schemas/AEFilePaymentIdResponse'
+          required:
+            - message
+    AEIdempotencyKeyQuerySigned:
+      description: |
+        Idempotency Key Query Response Signed Schema
+      allOf:
+        - $ref: '#/components/schemas/AEJwt'
+        - type: object
+          properties:
+            message:
+              $ref: '#/components/schemas/AEIdempotencyKeyQuery'
           required:
             - message
     AEPaymentRequestSigned:
@@ -2604,7 +2615,7 @@ components:
         It must be provided when long-lived consent parameters are updated/renewed for a current consent that has not
         yet finished.
 
-    ## Authorization Endpoints Schema Objects
+    ## Authorization Endpoints Schema Objects
 
     AEBankServiceInitiationRichAuthorizationRequests.IsSingleAuthorization:
       type: boolean

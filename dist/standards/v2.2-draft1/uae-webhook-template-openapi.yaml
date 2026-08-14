@@ -67,7 +67,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AEWebhookEventSigned'
-          application/jwe:
+          application/jwt:
             schema:
               type: string
         description: >-

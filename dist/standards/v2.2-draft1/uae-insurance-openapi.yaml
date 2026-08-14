@@ -11819,67 +11819,10 @@ components:
               minProperties: 1
               additionalProperties: false
             ContentsCoverDetails:
-              type: object
-              properties:
-                DeclaredValueAmount:
-                  allOf:
-                    - $ref: '#/components/schemas/AEActiveCurrencyAmount'
-                  description: The declared value of the contents to be insured.
-                HighValueContent:
-                  type: boolean
-                  description: Confirmation whether the customer owns an individual content item that has a value above AED 25,000
-                HighValueContentDetails:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      ItemDescription:
-                        type: string
-                        minLength: 1
-                        maxLength: 140
-                        description: The description of the high value contents item
-                      ItemValueAmount:
-                        allOf:
-                          - $ref: '#/components/schemas/AEActiveCurrencyAmount'
-                        description: The value of the high value contents item
-                      ItemType:
-                        type: string
-                        enum:
-                          - Appliances
-                          - Antiques
-                          - Art
-                          - Electronics
-                          - Furniture
-                          - PreciousMetals
-                          - RugsOrCarpets
-                          - StampCoinOrMedalCollections
-                          - Other
-                        description: >-
-                          Confirmation of the type of high value contents item that will be covered within the insurance
-                          policy
-                      ReceiptsProofOfPurchase:
-                        type: boolean
-                        description: >-
-                          Indicator to confirm whether the customer has the receipt to provide proof of purchase of the
-                          high value contents item
-                      PhotographicOrDocumentaryEvidence:
-                        type: boolean
-                        description: >-
-                          Indicator to confirm whether the customer has photographic or documentary evidence of the high
-                          value contents item
-                      LatestAppraisalReports:
-                        type: boolean
-                        description: Indicator to confirm whether the customer an appraisal report of the high value contents item
-                    required:
-                      - ItemDescription
-                      - ItemValueAmount
-                      - ItemType
-                    additionalProperties: false
-                  minItems: 1
-                  description: Required when the customer has declared that they have a content item with a value above AED 25,000
-              description: Revised details, verified by the TPP.
+              allOf:
+                - $ref: '#/components/schemas/AEInsuranceQuoteVerifiedContentsCoverDetails1Properties'
               minProperties: 1
-              additionalProperties: false
+              description: Revised details, verified by the TPP.
             BuildingsCover:
               type: object
               properties:
@@ -14631,6 +14574,70 @@ components:
         - ContentsOnly
         - BuildingsAndContents
       description: The type of Home or Renter insurance cover required
+    AEInsuranceQuoteVerifiedContentsCoverDetails1Properties:
+      type: object
+      properties:
+        DeclaredValueAmount:
+          type: object
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          description: The declared value of the contents to be insured.
+          additionalProperties: false
+        HighValueContent:
+          type: boolean
+          description: Confirmation whether the customer owns an individual content item that has a value above AED 25,000
+        HighValueContentDetails:
+          type: array
+          items:
+            type: object
+            properties:
+              ItemDescription:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: The description of the high value contents item
+              ItemType:
+                type: string
+                enum:
+                  - Appliances
+                  - Antiques
+                  - Art
+                  - Electronics
+                  - Furniture
+                  - PreciousMetals
+                  - RugsOrCarpets
+                  - StampCoinOrMedalCollections
+                  - Other
+                description: Confirmation of the type of high value contents item that will be covered within the insurance policy
+              ReceiptsProofOfPurchase:
+                type: boolean
+                description: >-
+                  Indicator to confirm whether the customer has the receipt to provide proof of purchase of the high
+                  value contents item
+              PhotographicOrDocumentaryEvidence:
+                type: boolean
+                description: >-
+                  Indicator to confirm whether the customer has photographic or documentary evidence of the high value
+                  contents item
+              LatestAppraisalReports:
+                type: boolean
+                description: Indicator to confirm whether the customer an appraisal report of the high value contents item
+              ItemValueAmount:
+                type: object
+                properties:
+                  Currency:
+                    $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+                  Amount:
+                    $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+                description: The value of the high value contents item
+                additionalProperties: false
+            additionalProperties: false
+          minItems: 1
+          description: Required when the customer has declared that they have a content item with a value above AED 25,000
+      additionalProperties: false
     AEInsuranceQuoteVerifiedIdentityProperties:
       type: object
       properties:
