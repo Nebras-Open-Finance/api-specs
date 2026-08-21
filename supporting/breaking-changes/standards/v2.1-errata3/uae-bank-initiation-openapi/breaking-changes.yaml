@@ -86,3 +86,76 @@
     Impact: a TPP that supplies an international Creditor Agent address must
     now include `TownName` and keep it within 70 characters. See the matching
     entry under `uae-authorization-endpoints-openapi/` for POST /par.
+
+- rule: request-property-pattern-added
+  endpoints:
+    - method: POST
+      path: /payments
+    - method: POST
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Per OFP-003 ("Define an allowed character set for Debtor and Creditor
+    References"), a character-set `pattern` is added to the free-text Debtor
+    and Creditor references (`AECreditorReference` / `AEDebtorReference` and the
+    `AEBankServiceInitiation.*` variants). oasdiff reports
+    `request-property-pattern-added` on the `CreditorReference` /
+    `DebtorReference` properties of POST /payments and POST /file-payments.
+
+    In v2.1 these references were relaxed from the old structured pattern to
+    plain free text (`minLength 1`, `maxLength 35`, no pattern). With no
+    validation at all, an LFI cannot know which characters it will be handed,
+    and each institution was left to guess what its systems can store. OFP-003
+    reintroduces a single, uniform character set — the ISO 20022 / SWIFT "x"
+    set (`^[A-Za-z0-9 \/?:().,'+-]+$`) — applied identically wherever the
+    free-text reference is defined (PAR, Bank Service Initiation, Consent
+    Manager, Consent Events, and Ozone Connect). The constraint validates the
+    characters only, not the structure; length and free-text-first are
+    unchanged, and the deprecated structured (120-char) variants are untouched.
+
+    Impact: a TPP that sends a reference containing a character outside the
+    agreed set (e.g. `@`, `#`, `%`, `<`, `>`, `;`, accented Latin, or other
+    scripts) will now receive a request-validation error at the API Hub. The
+    remedy is to sanitise or transliterate the reference to the agreed set
+    before submission. The equivalent change is recorded under
+    `uae-authorization-endpoints-openapi/` for POST /par.
+
+- rules:
+    - response-body-type-changed
+    - response-required-property-removed
+  endpoints:
+    - method: GET
+      path: /payments
+    - method: GET
+      path: /file-payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Not a real breaking change. The API Hub has always returned this response
+    as a signed JWT; the specification described a response the Hub has never
+    emitted, and this errata corrects the specification to match the behaviour.
+
+    Per CS-1346, the `200IdempotencyKeyQuery` response — shared by the
+    idempotency-key query on GET /payments and GET /file-payments — is
+    repointed from the bare `AEIdempotencyKeyQuery` object to a new
+    `AEIdempotencyKeyQuerySigned`, which is the standard signed envelope used
+    throughout this spec: `AEJwt` plus a required `message` carrying the
+    payload. oasdiff compares the declared shapes and therefore reports the
+    `200` body type changing from `object` to a string, and the required `Data`
+    and `Links` properties disappearing from the top level, on both endpoints.
+
+    This was the only response in the spec left unwrapped. Every other response
+    already declares a `*Signed` envelope — `AEPaymentConsentResponseSigned`,
+    `AEPaymentIdResponseSigned`, `AEFilePaymentIdResponseSigned`, the error
+    responses, and the rest — and the endpoint has always been served under the
+    `application/jwt` media type, which a bare object could never have
+    satisfied. The unwrapped declaration was an omission in the spec, not a
+    description of a different contract.
+
+    Impact: none. `Data` and `Links` are unchanged; they are now correctly shown
+    nested under `message` inside the signed envelope, which is where a TPP has
+    always found them after verifying the JWT. A TPP built against the API Hub's
+    actual behaviour needs no change. A TPP built literally against the previous
+    written specification would never have worked against the Hub.
+
+    The change is inherited unchanged by `dist/standards/v2.2-rc1/`, so there
+    is no v2.1-to-v2.2 delta and nothing to record under that version.

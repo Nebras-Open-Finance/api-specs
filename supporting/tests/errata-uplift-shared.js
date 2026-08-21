@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { distDir, parseVersion } = require('./helpers');
+const { distDir, parseVersion, compareVersions } = require('./helpers');
 
 const patchVersionRegex = /^v(\d+)\.(\d+)\.(\d+)$/;
 
@@ -52,7 +52,7 @@ function buildErrataPairs(category) {
   }
 
   for (const list of groups.values()) {
-    list.sort((a, b) => a.parsed.errata - b.parsed.errata);
+    list.sort((a, b) => compareVersions(a.parsed, b.parsed));
     for (let i = 1; i < list.length; i++) {
       const predecessor = list[i - 1];
       const errata = list[i];

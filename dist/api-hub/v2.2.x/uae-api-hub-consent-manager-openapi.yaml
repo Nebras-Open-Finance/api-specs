@@ -32,94 +32,33 @@ info:
     So, for example, `.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
-    ### v2.1.10
+    ### v2.2.1
 
-    * Added a character-set `pattern` (`^[A-Za-z0-9 \/?:().,'+-]+$`, the ISO 20022 / SWIFT "x" set) to the
-      current (free-text, 35-char) branch of the Creditor and Debtor references
-      (`AEServiceInitiationCreditorReference` / `AEServiceInitiationDebtorReference`), so every LFI knows
-      exactly which characters it must accept and store. The deprecated structured (120-char) branch is
-      unchanged. Per OFP-003.
+    * Added new version compatible with v2.2 of standards.
 
-    ### v2.1.9
+    * Changed `patch /insurance-quote-log/{logId}` to add `InsurancePolicyId` when `QuoteStatus` is `PolicyIssued`.
 
-    * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for
-      SWIFT SR2026: the Creditor party is now a `oneOf` of Individual and Organization variants, discriminated
-      by `IdentityType`.
+    * Changed `DebtorReference` and `CreditorReferences` to implement Aani-compatible pattern.
 
+    * Changed the `status` query parameter on `get /psu/{userId}/consents` to a comma-separated list of
+      `AEConsentStatus` values (`style: form`, `explode: false`), evaluated as a union — for example
+      `?status=Authorized,Suspended`. The parameter is now typed, so an unrecognised value is rejected with `400`
+      rather than returning an empty array. The operation no longer references the shared
+      `#/components/parameters/status` component, which is deliberately unchanged: `get /consents`,
+      `get /consent-groups/{consentGroupId}/consents` and `get /accounts/{accountId}/consents` continue to take a
+      single untyped value.
 
-    * The Individual variant carries object-valued `FirstName` / `MiddleName` / `LastName` (`en` / `ar` / `ls`),
-      `RelationshipToSender`, `DateOfBirth`, `Occupation`, `Nationality`, `Gender`, `CountryOfBirth`,
-      `SourceOfIncome`, `SourceOfFunds`, and `Evidence`. The Organization variant carries `AnyBIC`, `LEI`, and
-      `Identification` + `SchemeName`. Both variants share `MobileNumber` / `Email` and an object-valued `Name`
-      (`en` / `ar` / `ls`).
+    * Added `paymentResponse.paymentRail` to `patch /payment-log/{id}` and `get /payment-log`, recording the rail
+      over which the LFI settled the payment — `AANI`, `FTS`, or `LFI` for a payment settled internally. The LFI
+      MUST populate it when patching the status to a terminal success status, and the value MUST agree with the
+      namespace of any `paymentResponse.rejectReasonCode` entry.
 
+    * Changed `get /payment-log` to be paginated, taking the shared `page` and `pageSize` parameters already used by
+      the consent list operations and returning `paginationMetadata` in place of the empty `meta` object. Callers
+      written against v2.1 received every payment for the consent in one response and MUST now follow `page` to
+      retrieve the rest.
 
-    * Added SWIFT SR2026 fields to the international `PostalAddress` (`PostCode`, `Room`, `Department`,
-      `SubDepartment`, `TownLocationName`, and now-mandatory `TownName`). It is now a single
-      `AEInternationalAddress` schema shared by both the Creditor and the Creditor Agent (the Creditor Agent
-      previously used the legacy `AEAddress`).
-
-
-    * Added a `CreditorAgent.Branch` object and `CreditorAccount.AccountType` (Savings / Current / Checking /
-      Prepaid). Domestic Creditor schemas are unchanged.
-
-
-    ### v2.1.8
-
-    * Aligned `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType` enum with Standards (Retail / SME / Corporate), replacing the previous product-category enum (CurrentAccount / Savings / CreditCard / Mortgage / Finance) that diverged from the Standards PAR + Payments specs.
-
-
-    * Aligned the `Risk` object with Standards: tightened `AERisk` and its descendants on the payment-initiation side with `additionalProperties: false` throughout, carved out the three `SupplementaryData` blocks on the RAR-shape (`AEBankServiceInitiationRichAuthorizationRequests.AE*Indicators.SupplementaryData`) to be open extension points (no `additionalProperties: false`), and added `minLength: 1` / `maxLength: 70` to `AddressLine` items inside the legacy `AEAddress` variant.
-
-
-    * Added `ReadStatements` and `ReadProductFinanceRates` to `AEAccountAccessConsentPermissionCodes`, which were present in the v2.1 Standards Bank Data Sharing permission set but missing from the Consent Manager. The Consent Manager must accept every permission code from all supported Standards versions.
-
-
-    * Closed the three `ConsentManager.AE*ConsentUpdateProperties` schemas with `additionalProperties: false`. The `PATCH /consents/{consentId}` request body is an `anyOf` of one schema per consent type (Bank Data Sharing, Bank Service Initiation, Insurance Data Sharing); without this, unknown properties were silently accepted, so a field belonging to one consent type could be patched onto another. The schemas now enforce the per-type field separation they describe.
-
-
-    * Reverted the payment-log reject reason code to match the v2.0.x Consent Manager: the top-level property is `rejectReasonCode` (not `RejectReasonCode`) on the `GET /payment-log` response and `PATCH /payment-log/{id}` request body, and the `code` / `message` fields inside `CbuaePaymentLogRejectReasonCode` items are lower-case again (not `Code` / `Message`). The PascalCase variants were introduced in error and broke LFIs built against the v2.0.x payment-log contract.
-
-
-    ### v2.1.7
-
-    * Added `SME` to `AEExternalAccountTypeCode`.
-
-
-    * Changed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal 
-      monetary values.
-
-
-    * Removed the unused `AEBankServiceInitiationRichAuthorizationRequests.AERiskExternalAccountIdentificationCode` 
-      schema, which duplicated `AERiskExternalAccountIdentificationCode` and was never referenced.
-
-
-    ### v2.1.6
-
-    * Added revised PII properties compatible with version 2.1.
-
-
-    * Changed DebtorReference and CreditorReference to reflect v2.0 properties.
-
-
-    * Changed Rich Authorization Request `type` values to reflect exactly the consent type they are describing.
-
-
-    * Removed changelog before v2.1.4 to reduce bloat of API description.
-
-    ### v2.1.5
-
-    * Changed Account Opening Statuses to provide correct status codes for `patch /account-opening-log/{logId}`.
-
-    ### v2.1.4
-
-    * Added `FromDate` and `ToDate` in Bank Data Sharing Consents.
-
-    * Changed `TransactionFromDateTime` and `TransactionToDateTime` to `deprecated` in Bank Data Sharing Consents in
-      line with changes in v2.1 Pushed Authorization Requests.
-
-
-  version: v2.1.10
+  version: v2.2.1
 tags:
   - name: consents
   - name: consent-groups
@@ -422,7 +361,24 @@ paths:
       parameters:
         - $ref: '#/components/parameters/userId'
         - $ref: '#/components/parameters/consentType'
-        - $ref: '#/components/parameters/status'
+        - name: status
+          in: query
+          required: false
+          style: form
+          explode: false
+          description: >
+            Consent statuses to filter by, as a comma-separated list — for example `?status=Authorized,Suspended`.
+
+            The list is evaluated as a union: a consent is returned if its status matches any value in the list. Order
+            is not significant and duplicates are ignored. Omit the parameter to return consents of every status.
+
+            Every value MUST be a member of `AEConsentStatus`. A request carrying any other value is rejected with
+            `400`. Values are case-sensitive.
+          schema:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/AEConsentStatus'
         - $ref: '#/components/parameters/page'
         - $ref: '#/components/parameters/pageSize'
       responses:
@@ -552,7 +508,16 @@ paths:
         - payments
       summary: Retrieve a log of Payments by Consent ID
       operationId: getAuditConsentsByConsentIdw
-      description: Retrieve all payments using the `consentId` value. Returns all payments associated with the consent.
+      description: >
+        Retrieve the payments made under a consent, using the `consentId` value.
+
+        The response is **paginated**, using the same `page` and `pageSize` parameters as the consent list operations on
+        this API. `pageSize` defaults to 25. The response `meta` reports `pageNumber`, `pageSize`, `totalPages` and
+        `totalRecords`, so a caller reads `totalPages` to know when to stop rather than assuming a short page is the
+        last one.
+
+        Callers written against v2.1 received every payment for the consent in a single response. From v2.2 they
+        receive one page, and MUST follow `page` to retrieve the rest.
       parameters:
         - name: consentId
           in: query
@@ -561,6 +526,8 @@ paths:
           required: true
           description: |
             Identifier for the consent
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
       responses:
         '200':
           description: successful operation
@@ -639,6 +606,8 @@ paths:
                                 An ISO date-time representing when the consent status was last updated
                             OpenFinanceBilling:
                               $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
+                            paymentRail:
+                              $ref: '#/components/schemas/AEPaymentRail'
                             rejectReasonCode:
                               $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
                         signedResponse:
@@ -671,7 +640,7 @@ paths:
                           description: |
                             The entire set of Http request headers that was received by Ozone from the TPP
                   meta:
-                    $ref: '#/components/schemas/meta'
+                    $ref: '#/components/schemas/paginationMetadata'
         '400':
           description: |
             Indicates a failure to retrieve the payments
@@ -920,6 +889,7 @@ paths:
           application/json:
             schema:
               oneOf:
+                - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventAvailableStatus'
                 - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventTerminalStatus'
                 - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventPendingCompletionStatus'
                 - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventCompletedStatus'
@@ -1490,8 +1460,45 @@ components:
             - The `paymentTransactionId` must be populated if the payment is processed by the LFI.
           minLength: 1
           maxLength: 40
+        paymentResponse.paymentRail:
+          $ref: '#/components/schemas/AEPaymentRail'
         paymentResponse.rejectReasonCode:
           $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
+    AEPaymentRail:
+      type: string
+      description: >
+        The payment rail over which the LFI settled the payment.
+
+        The value records how the payment was **executed**, not how it was requested. Where an LFI's routing rules
+        settle an instant payment on another rail, this field reports the rail actually used.
+
+        * `AANI`: Settled over AANI, the UAE instant payment platform.
+
+        * `FTS`: Settled over UAEFTS, the CBUAE funds transfer system.
+
+        * `LFI`: Settled internally by the LFI. The debtor and creditor accounts are both held at the LFI, so the
+        payment was booked on the LFI's own ledger and did not reach an external rail.
+
+        The LFI MUST populate this field when patching `paymentResponse.status` to a terminal success status —
+        `AcceptedWithoutPosting`, `AcceptedSettlementCompleted`, or `AcceptedCreditSettlementCompleted`. It MAY be sent
+        alongside `Pending`, and MAY be omitted on `Rejected`, where the payment may have been rejected before a rail
+        was selected.
+
+        Where a payment was rejected by a rail, this value MUST agree with the namespace of the corresponding
+        `paymentResponse.rejectReasonCode` entry: an `AANI.*` reject code MUST be accompanied by `AANI`, and an `FTS.*`
+        code by `FTS`. An `LFI.*` reject code indicates rejection at the LFI prior to rail submission, and carries no
+        such constraint.
+
+        This field and `paymentResponse.paymentTransactionId` are a pair: the rail names the system that generated the
+        transaction identifier.
+
+        A payment settles over exactly one rail. This holds for file payments as well as single payments — a file
+        payment is settled in its entirety over one rail, so a single value describes the whole record.
+      enum:
+        - AANI
+        - FTS
+        - LFI
+      example: AANI
     AEServiceInitiationOpenFinancePaymentBillingPatch:
       type: object
       properties:
@@ -2947,8 +2954,17 @@ components:
             ^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)
           deprecated: true
         - description: |-
+            **DEPRECATED AT v2.1 - OPEN STRINGS ARE NO LONGER ALLOWED.**
+
             A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of
             a given payment instruction.
+          type: string
+          minLength: 1
+          maxLength: 35
+          deprecated: true
+        - description: |-
+            A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of
+            a given payment instruction. Supports a restricted character set.
           type: string
           minLength: 1
           maxLength: 35
@@ -2990,8 +3006,17 @@ components:
           pattern: ^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},(Merchant=[A-Z0-9]{3}-[A-Z]{4}-TL.+-[0-9]{4}|),BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)
           deprecated: true
         - description: |-
+            **DEPRECATED AT v2.1 - OPEN STRINGS ARE NO LONGER ALLOWED.**
+
             A Debtor Reference is a note is for the reference of a given User that may be available as
             additional information in relation to a given payment instruction.
+          type: string
+          minLength: 1
+          maxLength: 35
+          deprecated: true
+        - description: |-
+            A Debtor Reference is a note is for the reference of a given User that may be available as
+            additional information in relation to a given payment instruction. Supports a restricted character set.
           type: string
           minLength: 1
           maxLength: 35
@@ -4868,7 +4893,27 @@ components:
             $ref: '#/components/schemas/AEInsurance.AEDocumentProperties'
           minItems: 1
           description: Policy documents to be issued to the Customer via the TPP.
+        InsurancePolicyId:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceResourceIdentifierType'
+          description: Unique policy identifier for a given policy. Optionally provided when the `QuoteStatus` is 
+            `PolicyIssued`
+        ConfirmedPolicyStartDate:
+          $ref: '#/components/schemas/AEInsurancePolicyConfirmedPolicyStartDateStartDate1Type'
+        ConfirmedPolicyEndDate:
+          $ref: '#/components/schemas/AEInsurancePolicyConfirmedPolicyEndDateStartDate1Type'
       description: Quote status updates indicating a pending state, with optional instructions for TPPs.
+    AEInsurance.AEInsuranceQuoteEventAvailableStatus:
+      title: Available Status
+      type: object
+      required:
+        - QuoteStatus
+      properties:
+        QuoteStatus:
+          description: Available quote status.
+          type: string
+          enum:
+            - Available
 
   # PII properties split between Domestic and International, as described by v2.1 of the standards
 
@@ -6089,6 +6134,27 @@ components:
         Risk:
           $ref: '#/components/schemas/AERisk'
       additionalProperties: false
+
+    AEInsuranceResourceIdentifierType:
+      type: string
+      minLength: 1
+      maxLength: 128
+      description: |-
+        Unique identifier for a given insurance policy. 
+
+        A uuid v4 is recommended for consistency but not mandatory.
+
+    AEInsurancePolicyConfirmedPolicyStartDateStartDate1Type:
+      type: string
+      format: date
+      description: LFI confirmed or revised start date for policy plan at issuance. Optionally provided when 
+        `QuoteStatus` is `PolicyIssued`.
+
+    AEInsurancePolicyConfirmedPolicyEndDateStartDate1Type:
+      type: string
+      format: date
+      description: LFI confirmed or revised end date for policy plan at issuance. Optionally provided when 
+        `QuoteStatus` is `PolicyIssued`.
 
   parameters:
     consentId:
