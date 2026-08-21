@@ -4,36 +4,29 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const YAML = require('yaml');
-const { distDir, repoRoot, parseVersion, compareVersions } = require('../helpers');
+const {
+  distDir, repoRoot, parseVersion, compareVersions, versionLabel, isPreReleaseLine, listVersionDirs,
+} = require('../helpers');
 
 const acceptedChangesRoot = path.join(repoRoot, 'supporting', 'breaking-changes', 'standards');
 
 // Per-file start version. A file is only checked for breaking changes from its
 // start version onward; files without an entry here are skipped entirely.
-// Format: "v2.1" or "v2.1-errata1".
+// Format: "v2.1", "v2.1-errata1", "v2.2-draft1" or "v2.2-rc1".
 const START_VERSIONS = {
   'uae-account-information-openapi.yaml': 'v2.1',
   'uae-atm-openapi.yaml': 'v2.1',
   'uae-authorization-endpoints-openapi.yaml': 'v2.1',
   'uae-bank-initiation-openapi.yaml': 'v2.1',
   'uae-confirmation-of-payee-openapi.yaml': 'v2.1',
+  // No entry for uae-insurance-openapi.yaml: the v2.2 rework is a large,
+  // deliberate reshaping of that spec and its baseline has not been agreed yet.
+  // Deferred rather than forgotten — add a start version once it is settled.
   'uae-product-openapi.yaml': 'v2.1',
   'uae-webhook-template-openapi.yaml': 'v2.1',
 };
 
 const standardsDir = path.join(distDir, 'standards');
-
-function versionLabel(v) {
-  return v.errata > 0 ? `v${v.major}.${v.minor}-errata${v.errata}` : `v${v.major}.${v.minor}`;
-}
-
-function listVersionDirs() {
-  return fs.readdirSync(standardsDir, { withFileTypes: true })
-    .filter(e => e.isDirectory())
-    .map(e => ({ name: e.name, parsed: parseVersion(e.name) }))
-    .filter(e => e.parsed)
-    .sort((a, b) => compareVersions(a.parsed, b.parsed));
-}
 
 function listSpecFiles(versionDirName) {
   const specDir = path.join(standardsDir, versionDirName);
@@ -49,12 +42,13 @@ function groupByMinor(versions) {
     groups.get(key).push(v);
   }
   for (const arr of groups.values()) {
-    arr.sort((a, b) => a.parsed.errata - b.parsed.errata);
+    arr.sort((a, b) => compareVersions(a.parsed, b.parsed));
   }
   return groups;
 }
 
-// Effective spec set for a minor: file-by-file, the highest-errata copy wins.
+// Effective spec set for a minor: file-by-file, the highest revision wins
+// (errata over base over rc over draft).
 // Returns Map<filename, sourceVersionDirName>.
 function effectiveFiles(versionsInMinor) {
   const effective = new Map();
@@ -86,15 +80,19 @@ function buildPairs(versions) {
     }
   }
 
-  // Minor pairs within a major: older effective -> newer base.
+  // Minor pairs within a major: the older line's effective set -> the first
+  // revision of the newer line. That first revision is the base release once the
+  // version is published, and the first pre-release (draft or rc) while it is
+  // still being assembled (`v2.1-errata3` effective -> `v2.2-rc1`), so the
+  // v2.1 -> v2.2 contract is under test from the first pre-release rather than
+  // only at publication. Later revisions of the newer line are covered by the
+  // within-line pairs above.
   for (let i = 1; i < minorKeys.length; i++) {
     const olderList = groups.get(minorKeys[i - 1]);
     const newerList = groups.get(minorKeys[i]);
     if (olderList[0].parsed.major !== newerList[0].parsed.major) continue;
-    const newerBase = newerList.find(v => v.parsed.errata === 0);
-    if (!newerBase) continue;
     const olderLatest = olderList[olderList.length - 1];
-    pairs.push({ kind: 'minor', olderList, olderLatest, revision: newerBase });
+    pairs.push({ kind: 'minor', olderList, olderLatest, revision: newerList[0] });
   }
 
   return pairs;
@@ -166,7 +164,7 @@ function shouldCheckFile(file, baseParsed) {
   return compareVersions(baseParsed, start) >= 0;
 }
 
-const versions = listVersionDirs();
+const versions = listVersionDirs('standards');
 const pairs = buildPairs(versions);
 
 describe('No breaking changes within a major version (standards)', { skip: !oasdiffAvailable() && 'oasdiff not installed — see https://github.com/oasdiff/oasdiff#installation' }, () => {
@@ -203,7 +201,14 @@ describe('No breaking changes within a major version (standards)', { skip: !oasd
       const effective = effectiveFiles(olderList);
       const newerFiles = new Set(listSpecFiles(revision.name));
 
-      it(`${label}: no spec files removed`, () => {
+      // A pre-release line (draft or rc) carries only the specs that version
+      // has changed so far — the rest stay current at the older line and are
+      // copied in before publication. Absence is therefore "not uplifted yet",
+      // not a removal, and this check only becomes meaningful once the line is
+      // published.
+      const newerIsPreRelease = isPreReleaseLine(revision.parsed.major, revision.parsed.minor);
+
+      it(`${label}: no spec files removed`, { skip: newerIsPreRelease && `${versionLabel(revision.parsed)} is an unpublished pre-release line — its spec set is still being assembled` }, () => {
         const removed = [...effective.entries()]
           .filter(([f, sourceVersion]) => {
             if (newerFiles.has(f)) return false;

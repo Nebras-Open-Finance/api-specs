@@ -1,0 +1,102 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rules:
+    - request-parameter-type-changed
+    - request-parameter-min-items-increased
+  endpoints:
+    - method: GET
+      path: /psu/{userId}/consents
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `status` query parameter on `GET /psu/{userId}/consents` was changed
+    from a bare `string` to an array of `AEConsentStatus`, serialised
+    comma-separated (`style: form`, `explode: false`) — for example
+    `?status=Authorized,Suspended`. This is v2.1-to-v2.2 change §2.
+
+    On the wire the single-valued form is unchanged: `?status=Authorized` is a
+    one-item list and behaves exactly as it did in v2.1, and omitting the
+    parameter still returns consents of every status. Every request an LFI
+    built against v2.1 sends today continues to work.
+
+    What does change is validation. In v2.1 the schema was an untyped `string`
+    with no enum, so an unrecognised value was accepted by the contract and
+    simply returned an empty array. From v2.2 each list item MUST be a member
+    of `AEConsentStatus` and any other value is rejected with `400`. An LFI
+    sending a status name the standard does not define was already getting no
+    results; it now gets an error that says so.
+
+    `request-parameter-min-items-increased` is reported for the same edit:
+    oasdiff reads the absent `minItems` on the v2.1 scalar as `0` and compares
+    it against the `minItems: 1` on the new array. A caller cannot send an
+    empty list — omitting the parameter is how "no filter" is expressed, as
+    before — so nothing that previously validated is now rejected.
+
+    The shared `#/components/parameters/status` component is deliberately
+    untouched. `GET /consents`, `GET /consent-groups/{consentGroupId}/consents`
+    and `GET /accounts/{accountId}/consents` continue to reference it and stay
+    single-valued and untyped in v2.2, so this change reaches one operation
+    only.
+
+- rule: request-property-any-of-removed
+  endpoints:
+    - method: POST
+      path: /consents
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `AEServiceInitiationCreditorReference` and
+    `AEServiceInitiationDebtorReference` — reached from `POST /consents`
+    through the `ServiceInitiationAuthorizationDetails` RAR — each gain a
+    third `anyOf` branch in v2.2.
+
+    In v2.1 the list was:
+
+      1. the deprecated structured 120-character reference, and
+      2. the free-text 35-character reference carrying the OFP-003 character
+         set `^[A-Za-z0-9 \/?:().,'+-]+$`.
+
+    In v2.2 it is:
+
+      1. the deprecated structured 120-character reference,
+      2. a deprecated free-text 35-character reference with no `pattern`,
+         described as "DEPRECATED AT v2.1 - OPEN STRINGS ARE NO LONGER
+         ALLOWED.", and
+      3. the patterned free-text reference, its description extended with
+         "Supports a restricted character set."
+
+    oasdiff pairs `anyOf` branches by position and content. The patterned
+    branch moved from index 2 to index 3 and its description changed, so
+    oasdiff cannot pair it with its v2.1 counterpart and reports the v2.1
+    index 2 as `request-property-any-of-removed` — once for
+    `CreditorReference` and once for `DebtorReference`. No branch was
+    actually withdrawn: v2.2 validates a strict superset of v2.1, because the
+    unpatterned branch re-admits every value the OFP-003 pattern rejects.
+
+    Why the open branch is present: restricting the character set is a
+    genuine breaking change for any TPP already sending references containing
+    characters outside the ISO 20022 / SWIFT "x" set, and landing it silently
+    — as a side effect of a `pattern` appearing in a schema — is not an
+    acceptable way to introduce it. v2.2 therefore keeps open strings
+    structurally valid while marking that branch `deprecated: true` and
+    saying in the description that open strings are no longer allowed, so the
+    intent is unmistakable to anyone reading the spec or generating code from
+    it. The branch will be removed, and the restriction actually enforced, in
+    a new version announced explicitly for that purpose.
+
+    Impact: none today. A TPP already within the restricted character set is
+    unaffected; a TPP sending open strings continues to validate at v2.2 but
+    is on notice and must migrate before the branch is withdrawn.

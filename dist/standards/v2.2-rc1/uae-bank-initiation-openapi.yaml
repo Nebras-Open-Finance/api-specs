@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: UAE Payment API
   description: '## UAE Open Finance Payment API Specification'
-  version: v2.2-draft1
+  version: v2.2-rc1
 servers:
   - url: /open-finance/payment/v2.2
 tags:
@@ -3505,6 +3505,7 @@ components:
       type: string
       minLength: 1
       maxLength: 35
+      pattern: ^[A-Za-z0-9 \/?:().,'+-]+$
       description: >-
         A Debtor Reference is a note is for the reference of a given User that may be available as additional
         information in relation to a given payment instruction.

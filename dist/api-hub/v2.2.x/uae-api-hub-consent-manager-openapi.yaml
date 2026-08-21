@@ -40,6 +40,24 @@ info:
 
     * Changed `DebtorReference` and `CreditorReferences` to implement Aani-compatible pattern.
 
+    * Changed the `status` query parameter on `get /psu/{userId}/consents` to a comma-separated list of
+      `AEConsentStatus` values (`style: form`, `explode: false`), evaluated as a union — for example
+      `?status=Authorized,Suspended`. The parameter is now typed, so an unrecognised value is rejected with `400`
+      rather than returning an empty array. The operation no longer references the shared
+      `#/components/parameters/status` component, which is deliberately unchanged: `get /consents`,
+      `get /consent-groups/{consentGroupId}/consents` and `get /accounts/{accountId}/consents` continue to take a
+      single untyped value.
+
+    * Added `paymentResponse.paymentRail` to `patch /payment-log/{id}` and `get /payment-log`, recording the rail
+      over which the LFI settled the payment — `AANI`, `FTS`, or `LFI` for a payment settled internally. The LFI
+      MUST populate it when patching the status to a terminal success status, and the value MUST agree with the
+      namespace of any `paymentResponse.rejectReasonCode` entry.
+
+    * Changed `get /payment-log` to be paginated, taking the shared `page` and `pageSize` parameters already used by
+      the consent list operations and returning `paginationMetadata` in place of the empty `meta` object. Callers
+      written against v2.1 received every payment for the consent in one response and MUST now follow `page` to
+      retrieve the rest.
+
   version: v2.2.1
 tags:
   - name: consents
@@ -343,7 +361,24 @@ paths:
       parameters:
         - $ref: '#/components/parameters/userId'
         - $ref: '#/components/parameters/consentType'
-        - $ref: '#/components/parameters/status'
+        - name: status
+          in: query
+          required: false
+          style: form
+          explode: false
+          description: >
+            Consent statuses to filter by, as a comma-separated list — for example `?status=Authorized,Suspended`.
+
+            The list is evaluated as a union: a consent is returned if its status matches any value in the list. Order
+            is not significant and duplicates are ignored. Omit the parameter to return consents of every status.
+
+            Every value MUST be a member of `AEConsentStatus`. A request carrying any other value is rejected with
+            `400`. Values are case-sensitive.
+          schema:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/AEConsentStatus'
         - $ref: '#/components/parameters/page'
         - $ref: '#/components/parameters/pageSize'
       responses:
@@ -473,7 +508,16 @@ paths:
         - payments
       summary: Retrieve a log of Payments by Consent ID
       operationId: getAuditConsentsByConsentIdw
-      description: Retrieve all payments using the `consentId` value. Returns all payments associated with the consent.
+      description: >
+        Retrieve the payments made under a consent, using the `consentId` value.
+
+        The response is **paginated**, using the same `page` and `pageSize` parameters as the consent list operations on
+        this API. `pageSize` defaults to 25. The response `meta` reports `pageNumber`, `pageSize`, `totalPages` and
+        `totalRecords`, so a caller reads `totalPages` to know when to stop rather than assuming a short page is the
+        last one.
+
+        Callers written against v2.1 received every payment for the consent in a single response. From v2.2 they
+        receive one page, and MUST follow `page` to retrieve the rest.
       parameters:
         - name: consentId
           in: query
@@ -482,6 +526,8 @@ paths:
           required: true
           description: |
             Identifier for the consent
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
       responses:
         '200':
           description: successful operation
@@ -560,6 +606,8 @@ paths:
                                 An ISO date-time representing when the consent status was last updated
                             OpenFinanceBilling:
                               $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
+                            paymentRail:
+                              $ref: '#/components/schemas/AEPaymentRail'
                             rejectReasonCode:
                               $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
                         signedResponse:
@@ -592,7 +640,7 @@ paths:
                           description: |
                             The entire set of Http request headers that was received by Ozone from the TPP
                   meta:
-                    $ref: '#/components/schemas/meta'
+                    $ref: '#/components/schemas/paginationMetadata'
         '400':
           description: |
             Indicates a failure to retrieve the payments
@@ -1412,8 +1460,45 @@ components:
             - The `paymentTransactionId` must be populated if the payment is processed by the LFI.
           minLength: 1
           maxLength: 40
+        paymentResponse.paymentRail:
+          $ref: '#/components/schemas/AEPaymentRail'
         paymentResponse.rejectReasonCode:
           $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
+    AEPaymentRail:
+      type: string
+      description: >
+        The payment rail over which the LFI settled the payment.
+
+        The value records how the payment was **executed**, not how it was requested. Where an LFI's routing rules
+        settle an instant payment on another rail, this field reports the rail actually used.
+
+        * `AANI`: Settled over AANI, the UAE instant payment platform.
+
+        * `FTS`: Settled over UAEFTS, the CBUAE funds transfer system.
+
+        * `LFI`: Settled internally by the LFI. The debtor and creditor accounts are both held at the LFI, so the
+        payment was booked on the LFI's own ledger and did not reach an external rail.
+
+        The LFI MUST populate this field when patching `paymentResponse.status` to a terminal success status —
+        `AcceptedWithoutPosting`, `AcceptedSettlementCompleted`, or `AcceptedCreditSettlementCompleted`. It MAY be sent
+        alongside `Pending`, and MAY be omitted on `Rejected`, where the payment may have been rejected before a rail
+        was selected.
+
+        Where a payment was rejected by a rail, this value MUST agree with the namespace of the corresponding
+        `paymentResponse.rejectReasonCode` entry: an `AANI.*` reject code MUST be accompanied by `AANI`, and an `FTS.*`
+        code by `FTS`. An `LFI.*` reject code indicates rejection at the LFI prior to rail submission, and carries no
+        such constraint.
+
+        This field and `paymentResponse.paymentTransactionId` are a pair: the rail names the system that generated the
+        transaction identifier.
+
+        A payment settles over exactly one rail. This holds for file payments as well as single payments — a file
+        payment is settled in its entirety over one rail, so a single value describes the whole record.
+      enum:
+        - AANI
+        - FTS
+        - LFI
+      example: AANI
     AEServiceInitiationOpenFinancePaymentBillingPatch:
       type: object
       properties:

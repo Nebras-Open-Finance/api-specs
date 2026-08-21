@@ -94,6 +94,29 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
+    * Changed `transactionInformation` on `CbuaeTransaction` to be required, so every transaction returned by
+      `get /accounts/{accountId}/transactions` carries a narrative by which the customer can recognise the entry.
+      The field also gains `minLength: 1` and `maxLength: 500`, matching the bounds the TPP-facing
+      `TransactionInformation` schema has carried since v2.1. The same requirement is applied to `AETransaction` in
+      the Standards Account Information API description, since the API Hub can only return a narrative the LFI
+      supplied.
+
+    * Changed the `post /customers/action/cop-query` request to carry the account IBAN only. `data.account.name` is
+      removed, along with the `PersonName` and `BusinessName` Schema Objects it referenced. The LFI performs no
+      matching, so the name submitted by the TPP is no longer sent to it.
+
+    * Changed the `post /customers/action/cop-query` response to carry the account holder's name directly. Each
+      entry in `data` is now an `id` and a `name`, which is either a `CbuaeCopPersonName` (`fullName` required) or a
+      `CbuaeCopBusinessName` (`businessName` required). The `verifiedClaims` / `verification` identity-assurance
+      envelope is removed from this operation, along with the `CbuaeVerifiedCopClaim` and
+      `ConfirmationOfPayeePersonClaims` Schema Objects and the wider customer data the latter carried — none of it
+      is needed to compare two names, and Confirmation of Payee runs without a consent. `number` is dropped for the
+      same reason; `id` is retained as the handle for investigating a disputed result. Structured name fields
+      (`firstName`, `middleName`, `lastName`, `fullNameAr`, `alsoKnownAs`, `businessNameAr`) are retained as
+      optional members so the matching algorithm can be improved without a further change to this contract.
+      `get /accounts/{accountId}/customer` is unaffected: it has its own `CbuaeCustomer` / `CbuaeVerifiedClaim`
+      Schema Objects.
+
   version: v2.2.1
 servers:
   - url: https://<your-ozone-connect-server>
@@ -488,27 +511,32 @@ paths:
         - customers
       summary: Fetches customer data based on a confirmation of payee query
       description: >
-        The API is used by Ozone to find customer records from the LFI based on a confirmation of payee query.
+        Used by the API Hub to find the name(s) held against an account, so that the Hub can answer a Confirmation of
+        Payee query.
 
 
-        Ozone will send a query to the LFI that identifies a customer account. The financial institution must return the
-        customer records associated with specified account.
+        The API Hub sends an IBAN, and nothing else. The LFI returns the name(s) it holds against that account. **The
+        LFI performs no matching** — the name the TPP submitted is not sent to it, and it MUST NOT filter, rank, or omit
+        holders on any basis. The API Hub owns the matching rules and applies them to what is returned.
 
 
-        Ozone takes on the responsibility of implementing the COP name matching rules. The financial institution must
-        return the customer records that match the COP query.
+        A joint account MUST return **one entry per holder**. The API Hub evaluates every entry in `data`; it does not
+        stop at the first.
 
 
-        The financial institution may return multiple customer records for a single account. (e.g. for joint accounts)
+        **Not found is `200` with an empty `data` array** — never `204`, `404`, `201`, or `202`. Return it where the
+        account does not exist, is under a bar, or the customer has opted out of Confirmation of Payee. The three cases
+        are deliberately indistinguishable to the TPP, so that a CoP query cannot be used to probe for the existence of
+        an account.
 
 
-        In situations where the customer is not found, the financial institution must return a success status code `200`
-        with an empty `data` object. e.g.
-          - account is not found
-          - account is under a bar
-          - customer has opted out of COP
+        From v2.2 the request carries the IBAN only, and the response is **flattened**: each entry in `data` carries
+        `name` directly. The v2.1 `verifiedClaims` / `verification` identity-assurance envelope is removed from this
+        operation — the API Hub never read it.
 
-        Note that this operation is not carried out under a consent and the call will not have a `o3-consent-id` header
+
+        This operation is not carried out under a consent, and the call will not have an `o3-consent-id` header. The
+        response MUST therefore carry only the name data this question requires, and no wider customer data.
       operationId: findCustomerForCop
       parameters:
         - $ref: '#/components/parameters/providerId'
@@ -1284,33 +1312,111 @@ components:
         Based on the [OpenID Connect for Identity Assurance 1.0
         Specification](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html)
     CbuaeCopCustomer:
+      description: >
+        One account holder returned for a Confirmation of Payee query.
+
+        A joint account returns one entry per holder. The API Hub evaluates EVERY entry in `data` — returning the
+        holders in any order is safe, and the LFI MUST NOT attempt to order them by likelihood of match.
       type: object
       required:
         - id
-        - verifiedClaims
+        - name
+      additionalProperties: false
       properties:
         id:
-          type: string
-          minLength: 1
-          maxLength: 40
           description: >-
             A unique and immutable identifier used to identify the customer resource. This identifier has no meaning to
             the account owner.
-        number:
           type: string
           minLength: 1
-          maxLength: 35
-          description: Number assigned by an agent to identify its customer.
-        verifiedClaims:
+          maxLength: 40
+        name:
+          description: The name held against the account for this holder — a personal name or a business name.
+          oneOf:
+            - $ref: '#/components/schemas/CbuaeCopPersonName'
+            - $ref: '#/components/schemas/CbuaeCopBusinessName'
+    CbuaeCopPersonName:
+      description: >
+        The name of a personal account holder, as held by the LFI.
+
+        `fullName` is the only required field and is what the API Hub matches on today. The remaining fields are
+        OPTIONAL and are not required for a match to succeed — supply them where your systems hold them separately, so
+        that improvements to the matching algorithm can use them without a further change to this contract.
+      type: object
+      required:
+        - fullName
+      additionalProperties: false
+      properties:
+        fullName:
+          description: The full name of the account holder, as it appears on the account, as a single string.
+          type: string
+          minLength: 1
+          maxLength: 140
+        firstName:
+          description: >-
+            Given name of the account holder. Optional. Named `firstName` rather than the v2.1 `givenName`, which the
+            v2.1 schema already recorded as withdrawn.
+          type: string
+          minLength: 1
+          maxLength: 70
+        middleName:
+          description: Middle name(s) of the account holder. Optional.
+          type: string
+          minLength: 1
+          maxLength: 70
+        lastName:
+          description: >-
+            Family name of the account holder. Optional. Named `lastName` rather than the v2.1 `familyName`, which the
+            v2.1 schema already recorded as withdrawn.
+          type: string
+          minLength: 1
+          maxLength: 70
+        fullNameAr:
+          description: >-
+            The full name of the account holder in Arabic script, where the LFI holds one. Optional. Not matched today.
+          type: string
+          minLength: 1
+          maxLength: 140
+        alsoKnownAs:
+          description: >-
+            Other names the account is legitimately known by — for example a maiden name, or a transliteration variant
+            the LFI holds. Optional. Not matched today.
           type: array
           items:
-            $ref: '#/components/schemas/CbuaeVerifiedCopClaim'
-          description: Container object containing entries for the trust framework and the evidence used to verify the claims
+            type: string
+            minLength: 1
+            maxLength: 140
+    CbuaeCopBusinessName:
       description: >
-        Party Identity Assurance (Response) Schema
+        The name of a business account holder, as held by the LFI.
 
-        Based on the [OpenID Connect for Identity Assurance 1.0
-        Specification](https://openid.net/specs/openid-connect-4-identity-assurance-1_0.html)
+        `businessName` is the only required field and is what the API Hub matches on today. The remaining fields are
+        OPTIONAL inputs to future matching.
+      type: object
+      required:
+        - businessName
+      additionalProperties: false
+      properties:
+        businessName:
+          description: The registered business name on the account.
+          type: string
+          minLength: 1
+          maxLength: 140
+        businessNameAr:
+          description: >-
+            The registered business name in Arabic script, where the LFI holds one. Optional. Not matched today.
+          type: string
+          minLength: 1
+          maxLength: 140
+        alsoKnownAs:
+          description: >-
+            Other names the business is legitimately known by — for example a trading name distinct from the registered
+            name. Optional. Not matched today.
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 140
     CustomerCorporateClaims:
       type: object
       description: Standard claims for corporate or SME entities.
@@ -1584,211 +1690,6 @@ components:
             mapping:
               Person: '#/components/schemas/CustomerPersonClaims'
               Business: '#/components/schemas/CustomerCorporateClaims'
-    ConfirmationOfPayeePersonClaims:
-      description: >
-        Claims related to a person. 
-          
-        `fullName` **MUST** be provided.
-            
-        **Implementing  `givenName` and `familyName` is removed as of v1.2.1, based on standards version**
-        **v1.2-final-errata1.**
-      type: object
-      required:
-        - fullName
-      properties:
-        fullName:
-          description: >-
-            The full name of the account holder, as it appears on the account, as a single string. Used where LFIs hold
-            the account name as a single value.
-          type: string
-        givenName:
-          type: string
-          description: >-
-            Given name of the Party. Given name (also called forename) is used to differentiate from the surname or
-            family name. Used where LFIs hold `givenName` and `familyName` separately.
-        familyName:
-          type: string
-          description: Surname of the Party. Used where LFIs hold `givenName` and `familyName` separately.
-        middleName:
-          type: string
-          description: Middle name of the Party
-        nickname:
-          type: string
-          description: Nickname of the Party
-        emiratesId:
-          type: string
-          description: Emirates ID number of the Party
-        emiratesIdExpiryDate:
-          type: string
-          format: date
-          description: Emirates ID card expiry date
-        birthDate:
-          type: string
-          format: date
-          description: Date of birth of the Party
-        sourceOfIncome:
-          type: string
-          description: The customer source of income
-        salary:
-          type: string
-          description: The customer salary
-        nationality:
-          type: string
-          description: The customer nationality
-        residentialAddress:
-          $ref: '#/components/schemas/AEPartyIdentityResidentialAddressClaim'
-        mobileNumber:
-          type: string
-          description: The customer mobile number
-        email:
-          type: string
-          description: The customer email
-        maritalStatus:
-          type: string
-          description: The customer marital status
-        salutation:
-          type: string
-          description: The customer salutation
-        language:
-          type: string
-          description: The primary language of the customer
-        employerName:
-          type: string
-          description: The employer name of the customer
-        employmentSinceDate:
-          type: string
-          format: date
-          description: The date from which the customer was employed by their employer
-        powerofAttorney:
-          type: boolean
-          description: Indicator that labels whether the customer is subject to a power of attorney arrangement
-        salaryTransfer:
-          type: boolean
-          description: Indicator that labels whether the customer receives their salary in the associated account
-        profession:
-          type: string
-          description: The customer profession
-        updatedAt:
-          type: string
-          format: date-time
-          description: The date at which the customer data was last updated
-      additionalProperties: false
-    CbuaeVerifiedCopClaim:
-      description: |
-        Verified Claims :This is Required field for Cbuae
-        Container object containing entries for the trust framework and the evidence used to verify the customer claims
-      type: object
-      properties:
-        verification:
-          description: |
-            Verification
-          type: object
-          required:
-            - trustFramework
-          properties:
-            trustFramework:
-              type: string
-              enum:
-                - UAE.FI
-              description: >
-                Identifies the trust framework used for customer verification. Defaults to the KYC/AML applied as the
-                source of truth for account holder details as applied under UAE law for Financial Institutions.
-            assuranceLevel:
-              type: string
-              description: |
-                Determines the assurance level associated with the customer in the respective VerifiedClaims.
-            assuranceProcess:
-              type: object
-              description: >
-                Determines the assurance process that was followed. This reflects how the evidence meets the
-                requirements of the TrustFramework and AssuranceLevel.
-              required:
-                - policy
-                - procedure
-                - assuranceDetails
-              properties:
-                policy:
-                  type: string
-                  description: Representing the standard or policy that was followed.
-                procedure:
-                  type: string
-                  description: Representing a specific procedure from the policy that was followed.
-                assuranceDetails:
-                  type: array
-                  description: Denoting the details about how the evidence complies with the policy
-                  items:
-                    type: object
-                    required:
-                      - assuranceType
-                      - assuranceClassification
-                      - evidenceRef
-                    properties:
-                      assuranceType:
-                        description: String denoting which part of the assurance_process the evidence fulfils
-                        type: string
-                      assuranceClassification:
-                        description: >-
-                          String reflecting how the evidence has been classified or measured as required by the
-                          TrustFramework
-                        type: string
-                      evidenceRef:
-                        description: Evidence being referred to
-                        type: array
-                        items:
-                          type: object
-                          required:
-                            - txn
-                            - evidenceMetadata
-                          properties:
-                            txn:
-                              description: Identifier referring to the txn used in the CheckDetails.
-                              type: string
-                            evidenceMetadata:
-                              description: >-
-                                Object indicating any meta data about the evidence that is required by the
-                                AssuranceProcess in order to demonstrate compliance with the TrustFramework. It has the
-                                following sub-elements
-                              type: object
-                              required:
-                                - evidenceClassification
-                              properties:
-                                evidenceClassification:
-                                  type: string
-                                  description: The properties of each piece of evidence used in verifying a given customer
-                          description: >-
-                            The properties of each assurance process implemented by the LFI to verify the details of a
-                            given customer
-                    description: The properties of a customer associated with a given account
-            time:
-              type: string
-              format: date-time
-              description: |
-                Representing the date and time when the identity verification process took 
-                place. All dates in the JSON payloads are represented in ISO 8601 date-time 
-                format. All date-time fields in responses must include the timezone. An 
-                example is below: 2017-04-05T10:43:07+00:00
-            verificationProcess:
-              type: string
-              description: |
-                Unique reference to the identity verification process as performed by the OP.
-            evidence:
-              description: The type of evidence allowed for providing verification.
-              anyOf:
-                - $ref: '#/components/schemas/AEPartyIdentityEvidenceTypeDocument'
-                - $ref: '#/components/schemas/AEPartyIdentityEvidenceTypeElectronicRecord'
-        claims:
-          $ref: '#/components/schemas/ConfirmationOfPayeePersonClaims'
-        organisationClaims:
-          description: Claims related to a business entity
-          type: object
-          required:
-            - name
-          properties:
-            name:
-              type: string
-              description: Business name of the Party.
-          additionalProperties: false
-      additionalProperties: false
     AEPartyIdentityEvidenceTypeDocument:
       type: object
       properties:
@@ -2279,6 +2180,7 @@ components:
         - status
         - bookingDateTime
         - amount
+        - transactionInformation
       properties:
         accountId:
           description: A unique and immutable identifier produced by the financial institution to identify the account resource
@@ -2358,8 +2260,21 @@ components:
           type: string
           format: date-time
         transactionInformation:
-          description: Further details of the transaction.
+          description: >
+            Further details of the transaction. This is the transaction narrative, which is unstructured text.
+
+            REQUIRED from v2.2. The API Hub returns this value to the TPP as `TransactionInformation`, where it is also
+            required, so a transaction record that omits it cannot be served.
+
+            Where the LFI holds no stored narrative for a transaction, it MUST derive one from the data it does hold —
+            the merchant name, the counterparty, or the transaction type. Whitespace-only values and non-informative
+            placeholders such as `N/A`, `-`, or `Unknown` do not satisfy this requirement.
+
+            The length bounds match the TPP-facing `TransactionInformation` schema, so a narrative that validates here
+            also validates when the API Hub returns it.
           type: string
+          minLength: 1
+          maxLength: 500
         amount:
           $ref: '#/components/schemas/OBActiveOrHistoricCurrencyAndAmount_8'
         chargeAmount:
@@ -3476,7 +3391,6 @@ components:
               required:
                 - schemeName
                 - identification
-                - name
               properties:
                 schemeName:
                   type: string
@@ -3490,41 +3404,12 @@ components:
                   description: >-
                     Identification for the account assigned by the LFI based on the Account Scheme Name. This
                     identification is known by the User account owner. For IBAN, refer to the ISO Standard 13616.
-                name:
-                  oneOf:
-                    - $ref: '#/components/schemas/PersonName'
-                    - $ref: '#/components/schemas/BusinessName'
-              description: Account for which confirmation of payee details is required.
+              description: >-
+                The account the Confirmation of Payee query is about, identified by IBAN. From v2.2 the name the TPP
+                submitted is NOT sent to the LFI — the LFI returns the name(s) it holds against this account, and the
+                API Hub compares them.
           description: Primary data for the resource.
       description: Properties of a Confirmation of Payee request
-    PersonName:
-      description: >-
-        The properties of a person being matched in a Confirmation of Payee request. `fullName` is mandatory,
-        `firstName` and `lastName` can be omitted if not collected by the TPP.
-      type: object
-      required:
-        - fullName
-      properties:
-        fullName:
-          description: The full name of the person submitted in a Confirmation of Payee request
-          type: string
-        firstName:
-          type: string
-          description: The first name of the person submitted in a Confirmation of Payee request.
-        lastName:
-          type: string
-          description: The last name of the person submitted in a Confirmation of Payee request.
-      additionalProperties: false
-    BusinessName:
-      description: The properties of a business submitted in a Confirmation of Payee request.
-      type: object
-      required:
-        - businessName
-      properties:
-        businessName:
-          type: string
-          description: The name of a business submitted in a Confirmation of Payee request.
-      additionalProperties: false
     Meta:
       type: object
       properties:

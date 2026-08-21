@@ -7,7 +7,7 @@ The OpenAPI YAML files in this repository are the **source of truth**.
 ## Branches
 
 - **`main`** — the live source of truth. Everything on `main` is considered **published, authoritative, and externally consumable** by the wider ecosystem.
-- **Other branches** — used for drafts of future content (for example a forthcoming `v2.2`). The Nebras Open Finance team will announce when draft content on a non-`main` branch is ready for ecosystem review.
+- **Other branches** — used for pre-release content of a future version: drafts (`v2.2-draft1`) and release candidates (`v2.2-rc1`) of, for example, a forthcoming `v2.2`. The Nebras Open Finance team will announce when pre-release content on a non-`main` branch is ready for ecosystem review.
 
 New implementers should work from the latest version on `main`.
 

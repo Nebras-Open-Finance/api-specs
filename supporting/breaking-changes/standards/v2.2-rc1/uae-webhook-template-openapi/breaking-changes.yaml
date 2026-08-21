@@ -1,0 +1,95 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rule: request-body-media-type-removed
+  endpoints:
+    - method: POST
+      path: /
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Content Type advertised for the Event Notification delivered to a
+    registered Webhook changes from `application/jwe` to `application/jwt`.
+
+    `application/jwe` is not a registered media type. RFC 7519 registers
+    `application/jwt`, and that is the value the API Hub sends, so the previous
+    `application/jwe` entry described a Content Type that is never emitted. The
+    v2.2 spec corrects the advertised value to match the wire.
+
+    Nothing about the payload changes. The event remains a nested JWT — a JWS,
+    signed by the sender, encrypted inside a JWE addressed to the recipient —
+    transmitted as a JWE in Compact Serialization. Because the corrected Content
+    Type no longer names the encryption, the request body description is
+    expanded to state explicitly that the Content Type is `application/jwt`
+    while the event is a JWE, and to spell out the decrypt-then-verify-then-parse
+    order a recipient must follow.
+
+    Impact: a TPP that dispatches on the Content Type header, or that rejects
+    payloads whose Content Type is not `application/jwe`, must accept
+    `application/jwt` instead. A TPP that ignores the header and decrypts the
+    body unconditionally is unaffected. No change is required to key material,
+    decryption, or signature verification.
+
+- rules:
+    - new-required-request-property
+    - request-property-type-changed
+  endpoints:
+    - method: POST
+      path: /
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Two changes to the Insurance Quote Event carried by the Event Notification,
+    both reported by oasdiff against POST /.
+
+    1. `QuoteId` becomes a required property of every quote-event status
+       subschema. v2.2 adds a fourth branch to `AEInsurance.AEInsuranceEvent`
+       — `AEInsurance.AEInsuranceQuoteEventAvailableStatus1Properties`, the
+       Available status — at the head of the `anyOf`, and adds `QuoteId` to
+       the `required` list of the three pre-existing branches (Terminal,
+       Pending Completion, Completed). oasdiff reports
+       `new-required-request-property` once per pre-existing branch, each
+       annotated with the index shift the new first branch causes
+       (`subschema #1: Terminal Event -> subschema #2: Terminal Event`, and so
+       on).
+
+       The quote identifier is what a TPP correlates the event against: an
+       event body that does not carry it cannot be matched to the quote it
+       describes without relying on the envelope. `QuoteId` was already a
+       required member of the Insurance Quote Event `Meta`, so requiring it in
+       `Data` aligns the two halves of the same notification rather than
+       introducing a new obligation on the sender.
+
+    2. `AEInsurance.AEInsuranceResourceIdentifierType` drops `format: uuid`.
+       The schema stays `type: string`, `minLength: 1`, `maxLength: 128`, so
+       oasdiff sees the format go from `uuid` to empty and reports
+       `request-property-type-changed` on the Insurance Quote Event
+       `Meta/QuoteId`. This is a relaxation, not a restriction. The `uuid`
+       format was over-specified — LFIs do not all mint quote and policy
+       identifiers as UUIDs — and the description now records that a UUID v4
+       is recommended for consistency but not mandatory. Every value that was
+       valid before remains valid.
+
+    Acceptance rationale: this is the insurance webhook, and insurance is not
+    gated in the same way as banking. The insurance quote-event contract is
+    not carrying the same weight of committed implementations that the banking
+    surface is, so correcting it now — while it can still be corrected
+    cheaply — is preferable to shipping a contract that cannot express the
+    correlation identifier or that mandates an identifier format LFIs cannot
+    all meet.
+
+    Impact: an LFI emitting Insurance Quote Events must include `QuoteId` in
+    the event `Data`, alongside the `Meta` value it already sends. The format
+    change requires nothing of either side.

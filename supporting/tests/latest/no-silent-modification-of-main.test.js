@@ -51,21 +51,23 @@ async function fetchFromMain(relPath) {
   return YAML.parse(await res.text());
 }
 
-// Standards errata folders are mutable working areas by design: CLAUDE.md
-// requires info.version to equal the errata folder suffix verbatim (so it
-// cannot be bumped) and instructs editing the latest errata folder in place.
-// Modifying such a file after it has reached main is therefore the sanctioned
-// workflow, not a silent modification — the errata mechanism and
-// supporting/breaking-changes/ are the governance for it. This test only
-// enforces the patch-bump rule, which applies to api-hub and ozone-connect.
-function isStandardsErrataSpec(filePath) {
+// Standards pre-release (draft, rc) and errata folders are mutable working
+// areas by design: CLAUDE.md requires info.version to equal the folder suffix
+// verbatim (so it cannot be bumped) and instructs editing the latest folder in
+// place — a draft or release candidate while the version is being assembled, an
+// errata once it is published. Modifying such a file after it has reached main
+// is therefore the sanctioned workflow, not a silent modification — the
+// pre-release/errata mechanism and supporting/breaking-changes/ are the
+// governance for it. This test only enforces the patch-bump rule, which applies
+// to api-hub and ozone-connect.
+function isStandardsWorkingSpec(filePath) {
   const segments = relativeToRepo(filePath).split(/[\\/]/);
   return segments[0] === 'dist'
     && segments[1] === 'standards'
-    && /-errata\d+$/.test(segments[2] || '');
+    && /-(draft|rc|errata)\d+$/.test(segments[2] || '');
 }
 
-const latestSpecs = findLatestSpecs().filter(f => !isStandardsErrataSpec(f));
+const latestSpecs = findLatestSpecs().filter(f => !isStandardsWorkingSpec(f));
 
 describe(`No silent modification of a version already on ${BRANCH}`, () => {
   for (const filePath of latestSpecs) {

@@ -3,7 +3,9 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 const YAML = require('yaml');
-const { distDir, parseVersion, compareVersions, relativeToRepo, findLatestSpecs } = require('../helpers');
+const {
+  distDir, parseVersion, compareVersions, relativeToRepo, findLatestSpecs, findEffectiveSpec,
+} = require('../helpers');
 
 // Permission codes originate in the Standards specs, are staged by the api-hub
 // Consent Manager, and are forwarded unchanged to LFIs over Ozone Connect. Every
@@ -48,6 +50,10 @@ const FAMILIES = [
         file: 'uae-authorization-endpoints-openapi.yaml',
         schema: 'AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingConsentPermissionCodes',
       },
+      'v2.2': {
+        file: 'uae-authorization-endpoints-openapi.yaml',
+        schema: 'AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingConsentPermissionCodes',
+      },
     },
     consumers: [
       {
@@ -77,6 +83,10 @@ const FAMILIES = [
       'v1.2': { file: 'uae-authorization-endpoints-openapi.yaml', schema: 'AEPaymentConsentPermissions' },
       'v2.0': { file: 'uae-authorization-endpoints-openapi.yaml', schema: 'AEPaymentConsentPermissions' },
       'v2.1': {
+        file: 'uae-authorization-endpoints-openapi.yaml',
+        schema: 'AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes',
+      },
+      'v2.2': {
         file: 'uae-authorization-endpoints-openapi.yaml',
         schema: 'AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes',
       },
@@ -122,6 +132,7 @@ const FAMILIES = [
       'v1.2': null,
       'v2.0': { file: 'uae-insurance-openapi.yaml', schema: 'AEConsentPermissionCodes' },
       'v2.1': { file: 'uae-authorization-endpoints-openapi.yaml', schema: 'AEInsurance.AEConsentPermissionCodes' },
+      'v2.2': { file: 'uae-authorization-endpoints-openapi.yaml', schema: 'AEInsurance.AEConsentPermissionCodes' },
     },
     consumers: [
       {
@@ -144,8 +155,10 @@ const FAMILIES = [
   },
 ];
 
-// Latest errata folder for each base version under dist/<category>/.
-function latestErrataByBase(category) {
+// Latest revision folder for each base version under dist/<category>/ — the
+// highest errata once published, the highest pre-release (draft or rc) while it
+// is being assembled.
+function latestRevisionByBase(category) {
   const categoryDir = path.join(distDir, category);
   const byBase = {};
   for (const entry of fs.readdirSync(categoryDir, { withFileTypes: true })) {
@@ -185,7 +198,7 @@ function loadEnum(filePath, schemaName) {
   return { values };
 }
 
-const standardsByBase = latestErrataByBase('standards');
+const standardsByBase = latestRevisionByBase('standards');
 const latestSpecs = findLatestSpecs();
 
 function findLatestSpec(category, file) {
@@ -202,7 +215,14 @@ const resolved = FAMILIES.map(family => {
     if (!src) continue;
     const info = standardsByBase[base];
     if (!info) continue; // a missing folder is reported by its own test below
-    const result = loadEnum(path.join(info.dir, src.file), src.schema);
+    // Resolve through the effective set rather than the version's own folder: a
+    // Standards line carries only the specs it changed, so `v2.2` names the
+    // authorization-endpoints spec even though that file is still current at
+    // v2.1-errata3. It re-resolves to the v2.2 copy the moment one is added.
+    const filePath = findEffectiveSpec('standards', src.file, info.parsed);
+    const result = filePath
+      ? loadEnum(filePath, src.schema)
+      : { error: `no copy of ${src.file} is effective as at Standards ${base}` };
     standards[base] = { src, ...result };
     for (const code of result.values || []) {
       (codeOrigins[code] ??= new Set()).add(base);

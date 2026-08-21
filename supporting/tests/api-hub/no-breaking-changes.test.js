@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const YAML = require('yaml');
-const { distDir, repoRoot, parseVersion } = require('../helpers');
+const { distDir, repoRoot, parseVersion, isPreReleaseLine } = require('../helpers');
 
 // The api-hub Authorisation Server and Consent Manager must stay backward
 // compatible: a client built against an older release must keep working
@@ -21,6 +21,12 @@ const { distDir, repoRoot, parseVersion } = require('../helpers');
 //   * api-hub has no errata folders. Patch versions (v2.1.7, v2.1.8, ...)
 //     live in git history, not on disk, so the on-disk comparison is
 //     folder-to-folder: one folder per major.minor line.
+//   * While the Standards line for a minor is still pre-release (a draft or a
+//     release candidate, e.g. `v2.2-rc1` with no published `v2.2`), the matching
+//     api-hub folder holds only the specs that version has changed so far. A
+//     file missing from it has not been uplifted yet, so the comparison is
+//     skipped rather than reported as a removal. Once the line is published,
+//     every file must be present and the removal check applies again.
 //
 // A genuinely necessary breaking change can be recorded under
 // supporting/breaking-changes/api-hub/<revision-folder>/<spec-name>/breaking-changes.yaml
@@ -275,12 +281,16 @@ describe('No breaking changes within a major version (api-hub auth server + cons
 
   for (const { base, revision } of pairs) {
     const label = `${base.name} -> ${revision.name}`;
+    const revisionIsPreRelease = isPreReleaseLine(revision.parsed.major, revision.parsed.minor);
 
     for (const file of CHECKED_FILES) {
       const baseFile = path.join(apiHubDir, base.name, file);
       const revisionFile = path.join(apiHubDir, revision.name, file);
+      const notYetUplifted = revisionIsPreRelease && !fs.existsSync(revisionFile);
 
-      it(`${label}: ${file} has no breaking changes`, () => {
+      it(`${label}: ${file} has no breaking changes`, {
+        skip: notYetUplifted && `${file} has not been uplifted to ${revision.name} yet — that line is still an unpublished pre-release`,
+      }, () => {
         if (!fs.existsSync(baseFile)) return; // not present in the older line — nothing to break
 
         assert.ok(

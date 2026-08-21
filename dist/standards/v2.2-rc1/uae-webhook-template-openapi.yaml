@@ -4,7 +4,7 @@ info:
   description: >-
     OpenAPI description provided **as a template** for guidance in implementing Webhooks under the UAE Open Finance
     Programme.
-  version: v2.2-draft1
+  version: v2.2-rc1
 tags:
   - name: Webhook Template
 paths:
@@ -70,18 +70,40 @@ paths:
           application/jwt:
             schema:
               type: string
+              description: >-
+                The Event Notification as it arrives on the wire: a JWE, in JWE Compact Serialization (five
+                base64url-encoded parts separated by dots), whose plaintext is a JWS carrying the JSON payload.
         description: >-
-          Please note the `application/json` Content Type is provided for processing the Event Notification payload and
-          does not accurately reflect the format of a serialized, signed, and encrypted JSON Web Token (JWT) that will
-          be received at the registered Webhook. The event will be a string and be received with the Content Type value
-          `application/jwe`.
+          **The Content Type is `application/jwt`, but the event is a JWE.**
 
 
-          The Schema Object is provided for TPPs to understand the correct message payload definition that must be
-          parsed from the signed and encrypted enclosed JWT received in the Event Notification.
+          `application/jwe` is not a registered media type, so the Content Type header carries the registered
+          `application/jwt` value (RFC 7519) for every Event Notification delivered to a Webhook. That value describes
+          the container, not the encryption: the event is a *nested* JWT — a JWS, signed by the sender, encrypted inside
+          a JWE addressed to the recipient — and it is the JWE that is transmitted. Do not infer from the
+          `application/jwt` Content Type that the payload can be parsed as a bare signed JWT; it cannot, because it is
+          encrypted.
 
 
-          Please refer to the Open Finance Framework documentation for guidelines on decrypting and verifying JWTs
+          A recipient must therefore, in order:
+
+
+          1. read the request body as a string — it is a JWE in Compact Serialization, five dot-separated parts, not the
+          three of a bare JWS;
+
+          2. decrypt the JWE to recover the enclosed JWS;
+
+          3. verify the JWS signature;
+
+          4. parse the resulting JSON payload, which is the Event Notification.
+
+
+          The `application/json` Content Type above is never sent on the wire. It is present only so that the Schema
+          Object can document the shape of the payload recovered at step 4, so TPPs can see the message definition they
+          must parse.
+
+
+          Please refer to the Open Finance Framework documentation for guidelines on decrypting and verifying the JWTs
           received at Webhooks.
 components:
   schemas:
@@ -321,83 +343,6 @@ components:
       minLength: 1
       maxLength: 35
       description: A reason or reference in relation to a payment.
-    AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedDefinedSchedule:
-      type: object
-      required:
-        - Type
-        - none
-      properties:
-        Type:
-          type: string
-          enum:
-            - FixedDefinedSchedule
-        none:
-          $ref: >-
-            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedDefinedSchedule
-    AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedOnDemand:
-      type: object
-      required:
-        - Type
-        - none
-      properties:
-        Type:
-          type: string
-          enum:
-            - FixedOnDemand
-        none:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedOnDemand'
-    AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedPeriodicSchedule:
-      type: object
-      required:
-        - Type
-        - none
-      properties:
-        Type:
-          type: string
-          enum:
-            - FixedPeriodicSchedule
-        none:
-          $ref: >-
-            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedPeriodicSchedule
-    AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariableDefinedSchedule:
-      type: object
-      required:
-        - Type
-        - none
-      properties:
-        Type:
-          type: string
-          enum:
-            - VariableDefinedSchedule
-        none:
-          $ref: >-
-            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableDefinedSchedule
-    AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariableOnDemand:
-      type: object
-      required:
-        - Type
-        - none
-      properties:
-        Type:
-          type: string
-          enum:
-            - VariableOnDemand
-        none:
-          $ref: >-
-            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableOnDemand
-    AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariablePeriodicSchedule:
-      type: object
-      required:
-        - Type
-        - none
-      properties:
-        Type:
-          type: string
-          enum:
-            - VariablePeriodicSchedule
-        none:
-          $ref: >-
-            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariablePeriodicSchedule
     AEBankServiceInitiationRichAuthorizationRequests.AEActiveOrHistoricAmount:
       type: string
       pattern: ^\d{1,16}\.\d{2}$
@@ -562,23 +507,32 @@ components:
             #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationLongLivedPaymentConsentPeriodicSchedule
       description: A Consent definition for defining Multi Payments
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationLongLivedPaymentConsentPeriodicSchedule:
-      type: object
       oneOf:
-        - $ref: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariableOnDemand'
-        - $ref: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedOnDemand'
-        - $ref: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariablePeriodicSchedule'
-        - $ref: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedPeriodicSchedule'
-        - $ref: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariableDefinedSchedule'
-        - $ref: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedDefinedSchedule'
+        - $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableOnDemand
+        - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedOnDemand'
+        - $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariablePeriodicSchedule
+        - $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedPeriodicSchedule
+        - $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableDefinedSchedule
+        - $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedDefinedSchedule
       discriminator:
         propertyName: Type
         mapping:
-          VariableOnDemand: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariableOnDemand'
-          FixedOnDemand: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedOnDemand'
-          VariablePeriodicSchedule: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariablePeriodicSchedule'
-          FixedPeriodicSchedule: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedPeriodicSchedule'
-          VariableDefinedSchedule: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleVariableDefinedSchedule'
-          FixedDefinedSchedule: '#/components/schemas/AEBankServiceInitiationLongLivedPaymentConsentPeriodicScheduleFixedDefinedSchedule'
+          VariableOnDemand: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableOnDemand
+          FixedOnDemand: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedOnDemand'
+          VariablePeriodicSchedule: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariablePeriodicSchedule
+          FixedPeriodicSchedule: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedPeriodicSchedule
+          VariableDefinedSchedule: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationVariableDefinedSchedule
+          FixedDefinedSchedule: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedDefinedSchedule
       description: The definition for a schedule
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationSingleInstantPayment:
       type: object
