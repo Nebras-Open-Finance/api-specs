@@ -32,13 +32,7 @@ info:
     So, for example, `.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
-    ### v2.2.1
-
-    * Added new version compatible with v2.2 of standards.
-
-    * Changed `patch /insurance-quote-log/{logId}` to add `InsurancePolicyId` when `QuoteStatus` is `PolicyIssued`.
-
-    * Changed `DebtorReference` and `CreditorReferences` to implement Aani-compatible pattern.
+    ### v2.2.2
 
     * Changed the `status` query parameter on `get /psu/{userId}/consents` to a comma-separated list of
       `AEConsentStatus` values (`style: form`, `explode: false`), evaluated as a union — for example
@@ -58,7 +52,15 @@ info:
       written against v2.1 received every payment for the consent in one response and MUST now follow `page` to
       retrieve the rest.
 
-  version: v2.2.1
+    ### v2.2.1
+
+    * Added new version compatible with v2.2 of standards.
+
+    * Changed `patch /insurance-quote-log/{logId}` to add `InsurancePolicyId` when `QuoteStatus` is `PolicyIssued`.
+
+    * Changed `DebtorReference` and `CreditorReferences` to implement Aani-compatible pattern.
+
+  version: v2.2.2
 tags:
   - name: consents
   - name: consent-groups

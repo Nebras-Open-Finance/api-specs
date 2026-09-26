@@ -58,6 +58,31 @@ info:
     **implementing new functionality.**
 
 
+    ### v2.2.2
+
+    * Changed `transactionInformation` on `CbuaeTransaction` to be required, so every transaction returned by
+      `get /accounts/{accountId}/transactions` carries a narrative by which the customer can recognise the entry.
+      The field also gains `minLength: 1` and `maxLength: 500`, matching the bounds the TPP-facing
+      `TransactionInformation` schema has carried since v2.1. The same requirement is applied to `AETransaction` in
+      the Standards Account Information API description, since the API Hub can only return a narrative the LFI
+      supplied.
+
+    * Changed the `post /customers/action/cop-query` request to carry the account IBAN only. `data.account.name` is
+      removed, along with the `PersonName` and `BusinessName` Schema Objects it referenced. The LFI performs no
+      matching, so the name submitted by the TPP is no longer sent to it.
+
+    * Changed the `post /customers/action/cop-query` response to carry the account holder's name directly. Each
+      entry in `data` is now an `id` and a `name`, which is either a `CbuaeCopPersonName` (`fullName` required) or a
+      `CbuaeCopBusinessName` (`businessName` required). The `verifiedClaims` / `verification` identity-assurance
+      envelope is removed from this operation, along with the `CbuaeVerifiedCopClaim` and
+      `ConfirmationOfPayeePersonClaims` Schema Objects and the wider customer data the latter carried — none of it
+      is needed to compare two names, and Confirmation of Payee runs without a consent. `number` is dropped for the
+      same reason; `id` is retained as the handle for investigating a disputed result. Structured name fields
+      (`firstName`, `middleName`, `lastName`, `fullNameAr`, `alsoKnownAs`, `businessNameAr`) are retained as
+      optional members so the matching algorithm can be improved without a further change to this contract.
+      `get /accounts/{accountId}/customer` is unaffected: it has its own `CbuaeCustomer` / `CbuaeVerifiedClaim`
+      Schema Objects.
+
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards.
@@ -94,30 +119,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-    * Changed `transactionInformation` on `CbuaeTransaction` to be required, so every transaction returned by
-      `get /accounts/{accountId}/transactions` carries a narrative by which the customer can recognise the entry.
-      The field also gains `minLength: 1` and `maxLength: 500`, matching the bounds the TPP-facing
-      `TransactionInformation` schema has carried since v2.1. The same requirement is applied to `AETransaction` in
-      the Standards Account Information API description, since the API Hub can only return a narrative the LFI
-      supplied.
-
-    * Changed the `post /customers/action/cop-query` request to carry the account IBAN only. `data.account.name` is
-      removed, along with the `PersonName` and `BusinessName` Schema Objects it referenced. The LFI performs no
-      matching, so the name submitted by the TPP is no longer sent to it.
-
-    * Changed the `post /customers/action/cop-query` response to carry the account holder's name directly. Each
-      entry in `data` is now an `id` and a `name`, which is either a `CbuaeCopPersonName` (`fullName` required) or a
-      `CbuaeCopBusinessName` (`businessName` required). The `verifiedClaims` / `verification` identity-assurance
-      envelope is removed from this operation, along with the `CbuaeVerifiedCopClaim` and
-      `ConfirmationOfPayeePersonClaims` Schema Objects and the wider customer data the latter carried — none of it
-      is needed to compare two names, and Confirmation of Payee runs without a consent. `number` is dropped for the
-      same reason; `id` is retained as the handle for investigating a disputed result. Structured name fields
-      (`firstName`, `middleName`, `lastName`, `fullNameAr`, `alsoKnownAs`, `businessNameAr`) are retained as
-      optional members so the matching algorithm can be improved without a further change to this contract.
-      `get /accounts/{accountId}/customer` is unaffected: it has its own `CbuaeCustomer` / `CbuaeVerifiedClaim`
-      Schema Objects.
-
-  version: v2.2.1
+  version: v2.2.2
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
