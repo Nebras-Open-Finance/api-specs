@@ -1,0 +1,33 @@
+# Versions whose published content has been withdrawn in place.
+#
+# no-silent-modification-of-main requires info.version to be bumped whenever a
+# file already on main changes. A reversion is the one case where that is the
+# wrong answer: the point of the change is that the version on main should
+# never have carried the content, so bumping would publish the withdrawal as a
+# new version instead of undoing it.
+#
+# An entry here exempts one `info.version` of one spec from that check, and
+# nothing else. The next patch uplift of the same file is checked normally.
+#
+# Format:
+#   - version: <the info.version the reversion was applied to>
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       What was withdrawn, and why this is a reversion rather than a change.
+
+- version: v2.2.1
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Three changes made at v2.2.1 are withdrawn:
+
+      1. the multi-valued `status` filter on `GET /psu/{userId}/consents`,
+      2. the pagination of `GET /payment-log`, and
+      3. `paymentResponse.paymentRail`, with its `AEPaymentRail` Schema Object.
+
+    All three are deferred to the v2.2-rc2 line and will be reintroduced with
+    it. v2.2.1 is restored to what it described before they landed, so for
+    these operations an LFI reading v2.2.1 now sees the v2.1.x contract again.
+
+    This is a withdrawal, not a new revision: bumping to v2.2.2 would leave
+    v2.2.1 standing as a version that published three changes the ecosystem
+    was never meant to implement.

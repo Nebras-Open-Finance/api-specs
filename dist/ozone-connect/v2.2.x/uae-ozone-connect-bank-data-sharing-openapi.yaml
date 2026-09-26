@@ -58,22 +58,6 @@ info:
     **implementing new functionality.**
 
 
-    ### v2.2.2
-
-    * Withdrawn the requirement, added at v2.2.1, that `transactionInformation` be present on `CbuaeTransaction`.
-      The property returns to being optional, with its v2.1 description and no length bounds. The matching
-      requirement on `AETransaction` in the Standards Account Information API description is withdrawn with it.
-      Deferred to a later version.
-
-    * Withdrawn the `post /customers/action/cop-query` request change made at v2.2.1. `data.account.name` is
-      restored, along with the `PersonName` and `BusinessName` Schema Objects it references. Deferred to a later
-      version.
-
-    * Withdrawn the `post /customers/action/cop-query` response change made at v2.2.1. The response returns to the
-      `verifiedClaims` / `verification` envelope, with the `CbuaeVerifiedCopClaim` and
-      `ConfirmationOfPayeePersonClaims` Schema Objects restored, and `CbuaeCopPersonName` / `CbuaeCopBusinessName`
-      removed. Deferred to a later version.
-
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards.
@@ -110,7 +94,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-  version: v2.2.2
+  version: v2.2.1
 servers:
   - url: https://<your-ozone-connect-server>
 tags:

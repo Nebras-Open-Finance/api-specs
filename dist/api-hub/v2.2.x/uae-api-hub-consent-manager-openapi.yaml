@@ -32,19 +32,6 @@ info:
     So, for example, `.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
-    ### v2.2.2
-
-    * Withdrawn the `status` query parameter change made at v2.2.1 on `get /psu/{userId}/consents`. The parameter
-      returns to the shared `#/components/parameters/status` component, a single untyped value, as it was at v2.1.
-      Deferred to a later version.
-
-    * Withdrawn `paymentResponse.paymentRail`, added at v2.2.1 to `patch /payment-log/{id}` and `get /payment-log`,
-      together with the `AEPaymentRail` Schema Object. Deferred to a later version.
-
-    * Withdrawn the pagination of `get /payment-log` added at v2.2.1. The operation no longer takes `page` and
-      `pageSize`, and its response `meta` returns to the empty `meta` Schema Object in place of `paginationMetadata`.
-      Deferred to a later version.
-
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards.
@@ -53,7 +40,7 @@ info:
 
     * Changed `DebtorReference` and `CreditorReferences` to implement Aani-compatible pattern.
 
-  version: v2.2.2
+  version: v2.2.1
 tags:
   - name: consents
   - name: consent-groups

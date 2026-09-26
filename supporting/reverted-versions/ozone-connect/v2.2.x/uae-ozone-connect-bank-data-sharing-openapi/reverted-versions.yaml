@@ -1,0 +1,39 @@
+# Versions whose published content has been withdrawn in place.
+#
+# no-silent-modification-of-main requires info.version to be bumped whenever a
+# file already on main changes. A reversion is the one case where that is the
+# wrong answer: the point of the change is that the version on main should
+# never have carried the content, so bumping would publish the withdrawal as a
+# new version instead of undoing it.
+#
+# An entry here exempts one `info.version` of one spec from that check, and
+# nothing else. The next patch uplift of the same file is checked normally.
+#
+# Format:
+#   - version: <the info.version the reversion was applied to>
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       What was withdrawn, and why this is a reversion rather than a change.
+
+- version: v2.2.1
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Two changes made at v2.2.1 are withdrawn:
+
+      1. the `POST /customers/action/cop-query` request and response rework,
+         which removed `data.account.name` and replaced the `verifiedClaims`
+         envelope with `CbuaeCopPersonName` / `CbuaeCopBusinessName`, and
+      2. the requirement that `transactionInformation` be present on
+         `CbuaeTransaction`, together with its length bounds.
+
+    Both are deferred to the v2.2-rc2 line and will be reintroduced with it.
+    v2.2.1 is restored to what it described before they landed.
+
+    The matching narrative requirement on `AETransaction` in the Standards
+    Account Information API description is withdrawn alongside this one. That
+    file needs no entry here: `dist/standards/v2.2-rc1/` is a pre-release
+    folder, which this test already exempts.
+
+    This is a withdrawal, not a new revision: bumping to v2.2.2 would leave
+    v2.2.1 standing as a version that published changes the ecosystem was
+    never meant to implement.
