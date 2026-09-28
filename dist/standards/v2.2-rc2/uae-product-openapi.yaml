@@ -36,8 +36,7 @@ paths:
           description: Filter by last updated date time
           required: false
           schema:
-            type: string
-            format: date-time
+            $ref: '#/components/schemas/AEDateTime'
         - name: SortOrder
           in: query
           description: Order of sorting the results
@@ -133,6 +132,20 @@ components:
         type: string
       example: 49df2c2c-6b80-40ee-96a1-71910a248048
   schemas:
+    AEDateTime:
+      title: AEDateTime
+      description: |
+        An instant in time, per ISO 8601 / RFC 3339, with a mandatory offset. Recipients MUST apply the offset, and
+        MUST NOT read the date and time components as local time. Encodings of the same instant are equivalent and MUST
+        behave identically: `2027-07-22T00:00:00Z` and `2027-07-22T04:00:00+04:00` identify the same moment.
+
+        Issuers SHOULD emit UTC, using `Z` or `+00:00`. The negative zero offset `-00:00` MUST NOT be used. Fractional
+        seconds are optional and carry no specified precision; implementations MUST accept both their presence and
+        their absence.
+      type: string
+      format: date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|\+\d{2}:\d{2}|-(?:0[1-9]|1[0-2]):\d{2})$'
+      example: '2027-07-22T00:00:00Z'
     AEError400Response:
       description: An array of detail error codes, and messages, and URLs to documentation to help remediation.
       type: object
@@ -354,23 +367,23 @@ components:
             purposes.
           type: string
         EffectiveFromDateTime:
-          description: >-
-            The date and time from which this product is effective (i.e. is available for origination). Used to enable
-            the articulation of products to the regime before they are available for customers to originate.
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The date and time from which this product is effective (i.e. is available for origination). Used to
+                enable the articulation of products to the regime before they are available for customers to originate.
         EffectiveToDateTime:
-          description: >-
-            The date and time at which this product will be retired and will no longer be offered. Used to enable the
-            managed deprecation of products.
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The date and time at which this product will be retired and will no longer be offered. Used to enable
+                the managed deprecation of products.
         LastUpdatedDateTime:
-          description: >-
-            The last date and time that the information for this product was changed (or the creation date for the
-            product if it has never been altered).
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The last date and time that the information for this product was changed (or the creation date for the
+                product if it has never been altered).
         IsShariaCompliant:
           type: boolean
           description: Indicates whether the product is Sharia-compliant.

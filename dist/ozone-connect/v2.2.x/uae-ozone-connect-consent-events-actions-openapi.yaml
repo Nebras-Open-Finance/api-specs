@@ -1,918 +1,322 @@
 openapi: 3.0.1
-servers:
-  - url: https://<your-ozone-cm-server>
 info:
-  title: Consent Manager API
-  description: >
-    This document provides an API description in [OpenAPI](https://spec.openapis.org/oas/v3.0.1.html)
+  title: Ozone Connect - Consent Event & Action APIs
+  contact:
+    name: Ozone Financial Technology Limited
+  description: >-
+    This document provides an API description in [OpenAPI](https://spec.openapis.org/oas/v3.0.1.html) for APIs that are
+    called by Ozone Connect to inform a  financial institution that a consent has been created or modified.
 
-    for the Consent Manager API.
+
+    These are also used to carry out actions to verify and augment a consent when it is being created.
 
 
-    These APIs are implemented by Ozone and should be called by the financial institution to find, modify and delete
-    consents.
+    These APIs should be implemented by an financial institution.
 
+
+    Please refer to the API Hub documentation for details of test cases that are available for this API  using the Ozone
+    Connect test suite.
 
     ### Versioning
-
 
     The `version` property implements the following pattern
     `{standards-major}.{standards-minor}.{ozone-connect-version}`, where:
 
-
     * `standards-major` is the major version of the latest UAE standard that the API description implements.
 
-
     * `standards-minor` is the minor version of the latest UAE standard that the API description implements.
-
 
     * `ozone-connect-version` is the version of the Ozone Connect API description.
 
 
-    So, for example, `.1` indicates the first version of the Ozone Connect API description that implements the UAE
+    So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
-    ### v2.2.2
 
-    * Changed the `status` query parameter on `get /psu/{userId}/consents` to a comma-separated list of
-      `AEConsentStatus` values (`style: form`, `explode: false`), evaluated as a union — for example
-      `?status=Authorized,Suspended`. The parameter is now typed, so an unrecognised value is rejected with `400`
-      rather than returning an empty array. The operation no longer references the shared
-      `#/components/parameters/status` component, which is deliberately unchanged: `get /consents`,
-      `get /consent-groups/{consentGroupId}/consents` and `get /accounts/{accountId}/consents` continue to take a
-      single untyped value.
+    **Please adhere to the deprecated flags in your implementation. Do not implement deprecated properties when**
+    **implementing new functionality.**
 
-    * Added `paymentResponse.paymentRail` to `patch /payment-log/{id}` and `get /payment-log`, recording the rail
-      over which the LFI settled the payment — `AANI`, `FTS`, or `LFI` for a payment settled internally.
 
-    * Changed the `patch /payment-log/{id}` request body to a `oneOf` selected by `paymentResponse.paymentRail`, which
-      is now required on every patch and stated first. Each rail carries its own contract:
-
-      * `AANI` — statuses `AcceptedSettlementCompleted`, `AcceptedWithoutPosting` and `Rejected`, where
-        `AcceptedSettlementCompleted` is **not terminal** and records the payment having been passed to AANI; the LFI
-        patches again to `AcceptedWithoutPosting` once AANI confirms it. `paymentResponse.paymentTransactionId`
-        carries the AANI-issued identifier. `paymentResponse.OpenFinanceBilling` is not available on this rail, and
-        reject reason codes are `AANI.*` only.
-
-      * `LFI` — statuses `AcceptedCreditSettlementCompleted` and `Rejected`, both terminal.
-        `paymentResponse.paymentTransactionId` is not available, since nothing outside the LFI issues an identifier.
-        `paymentResponse.OpenFinanceBilling` is not available on this rail, and reject reason codes are `LFI.*` only.
-
-      * `FTS` — statuses `AcceptedSettlementCompleted`, `AcceptedCreditSettlementCompleted` and `Rejected`, where
-        `AcceptedSettlementCompleted` is **not terminal** and records the payment having been passed to UAEFTS; the LFI
-        patches again to `AcceptedCreditSettlementCompleted` once UAEFTS confirms it.
-        `paymentResponse.paymentTransactionId` carries the UAEFTS-issued identifier.
-        `paymentResponse.OpenFinanceBilling` is not available on this rail, and reject reason codes are `FTS.*` only.
-
-      `Pending` is no longer a patchable status on any rail, and `paymentResponse.OpenFinanceBilling` is no longer
-      patchable through this operation on any rail.
-
-    * Changed the `paymentResponse` returned by `get /payment-log` to the matching `oneOf`, so a payment reads back in
-      the shape it was patched in. The previously inline object is now `CbuaePaymentLogPaymentResponse`, with one member
-      per rail plus `CbuaePaymentLogPaymentResponseUnrouted` for a payment the LFI has not routed yet, which carries no
-      `paymentRail` and is `Pending` or `Rejected`. `paymentTransactionId` is now returned on the `AANI` and `FTS`
-      members, having been absent from this operation's response since v2.1 although the patch operation set it.
-
-    * Changed `get /payment-log` to be paginated, taking the shared `page` and `pageSize` parameters already used by
-      the consent list operations and returning `paginationMetadata` in place of the empty `meta` object. Callers
-      written against v2.1 received every payment for the consent in one response and MUST now follow `page` to
-      retrieve the rest.
+    **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
+    for deprecated properties.**
 
     ### v2.2.1
 
-    * Added new version compatible with v2.2 of standards.
+    * Added new version compatible with v2.2 of standards
 
-    * Changed `patch /insurance-quote-log/{logId}` to add `InsurancePolicyId` when `QuoteStatus` is `PolicyIssued`.
+    * Changed every date-time field to reference the shared `AEDateTime` Schema Object. `AEDateTime` states that a
+      date-time value identifies an instant, that the offset is part of the value and must be applied by the
+      recipient, and that two encodings of the same instant are equivalent and must behave identically. It carries
+      a `pattern` requiring an offset and forbidding `-00:00`; all other offsets remain conformant. Each field
+      description now states only what is specific to that field. Per OFP-014.
 
-    * Changed `DebtorReference` and `CreditorReferences` to implement Aani-compatible pattern.
+    ### v2.1.7
 
-  version: v2.2.2
+    * Added `ReadStatements` and `ReadProductFinanceRates` to `AEAccountAccessConsentPermissionCodes`, matching the
+      same addition to the Consent Manager. Both codes are in the v2.1 Standards Bank Data Sharing permission set, so
+      the Hub can forward them on a consent event; without them a valid consent failed validation at the LFI.
+    * Added a character-set `pattern` (`^[A-Za-z0-9 \/?:().,'+-]+$`, the ISO 20022 / SWIFT "x" set) to the
+      current (free-text, 35-char) branch of the Creditor and Debtor references
+      (`AEServiceInitiationCreditorReference` / `AEServiceInitiationDebtorReference`), so every LFI knows
+      exactly which characters it must accept and store. The deprecated structured (120-char) branch is
+      unchanged. Per OFP-003.
+
+    ### v2.1.6
+
+    * Restructured the international Creditor PII (`PersonalIdentifiableInformation.Initiation.Creditor`) for
+      SWIFT SR2026: the Creditor party is now a `oneOf` of Individual and Organization variants, discriminated
+      by `IdentityType`.
+
+
+    * The Individual variant carries object-valued `FirstName` / `MiddleName` / `LastName` (`en` / `ar` / `ls`),
+      `RelationshipToSender`, `DateOfBirth`, `Occupation`, `Nationality`, `Gender`, `CountryOfBirth`,
+      `SourceOfIncome`, `SourceOfFunds`, and `Evidence`. The Organization variant carries `AnyBIC`, `LEI`, and
+      `Identification` + `SchemeName`. Both variants share `MobileNumber` / `Email` and an object-valued `Name`
+      (`en` / `ar` / `ls`).
+
+
+    * Added SWIFT SR2026 fields to the international `PostalAddress` (`PostCode`, `Room`, `Department`,
+      `SubDepartment`, `TownLocationName`, and now-mandatory `TownName`). It is now a single
+      `AEInternationalAddress` schema shared by both the Creditor and the Creditor Agent (the Creditor Agent
+      previously used the legacy `AEAddress`).
+
+
+    * Added a `CreditorAgent.Branch` object and `CreditorAccount.AccountType` (Savings / Current / Checking /
+      Prepaid). Domestic Creditor schemas are unchanged.
+
+
+    ### v2.1.5
+
+    * Aligned the `Risk` object with Standards: updated `AEAccountTypeCode` and the inline `AEBankServiceInitiationRichAuthorizationRequests.AECreditorIndicators.AccountType` enum to `Retail / SME / Corporate` (was `Retail / Corporate` and a divergent `CurrentAccount / Savings / CreditCard / Mortgage / Finance` respectively), tightened `AERisk` and its descendants with `additionalProperties: false` on the payment-initiation side, carved out the three RAR-shape `SupplementaryData` blocks (`AEBankServiceInitiationRichAuthorizationRequests.AE*Indicators.SupplementaryData`) to be open extension points, and added `minLength: 1` / `maxLength: 70` to the `AddressLine` items.
+
+
+    ### v2.1.4
+
+    * Changed the `Amount` schema `pattern` regex, which was over-escaped in YAML and failed to validate decimal
+      monetary values.
+
+    ### v2.1.3
+
+    * Added revised PII properties compatible with version 2.1.
+
+
+    * Changed DebtorReference and CreditorReference to reflect v2.0 properties.
+
+
+    * Changed Rich Authorization Request `type` values to reflect exactly the consent type they are describing.
+
+    ### v2.1.2
+
+    * Changed API description to synchronise consent Schema Objects with Consent Manager API description.
+
+    ### v2.1.1
+
+    * Added `Type` to `CreditorAccount` in `PersonalIdentifiableInformation`.
+
+    * Changed loan to finance for all Schema Objects names and object descriptions.
+
+    * Changed CreditorReference and DebtorReference objects to remove pattern
+
+    * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
+
+    * Removed support for single future-dated payment consents that are warehoused at the LFI.
+  version: v2.2.1
+servers:
+  - url: https://<your-ozone-connect-server>
 tags:
-  - name: consents
-  - name: consent-groups
-  - name: consents-by-psu
-  - name: consents-by-account
-  - name: payments
-  - name: resource-log
-  - name: actions
-  - name: health-check
+  - name: consent-events
+    description: API operations invoked when a Consent is created or modified.
+  - name: consent-actions
+    description: API operations invoked when action is required by a financial institution for a given Consent.
 security:
   - {}
+  - OzoneConnectApiKey: []
+  - OzoneConnectClientCredentials:
+      - placeholder
   - OzoneConnectJwtAuth: []
 paths:
-  /consents:
+  /consent/event/{operation}:
     post:
       tags:
-        - consents
-      summary: Creates a new consent
+        - consent-events
+      summary: Called to inform a financial institution that a consent has been created or modified
       description: |
-        Used by Ozone to create a new consent using a Heimdall interaction.
-      operationId: addConsent
-      requestBody:
-        description: >
-          Creates a new consent in the consent Manager.
-
-
-          The API is primarily used by Ozone for creating consents when requested by a TPPs.
-
-
-          Financial Institutions may use this end-point to import consents and for supporting externally managed
-          consents. This is not part of the CBUAE standard.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthorizationDetails'
-      responses:
-        '201':
-          description: |
-            Indicates the successful creation of a consent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConsentPostResponse'
-        '400':
-          description: |
-            Indicates a failure to create the consent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-    get:
-      tags:
-        - consents
-      summary: Retrieves all the consents that meet the search criteria
-      description: >
-        Retrieves an array of consents that meets the search criteria.
-
-
-        If no consents could be found, then an empty array is returned.
-
-
-        This API may be used by an financial institution to get a "stream" of consents that have been created or updated
-        since a given timestamp.
-      operationId: getAllConsents
+        Used by financial institution to get a notification for updated consent.
+      operationId: consentEvent
       parameters:
-        - name: updatedAt
-          in: query
-          schema:
-            type: number
-          required: false
-          description: |
-            Select only consents updated after the specified time
-        - $ref: '#/components/parameters/consentType'
-        - $ref: '#/components/parameters/status'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/pageSize'
-      responses:
-        '200':
-          description: |
-            Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/multiConsentResponse'
-        '400':
-          description: Indicates a failure to retrieve the consents
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /consents/{consentId}:
-    get:
-      tags:
-        - consents
-      summary: Retrieve a consent by its id
-      description: Retrieves a consent by its id.
-      operationId: getConsentsByConsentId
-      parameters:
+        - $ref: '#/components/parameters/providerId'
+        - $ref: '#/components/parameters/aspspId'
+        - $ref: '#/components/parameters/callerOrgId'
+        - $ref: '#/components/parameters/callerClientId'
+        - $ref: '#/components/parameters/callerSoftwareStatementId'
+        - $ref: '#/components/parameters/apiUri'
+        - $ref: '#/components/parameters/apiOperation'
         - $ref: '#/components/parameters/consentId'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - data
-                  - meta
-                properties:
-                  data:
-                    $ref: '#/components/schemas/consent'
-                  meta:
-                    $ref: '#/components/schemas/meta'
-        '400':
-          description: |
-            Indicates a failure to retrieve the consent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-    patch:
-      tags:
-        - consents
-      summary: Patches one or more fields in a consent
-      description: |
-        This operation allows an financial institution modify fields within a consent's `consentBody`.
-
-        Typically, this API would be called after the PSU has authorised a consent. This would
-        allow the financial institution to "patch in" the `psuIdentifier` and `accountIds` associated with the
-        consent.
-
-        This is also called as authentication progresses for a multi-auth consent.
-      operationId: patchConsent
-      parameters:
-        - $ref: '#/components/parameters/consentId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConsentManager.AEConsentUpdateProperties'
-      responses:
-        '204':
-          description: |
-            Indicates a successful operation.
-            The response does not have a body.
-        '400':
-          description: |
-            Indicates a failure to patch the consent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /consents/{consentId}/audit:
-    get:
-      tags:
-        - consents
-      summary: Retrieve an audit of a consent by the consent's id
-      description: |-
-        Retrieves an audit of a consent by the consent's id.
-        The audit log is a low-level record of all changes applied to a Consent throughout its life-cycle
-      operationId: getAuditConsentsByConsentId
-      parameters:
-        - $ref: '#/components/parameters/consentId'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - data
-                  - meta
-                properties:
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      required:
-                        - providerId
-                        - operation
-                        - timestamp
-                        - fkMongoId
-                        - fkId
-                        - id
-                        - ozoneInteractionId
-                      properties:
-                        providerId:
-                          type: string
-                          description: |
-                            The provider id of the financial institution that made the change
-                        operation:
-                          type: string
-                          description: |
-                            Like "create" or "patch"
-                        timestamp:
-                          type: integer
-                        fkMongoId:
-                          type: string
-                          description: |
-                            A unique identifier for the audit log in mongodb
-                        fkId:
-                          type: string
-                          description: |
-                            A unique identifier for the consentId
-                        id:
-                          type: string
-                          description: |
-                            A unique identifier for the audit log
-                        ozoneInteractionId:
-                          type: string
-                          description: >
-                            The ozone interaction id assigned to the interaction that caused this changed. Useful for
-                            looking up the api-log.
-
-
-                            Note - this is not the "heimdall Interaction Id" - this is an identifier for the API log
-                        callerDetails:
-                          type: object
-                          description: |
-                            The details of the API caller that made the change
-                          additionalProperties: false
-                          properties:
-                            callerOrgId:
-                              type: string
-                            callerClientId:
-                              type: string
-                            callerSoftwareStatementId:
-                              type: string
-                        patchFilter:
-                          type: string
-                          description: |
-                            Low-level operation description of the selector for the patch
-                        patch:
-                          type: string
-                          description: |
-                            Low-level operation description of the patch that was applied at the storage level
-                  meta:
-                    $ref: '#/components/schemas/meta'
-        '400':
-          description: |
-            Indicates a failure to retrieve the consent's audit trail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /consent-groups/{consentGroupId}/consents:
-    get:
-      tags:
-        - consent-groups
-      summary: Retrieves consents within a consent group
-      description: |
-        Retrieves an array of consents that are within a consent group.
-
-        If no consents could be found, then an empty array is returned.
-
-        For CBUAE, a consent group id is the `BaseConsentId`
-      operationId: getConsentsInConsentGroup
-      parameters:
-        - name: consentGroupId
+        - $ref: '#/components/parameters/callerInteractionId'
+        - $ref: '#/components/parameters/ozoneInteractionId'
+        - $ref: '#/components/parameters/psuIdentifier'
+        - name: operation
           in: path
+          description: specifies whether this is a POST or PATCH operation
+          required: true
           schema:
             type: string
-          required: true
-          description: |
-            Select consents within the consentGroupId
-        - $ref: '#/components/parameters/consentType'
-        - $ref: '#/components/parameters/status'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/pageSize'
-      responses:
-        '200':
-          description: |
-            Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/multiConsentResponse'
-        '400':
-          description: Indicates a failure to retrieve the consents
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /psu/{userId}/consents:
-    get:
-      tags:
-        - consents-by-psu
-      summary: Retrieves all the consents associated with a given PSU
-      description: |
-        Retrieves an array of consents associated with the PSU.
-
-        If no consents could be found associated with the PSU, then an empty array is returned.
-
-        The userId path parameter is matched with the `psuIdentifiers.userId` field in the consent.
-      operationId: getConsents
-      parameters:
-        - $ref: '#/components/parameters/userId'
-        - $ref: '#/components/parameters/consentType'
-        - name: status
-          in: query
-          required: false
-          style: form
-          explode: false
-          description: >
-            Consent statuses to filter by, as a comma-separated list — for example `?status=Authorized,Suspended`.
-
-            The list is evaluated as a union: a consent is returned if its status matches any value in the list. Order
-            is not significant and duplicates are ignored. Omit the parameter to return consents of every status.
-
-            Every value MUST be a member of `AEConsentStatus`. A request carrying any other value is rejected with
-            `400`. Values are case-sensitive.
-          schema:
-            type: array
-            minItems: 1
-            items:
-              $ref: '#/components/schemas/AEConsentStatus'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/pageSize'
-      responses:
-        '200':
-          description: |
-            Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/multiConsentResponse'
-        '400':
-          description: Indicates a failure to retrieve the consents
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /accounts/{accountId}/consents:
-    get:
-      tags:
-        - consents-by-account
-      summary: Retrieve consents of a account by its id
-      description: |
-        Retrieve consents of a account by its id
-      operationId: getAccountIdConsents
-      parameters:
-        - name: accountId
-          in: path
-          schema:
-            type: string
-          required: true
-          description: Identifier for the account
-        - $ref: '#/components/parameters/consentType'
-        - $ref: '#/components/parameters/status'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/pageSize'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/multiConsentResponse'
-        '400':
-          description: |
-            Indicates a failure to create the consent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /consent-groups/{consentGroupId}/consents/action/revoke:
-    post:
-      tags:
-        - actions
-      summary: Revokes consents within a consent group
-      description: |
-        Revokes consents that are within a consent group.
-      operationId: revokeConsentsInConsentGroup
-      parameters:
-        - name: consentGroupId
-          in: path
-          schema:
-            type: string
-          required: true
-          description: |
-            Select consents within the consentGroupId
-      requestBody:
-        description: >
-          An end-point for revoking a consent within a consent group.
-
-
-          This is similar in behaviour to the consent revocation endpoint, but operates on a consent group id parameter
-          instead
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RevokeConsent'
-      responses:
-        '204':
-          description: |
-            Indicates a successful operation.
-            The response does not have a body.
-        '400':
-          description: Indicates a failure to revoke the consent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /consents/{consentId}/action/revoke:
-    post:
-      tags:
-        - actions
-      summary: Revoke a consent by its id
-      description: >-
-        Revokes a consent by its id along with any associated access and refresh tokens.
-
-        This API is used by ozone internally to revoke consents.
-
-        The API should be used by a financial institution to revoke consents (rather than simply patching the consent)
-        to also revoke the tokens associated with the consent
-      operationId: revokeConsentsByConsentId
-      parameters:
-        - $ref: '#/components/parameters/consentId'
+            enum:
+              - post
+              - patch
       requestBody:
         description: |
-          An end-point for revoking a consent.
+          Sends an event indicating the created or updated consent to an financial institution.
+          This consists of the entire consent as stored in the consent Manager.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RevokeConsent'
+              $ref: '#/components/schemas/consent'
       responses:
         '204':
           description: |
-            Indicates a successful operation.
-            The response does not have a body.
+            Indicates the successful notification response.
+            The response does not have a body
         '400':
           description: |
-            Indicates a failure to revoke the consent
+            Indicates that the financial institution could not process the event.
+
+            Ozone will ignore these errors.
+            The notification *will not* be retried.
+
+            The change to the consent *will not* be rolled back.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error400Response'
-  /payment-log:
-    get:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/Error'
+  /consent/action/augment:
+    post:
       tags:
-        - payments
-      summary: Retrieve a log of Payments by Consent ID
-      operationId: getAuditConsentsByConsentIdw
+        - consent-actions
+      summary: Account action augmentation
       description: >
-        Retrieve the payments made under a consent, using the `consentId` value.
+        The API is called by Ozone to allow a Financial Institution to augment additional information that may apply to
+        the account consent
 
-        The response is **paginated**, using the same `page` and `pageSize` parameters as the consent list operations on
-        this API. `pageSize` defaults to 25. The response `meta` reports `pageNumber`, `pageSize`, `totalPages` and
-        `totalRecords`, so a caller reads `totalPages` to know when to stop rather than assuming a short page is the
-        last one.
 
-        Callers written against v2.1 received every payment for the consent in a single response. From v2.2 they
-        receive one page, and MUST follow `page` to retrieve the rest.
+        The request body contains the entire consent record as stored in the Consent Manager.
+      operationId: augmentAccountConsent
       parameters:
-        - name: consentId
-          in: query
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/providerId'
+        - $ref: '#/components/parameters/aspspId'
+        - $ref: '#/components/parameters/callerOrgId'
+        - $ref: '#/components/parameters/callerClientId'
+        - $ref: '#/components/parameters/callerSoftwareStatementId'
+        - $ref: '#/components/parameters/apiUri'
+        - $ref: '#/components/parameters/apiOperation'
+        - $ref: '#/components/parameters/consentId'
+        - $ref: '#/components/parameters/callerInteractionId'
+        - $ref: '#/components/parameters/ozoneInteractionId'
+        - $ref: '#/components/parameters/psuIdentifier'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/consent'
+      responses:
+        '200':
           description: |
-            Identifier for the consent
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/pageSize'
+            Indicates a successful operation
+
+            The response consists of fields that must be augmented into the consent.
+
+            These fields will be different for each consent type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/augmentConsentResponse'
+        '400':
+          description: failed operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/Error'
+  /consent/action/validate:
+    post:
+      tags:
+        - consent-actions
+      summary: Provides an opportunity for a financial institution to validate a consent before it is created
+      description: >
+        The API is called by Ozone to allow a financial institution to carry out additional validations before a consent
+        is created.
+
+
+        The request body contains the entire consent along with contextual information.
+
+
+        Typically this could be used for situations like:
+
+        - soft validation of the debtor account (e.g. to ensure that it is a debtor account managed by the financial
+        institution)
+
+        - populating charges and exchange rate information
+
+
+        Note that a financial institution only need to implement this API where it needs to correlate information in the
+        consent payload
+
+        with data held in its systems. If this is not the case, "local" validations can be configured in Ozone that do
+        not require a remote call.
+
+
+        The financial institution must return a response that includes a status. If the status is set to `valid`, the
+        consent is saved and processing continues.
+
+
+        If the status is set to `invalid` the processing fails and an error response is sent to the TPP.
+      operationId: validateConsent
+      parameters:
+        - $ref: '#/components/parameters/providerId'
+        - $ref: '#/components/parameters/aspspId'
+        - $ref: '#/components/parameters/callerOrgId'
+        - $ref: '#/components/parameters/callerClientId'
+        - $ref: '#/components/parameters/callerSoftwareStatementId'
+        - $ref: '#/components/parameters/apiUri'
+        - $ref: '#/components/parameters/apiOperation'
+        - $ref: '#/components/parameters/consentId'
+        - $ref: '#/components/parameters/callerInteractionId'
+        - $ref: '#/components/parameters/ozoneInteractionId'
+        - $ref: '#/components/parameters/psuIdentifier'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/consent'
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - data
-                  - meta
-                properties:
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      required:
-                        - consentId
-                        - paymentType
-                        - paymentId
-                        - idempotencyKey
-                        - paymentResponse
-                        - tpp
-                        - accountId
-                        - psuIdentifiers
-                        - interactionId
-                        - authorizationCode
-                        - requestBody
-                        - requestHeaders
-                      properties:
-                        consentId:
-                          type: string
-                          description: |
-                            A consent identifier generated by the TPP for the consent.
-                        paymentType:
-                          type: string
-                          description: |
-                            The underlying payment type
-
-                            For example,
-
-                              - cbuae-payment (Single Instant Payment, Multi Payment - Fixed and Variable Recurring Payment, Future Dated Payment etc)
-                              - cbuae-file-payment
-                        paymentId:
-                          type: string
-                        idempotencyKey:
-                          type: string
-                        paymentResponse:
-                          $ref: '#/components/schemas/CbuaePaymentLogPaymentResponse'
-                        signedResponse:
-                          type: string
-                        tpp:
-                          $ref: '#/components/schemas/tpp'
-                        accountId:
-                          description: The account identifier
-                          type: string
-                        psuIdentifiers:
-                          $ref: '#/components/schemas/psuIdentifiers'
-                        interactionId:
-                          $ref: '#/components/schemas/apiLogInteractionId'
-                        authorizationCode:
-                          type: object
-                          properties:
-                            paymentId:
-                              type: string
-                            accessTokenHash:
-                              type: string
-                            currentDateTime:
-                              $ref: '#/components/schemas/AEDateTime'
-                        requestBody:
-                          $ref: '#/components/schemas/AEPaymentAndFilePaymentRequest'
-                        signedRequestBody:
-                          type: string
-                        requestHeaders:
-                          type: object
-                          description: |
-                            The entire set of Http request headers that was received by Ozone from the TPP
-                  meta:
-                    $ref: '#/components/schemas/paginationMetadata'
+                $ref: '#/components/schemas/consentValidateResponse'
         '400':
-          description: |
-            Indicates a failure to retrieve the payments
+          description: failed operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error400Response'
-  /payment-log/{id}:
-    patch:
-      tags:
-        - payments
-      summary: Patches one or more fields in a payment-log based on id .
-      description: |
-        This operation allows an  modify fields within a payment's `paymentResponse`.
-        This is used by the financial institutions to update the status of a payment
-      operationId: patchPymentlog
-      parameters:
-        - $ref: '#/components/parameters/id'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CbuaePatchPaymentRecordBody'
-      responses:
-        '204':
-          description: |
-            Indicates a successful operation.
-            The response does not have a body.
-        '400':
-          description: The request patch operation failed due to an error at the Consent Manager API.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /account-opening-log/{logId}:
-    patch:
-      operationId: UpdateAccountOpeningLog
-      tags:
-        - resource-log
-      summary: Patch the status of an account opening request.
-      description: >-
-        Patch the status of an account opening request. Account opening requests are not associated with a consent, but
-        always use an `accountId` value, which is the value of `logId`.
-      parameters:
-        - $ref: '#/components/parameters/logId'
-      requestBody:
-        description: Properties of the patch
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - OpeningStatus
-              properties:
-                OpeningStatus:
-                  type: string
-                  enum:
-                    - Pending
-                    - AwaitingUserInput
-                    - AwaitingLFIProcesses
-                    - Completed
-                    - Rejected
-                  description: >
-                    The status of the opening of the account, based on progress at the LFI.
-
-                    The values are defined as follows:
-
-                    * Pending: This is the initial state for the resource. The account is pending opening, based on 
-                      LFI processes being completed.
-
-                    * AwaitingUserInput: The account opening process has started and input is required from the 
-                      User to progress the application.
-
-                    * AwaitingLFIProcesses: The account opening process has started and is awaiting the completion 
-                      of LFI processes.
-
-                    * Completed: The account opening request has been completed by the LFI and the Account is available
-                      for use by the User.
-
-                    * Rejected: The account opening has been rejected by the LFI due to insufficient data or failure
-                      to validate the User data.
-
-                AdditionalStatusInformation:
-                  description: Additional information provided to the TPP by the LFI that qualifies the status, 
-                    including next steps such as where further information is required, or reasons for rejection.
-                  type: string
-                  minLength: 1
-                  maxLength: 1000
-      responses:
-        '204':
-          $ref: '#/components/responses/noContentResponse'
-        '400':
-          description: Failed to patch the log
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
+                $ref: '#/components/schemas/Error'
         default:
-          description: Default error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /fx-quote-log/{logId}:
-    patch:
-      operationId: UpdateFxQuoteLog
-      tags:
-        - resource-log
-      summary: Patch the status of an FX quote.
-      description: >-
-        Patch the status of an FX quote request. FX quote requests are not associated with a consent, but always use an
-        `FxQuoteId` value, which is the value of `logId`.
-      parameters:
-        - $ref: '#/components/parameters/logId'
-      requestBody:
-        description: Properties of the patch. `Trade` and `Commission` are only included when the status is `Completed`
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - title: Intermediate Status
-                  description: The status at either an intermediate state or terminal state that is not `Completed`.
-                  type: object
-                  required:
-                    - QuoteStatus
-                  properties:
-                    QuoteStatus:
-                      description: The quote status, based on states that are not `Completed`
-                      type: string
-                      enum:
-                        - AccountOpened
-                        - Actioned
-                        - Available
-                        - Cancelled
-                        - Expired
-                        - Funded
-                        - Rejected
-                    AdditionalStatusInformation:
-                      description: Additional information provided to the TPP by the LFI that provides qualifies the 
-                        status, including next steps such as where further information is required,
-                        or reasons for rejection.
-                      type: string
-                      minLength: 1
-                      maxLength: 1000
-                - title: Completed Status
-                  description: >-
-                    Properties of the completed trade. Trade amounts, charges, and commission at terminal state must be
-                    confirmed.
-                  type: object
-                  required:
-                    - QuoteStatus
-                    - Trade
-                    - Commission
-                  properties:
-                    QuoteStatus:
-                      description: The quote status. Only `Completed` is valid.
-                      type: string
-                      enum:
-                        - Completed
-                    Trade:
-                      description: Quote properties at completion.
-                      required:
-                        - SellAmount
-                        - BuyAmount
-                      type: object
-                      properties:
-                        SellAmount:
-                          description: The amount of the currency being sold.
-                          type: object
-                          required:
-                            - Currency
-                            - Amount
-                          properties:
-                            Currency:
-                              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
-                            Amount:
-                              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
-                        BuyAmount:
-                          description: The amount of the currency being bought.
-                          type: object
-                          required:
-                            - Currency
-                            - Amount
-                          properties:
-                            Currency:
-                              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
-                            Amount:
-                              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
-                        Charges:
-                          description: The charges associated with the request currency exchange.
-                          type: array
-                          items:
-                            type: object
-                            required:
-                              - ChargeBearer
-                              - Type
-                              - Amount
-                            properties:
-                              ChargeBearer:
-                                $ref: '#/components/schemas/AEChargeBearerType1Code'
-                              Type:
-                                $ref: '#/components/schemas/AEExternalPaymentChargeTypeCode'
-                              Amount:
-                                $ref: '#/components/schemas/AEActiveCurrencyAmount'
-                              Description:
-                                type: string
-                                minLength: 1
-                                maxLength: 140
-                                description: >-
-                                  Description of the charge, for display to the User to help explain why the charge is
-                                  levied.
-                    Commission:
-                      description: Details of commission.
-                      type: object
-                      properties:
-                        CommissionAmount:
-                          allOf:
-                            - $ref: '#/components/schemas/AEActiveCurrencyAmount'
-                          description: The total monetary value of the commission paid to the TPP.
-                      required:
-                        - CommissionAmount
-      responses:
-        '204':
-          $ref: '#/components/responses/noContentResponse'
-        '400':
-          description: Failed to patch the log
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /insurance-quote-log/{logId}:
-    patch:
-      operationId: UpdateInsuranceQuoteLog
-      tags:
-        - resource-log
-      summary: Patch the status of an insurance quote.
-      description: >-
-        Patch the status of an Insurance quote request. Insurance quote requests are not associated with a consent, but
-        always use an `QuoteId` value, which is the value of `logId`.
-      parameters:
-        - $ref: '#/components/parameters/logId'
-      requestBody:
-        description: Properties of the patch. `Premium` and `Commission` are only included when the status is
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventAvailableStatus'
-                - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventTerminalStatus'
-                - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventPendingCompletionStatus'
-                - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventCompletedStatus'
-      responses:
-        '204':
-          $ref: '#/components/responses/noContentResponse'
-        '400':
-          description: Failed to patch the log
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400Response'
-  /hello-mtls:
-    get:
-      operationId: helloMtls
-      tags:
-        - health-check
-      summary: check connectivity including mtls and provides information about the client cert that the server received
-      description: >-
-        This health check is used to check that the end-to-end network connectivity is working as expected including
-        mutual tls. This health check endpoint assists in debugging mutual tls client issues. The health check returns
-        information about the client certificate and the issuer of the client certificate that the server received.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthCheckCertResponse'
+          $ref: '#/components/responses/Error'
 components:
+  responses:
+    Error:
+      description: Default error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     AEDateTime:
       title: AEDateTime
@@ -928,65 +332,17 @@ components:
       format: date-time
       pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|\+\d{2}:\d{2}|-(?:0[1-9]|1[0-2]):\d{2})$'
       example: '2027-07-22T00:00:00Z'
-    standardErrorCodes:
-      description: Standardized error codes used across open finance components
-      type: string
-      enum:
-        - AccessToken.InvalidScope
-        - Body.InvalidFormat
-        - Consent.AccountTemporarilyBlocked
-        - Consent.BusinessRuleViolation
-        - Consent.FailsControlParameters
-        - Consent.Invalid
-        - Consent.InvalidUserIdentifier
-        - Consent.PermanentAccountAccessFailure
-        - Consent.TransientAccountAccessFailure
-        - Event.UnexpectedEvent
-        - JWE.DecryptionError
-        - JWE.InvalidHeader
-        - JWS.InvalidClaim
-        - JWS.InvalidHeader
-        - JWS.InvalidSignature
-        - JWS.Malformed
-        - Resource.InvalidFormat
-    standardErrorCodePattern:
-      description: >-
-        Namespaced error codes, indicating the source of the error code prior to the period, and the error code itself
-        after the period e.g. `AANI.AM04` indicates insufficient funds.
-      type: string
-      pattern: ^[A-Za-z]+\.[A-Za-z0-9]+$
-    errorReasonCodes:
-      description: >-
-        Error code identifying the problem that occurred. This may either be one of the prescribed error code(s), a 
-        code that observes the namespaced pattern, or a custom error codes specific to the API Hub.
-      anyOf:
-        - $ref: '#/components/schemas/standardErrorCodes'
-        - $ref: '#/components/schemas/standardErrorCodePattern'
-        - type: string
-    error400Response:
-      type: object
-      required:
-        - errorCode
-        - errorMessage
-      properties:
-        errorCode:
-          $ref: '#/components/schemas/errorReasonCodes'
-        errorMessage:
-          type: string
-          description: Message describing what problem has occurred
-    meta:
-      type: object
-      additionalProperties: false
-    apiLogInteractionId:
+    augmentConsentResponse:
+      description: |
+        Fields to be added to the consent
       type: object
       properties:
-        ozoneInteractionId:
-          type: string
-        clientInteractionId:
-          type: string
-      additionalProperties: false
-      required:
-        - ozoneInteractionId
+        Charges:
+          $ref: '#/components/schemas/AECharges'
+        ExchangeRate:
+          $ref: '#/components/schemas/AEExchangeRateInformation'
+        OpenFinanceBilling:
+          $ref: '#/components/schemas/ConsentManager.AEOpenFinanceBillingUpdateProperties'
     tpp:
       description: >-
         The TPP record as held by Ozone. If Ozone TPP Connect has been integrated into a directory, the
@@ -1121,6 +477,58 @@ components:
           type: string
       required:
         - userId
+    ConsentManager.AccountIdentifiers:
+      description: >-
+        An array of Account Identifier values associated with the Consent, which must be populated once consent has 
+        been authorised.
+
+        For Bank Service Initiation, the array must always have one element, which is the debtor account from which the 
+        payment will be made
+
+        For Bank Data Sharing requests, the array may contain multiple values, representing each of the payment accounts
+        for which an data will be provide.
+
+        Insurance Data Sharing does not require `accountIds` to be patched, and will instead use `insurancePolicyIds`. 
+        `accountIds` will, however, be populated with the value of `insurancePolicyIds` by a trigger in the Consent 
+        Manager, which ensures a consistent set of identifiers are available across different consent types.
+      type: array
+      minItems: 1
+      items:
+        type: string
+    ConsentManager.SupplementaryInformation:
+      description: Contains additional information at the discretion of the financial institution.
+      type: object
+    insurancePolicyIds:
+      description: >-
+        List of insurance policy identifiers that have been selected and authorized by the User when consenting to
+        insurance policy access. The LFI **MUST** patch these values onto the consent after the User has selected them,
+        to ensure the policies are correctly retrieved based on the consent in operations such as `get
+        /life-insurance-policies`.
+      type: array
+      minItems: 1
+      items:
+        description: >-
+          An insurance policy identifier, set by the LFI to uniquely identify a given policy when addressed through an
+          API operation e.g. `get /life-insurance-policies/{insurancePolicyId}`. For the sake of clarify this is **NOT**
+          the policy reference understood by the User.
+        type: string
+    AEConsentUsage:
+      type: object
+      description: |
+        Contains information about the last time the consent was used.
+      properties:
+        lastDataShared:
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The last time the data was shared with the TPP. This is updated by the CM when the data is shared with
+                the TPP.
+        lastServiceInitiationAttempt:
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The last time the payment was initiated by TPP. This is updated by the CM when payment is initiated by
+                TPP.
     newConsent:
       type: object
       properties:
@@ -1210,7 +618,6 @@ components:
         - $ref: '#/components/schemas/AEAccountAccessConsentBody'
         - $ref: '#/components/schemas/AEInsuranceConsentBody'
         - $ref: '#/components/schemas/AEPaymentConsentResponse'
-
     ConsentManager.AEUpdatedConsentProperties:
       type: object
       properties:
@@ -1231,141 +638,6 @@ components:
             consent.
         consentUsage:
           $ref: '#/components/schemas/AEConsentUsage'
-
-    ConsentManager.AEConsentUpdateProperties:
-      description: Update one-or-more properties of a given Consent based on the `consentId` value. Use the correct 
-        properties for the type of consent i.e. Bank Data Sharing, Bank Service Initiation, or Insurance Data Sharing.
-      anyOf:
-      - $ref: '#/components/schemas/ConsentManager.AEBankDataSharingConsentUpdateProperties'
-      - $ref: '#/components/schemas/ConsentManager.AEBankServiceInitiationConsentUpdateProperties'
-      - $ref: '#/components/schemas/ConsentManager.AEInsuranceDataSharingConsentUpdateProperties'
-
-    ConsentManager.AccountIdentifiers:
-      description: >-
-        An array of Account Identifier values associated with the Consent, which must be populated once consent has 
-        been authorised.
-
-        For Bank Service Initiation, the array must always have one element, which is the debtor account from which the 
-        payment will be made
-
-        For Bank Data Sharing requests, the array may contain multiple values, representing each of the payment accounts
-        for which an data will be provide.
-
-        Insurance Data Sharing does not require `accountIds` to be patched, and will instead use `insurancePolicyIds`. 
-        `accountIds` will, however, be populated with the value of `insurancePolicyIds` by a trigger in the Consent 
-        Manager, which ensures a consistent set of identifiers are available across different consent types.
-      type: array
-      minItems: 1
-      items:
-        type: string
-
-    ConsentManager.AEAuthorizationChannel:
-      description: LFI channel on which the User authorized the Consent.
-      type: string
-      enum:
-        - App
-        - Web
-
-    ConsentManager.SupplementaryInformation:
-      description: Contains additional information at the discretion of the financial institution.
-      type: object
-
-    ConsentManager.AEBankDataSharingConsentUpdateProperties:
-      title: Bank Data Sharing Consent Update
-      description: Properties that can be patched for a Bank Data Sharing Consent.
-      type: object
-      required:
-      - authorizationChannel
-      additionalProperties: false
-      properties:
-        psuIdentifiers:
-          $ref: '#/components/schemas/psuIdentifiers'
-        accountIds:
-          $ref: '#/components/schemas/ConsentManager.AccountIdentifiers'
-        supplementaryInformation:
-          $ref: '#/components/schemas/ConsentManager.SupplementaryInformation'
-        status:
-          $ref: '#/components/schemas/cbuaePatchableConsentStatus'
-        consentBody.Data.Status:
-          $ref: '#/components/schemas/cbuaePatchableConsentStatus'
-        consentBody.Data.RevokedBy:
-          $ref: '#/components/schemas/AERevokedBy'
-        authorizationChannel:
-          $ref: '#/components/schemas/ConsentManager.AEAuthorizationChannel'
-        consentBody.Data.OpenFinanceBilling:
-          $ref: '#/components/schemas/ConsentManager.AEOpenFinanceBillingUpdateProperties'
-        consentUsage:
-          $ref: '#/components/schemas/AEConsentUsage'
-
-    ConsentManager.AEBankServiceInitiationConsentUpdateProperties:
-      title: Bank Service Initiation Consent Update
-      description: Properties that can be patched for a Bank Service Initiation Consent.
-      type: object
-      required:
-      - authorizationChannel
-      additionalProperties: false
-      properties:
-        psuIdentifiers:
-          $ref: '#/components/schemas/psuIdentifiers'
-        accountIds:
-          allOf:
-          - $ref: '#/components/schemas/ConsentManager.AccountIdentifiers'
-          - type: array
-            maxItems: 1
-            items:
-              type: string
-        supplementaryInformation:
-          $ref: '#/components/schemas/ConsentManager.SupplementaryInformation'
-        status:
-          $ref: '#/components/schemas/cbuaePatchableConsentStatus'
-        consentBody.Data.Status:
-          $ref: '#/components/schemas/cbuaePatchableConsentStatus'
-        consentBody.Data.ExchangeRate:
-          $ref: '#/components/schemas/AEExchangeRateInformation'
-        consentBody.Data.Charges:
-          $ref: '#/components/schemas/AECharges'
-        consentBody.Data.RevokedBy:
-          $ref: '#/components/schemas/AERevokedBy'
-        consentBody.Meta.MultipleAuthorizers:
-          $ref: '#/components/schemas/AEMetaMultiAuthorization'
-        authorizationChannel:
-          $ref: '#/components/schemas/ConsentManager.AEAuthorizationChannel'
-        ConnectToken:
-          type: string
-          description: A bearer token that will be sent as the `Authorization` header for Bank Service Initiation 
-            operations invoked at Ozone Connect. The API Hub for a given LFI must be configured for sending this token.
-        consentBody.Data.OpenFinanceBilling:
-          $ref: '#/components/schemas/ConsentManager.AEOpenFinanceBillingUpdateProperties'
-        consentUsage:
-          $ref: '#/components/schemas/AEConsentUsage'
-
-    ConsentManager.AEInsuranceDataSharingConsentUpdateProperties:
-      title: Insurance Data Sharing Consent Update
-      description: Properties that can be patched for an Insurance Data Sharing Consent.
-      type: object
-      required:
-      - authorizationChannel
-      additionalProperties: false
-      properties:
-        psuIdentifiers:
-          $ref: '#/components/schemas/psuIdentifiers'
-        insurancePolicyIds:
-          $ref: '#/components/schemas/insurancePolicyIds'
-        supplementaryInformation:
-          $ref: '#/components/schemas/ConsentManager.SupplementaryInformation'
-        status:
-          $ref: '#/components/schemas/cbuaePatchableConsentStatus'
-        consentBody.Data.Status:
-          $ref: '#/components/schemas/cbuaePatchableConsentStatus'
-        consentBody.Data.RevokedBy:
-          $ref: '#/components/schemas/AERevokedBy'
-        authorizationChannel:
-          $ref: '#/components/schemas/ConsentManager.AEAuthorizationChannel'
-        consentBody.Data.OpenFinanceBilling:
-          $ref: '#/components/schemas/ConsentManager.AEOpenFinanceBillingUpdateProperties'
-        consentUsage:
-          $ref: '#/components/schemas/AEConsentUsage'
-
     AEServiceInitiationOpenFinanceBilling:
       type: object
       properties:
@@ -1374,569 +646,15 @@ components:
           description: Customer has more than 100 million AED turnover
       description: Billing parameters specified by the LFI
       additionalProperties: false
-
     ConsentManager.AEOpenFinanceBillingUpdateProperties:
       type: object
       required:
-      - IsLargeCorporate
+        - IsLargeCorporate
       properties:
         IsLargeCorporate:
           type: boolean
           description: Customer has more than 100 million AED turnover
       description: Billing parameters specified by the LFI
-      additionalProperties: false
-
-    cbuaePatchableConsentStatus:
-      description: |
-        Specifies the statuses that a consent can be patched to by an LFI.
-      type: string
-      enum:
-        - Authorized
-        - Rejected
-        - Revoked
-        - Expired
-        - Consumed
-        - Suspended
-    CbuaePaymentLogRejectReasonCode:
-      description: >
-        A list of reject reason codes provided by the LFI. 
-
-        Where this list is patched repeatedly the LFI **MUST** append to the existing list **BEFORE** calling the patch 
-        operation, to ensure all values are maintained, unless the reject reason was patched in error and the existing 
-        value is being replaced.
-      type: array
-      minItems: 1
-      items:
-        description: >-
-          The reason for rejection of a given payment request as detected by the LFI. The `Code` and `Message`
-          properties are transposed EXACTLY in event notifications sent to the TPP, so the `Message` value MUST be
-          sanitized accordingly.
-        type: object
-        required:
-          - code
-          - message
-        properties:
-          code:
-            description: >-
-              Error code that follows the namespaced pattern standardised for the Open Finance Framework. AANI reason
-              codes should be used as standard, and be applied in scenarios where payment instructions are rejected at
-              the LFI, prior to submission to AANI. LFI specific codes can be provided as a fallback.
-            anyOf:
-              - type: string
-                pattern: ^(AANI|FTS|LFI)\.[A-Za-z0-9]+$
-              - $ref: '#/components/schemas/standardErrorCodePattern'
-            example: AANI.AM04
-          message:
-            description: Error message describing the rejection reason
-            type: string
-            minLength: 1
-            maxLength: 500
-            example: Payment request cannot be executed as insufficient funds at debtor account.
-      additionalProperties: false
-    CbuaePaymentLogRejectReasonCodeAani:
-      description: >
-        A list of reject reason codes provided by the LFI for a payment routed to AANI.
-
-        Where this list is patched repeatedly the LFI **MUST** append to the existing list **BEFORE** calling the patch
-        operation, to ensure all values are maintained, unless the reject reason was patched in error and the existing
-        value is being replaced.
-      type: array
-      minItems: 1
-      items:
-        description: >-
-          The reason for rejection of a given payment request as detected by the LFI. The `Code` and `Message`
-          properties are transposed EXACTLY in event notifications sent to the TPP, so the `Message` value MUST be
-          sanitized accordingly.
-        type: object
-        required:
-          - code
-          - message
-        properties:
-          code:
-            description: >-
-              AANI reason code, namespaced to the rail. AANI reason codes are the standard set for this rail and carry
-              every rejection reported against it, including a rejection raised at the LFI before the payment was
-              submitted to AANI.
-            type: string
-            pattern: ^AANI\.[A-Za-z0-9]+$
-            example: AANI.AM04
-          message:
-            description: Error message describing the rejection reason
-            type: string
-            minLength: 1
-            maxLength: 500
-            example: Payment request cannot be executed as insufficient funds at debtor account.
-      additionalProperties: false
-    CbuaePaymentLogRejectReasonCodeFts:
-      description: >
-        A list of reject reason codes provided by the LFI for a payment routed to UAEFTS.
-
-        Where this list is patched repeatedly the LFI **MUST** append to the existing list **BEFORE** calling the patch
-        operation, to ensure all values are maintained, unless the reject reason was patched in error and the existing
-        value is being replaced.
-      type: array
-      minItems: 1
-      items:
-        description: >-
-          The reason for rejection of a given payment request as detected by the LFI. The `Code` and `Message`
-          properties are transposed EXACTLY in event notifications sent to the TPP, so the `Message` value MUST be
-          sanitized accordingly.
-        type: object
-        required:
-          - code
-          - message
-        properties:
-          code:
-            description: >-
-              UAEFTS reason code, namespaced to the rail. UAEFTS reason codes are the standard set for this rail and
-              carry every rejection reported against it, including a rejection raised at the LFI before the payment was
-              submitted to UAEFTS.
-            type: string
-            pattern: ^FTS\.[A-Za-z0-9]+$
-            example: FTS.AM04
-          message:
-            description: Error message describing the rejection reason
-            type: string
-            minLength: 1
-            maxLength: 500
-            example: Payment request cannot be executed as insufficient funds at debtor account.
-      additionalProperties: false
-    CbuaePaymentLogRejectReasonCodeLfi:
-      description: >
-        A list of reject reason codes provided by the LFI for a payment settled on the LFI's own ledger.
-
-        Where this list is patched repeatedly the LFI **MUST** append to the existing list **BEFORE** calling the patch
-        operation, to ensure all values are maintained, unless the reject reason was patched in error and the existing
-        value is being replaced.
-      type: array
-      minItems: 1
-      items:
-        description: >-
-          The reason for rejection of a given payment request as detected by the LFI. The `Code` and `Message`
-          properties are transposed EXACTLY in event notifications sent to the TPP, so the `Message` value MUST be
-          sanitized accordingly.
-        type: object
-        required:
-          - code
-          - message
-        properties:
-          code:
-            description: >-
-              LFI reason code, namespaced to the rail. The payment never left the LFI, so every rejection reported
-              against it is the LFI's own.
-            type: string
-            pattern: ^LFI\.[A-Za-z0-9]+$
-            example: LFI.AM04
-          message:
-            description: Error message describing the rejection reason
-            type: string
-            minLength: 1
-            maxLength: 500
-            example: Payment request cannot be executed as insufficient funds at debtor account.
-      additionalProperties: false
-    CbuaePaymentLogPaymentResponse:
-      description: >
-        The payment response as received from the financial institution as a result of a `make-payment` call, as it
-        stands after every patch the LFI has applied to it.
-
-        `paymentRail` selects the shape, exactly as it does on `patch /payment-log/{id}`: the rail determines which
-        status the payment can be in, whether it carries a `paymentTransactionId`, and which reject reason code
-        namespace applies. A payment the LFI has not yet routed carries no `paymentRail` at all — see
-        `CbuaePaymentLogPaymentResponseUnrouted`.
-
-        `CbuaePatchPaymentRecordBody` describes what each rail means and the obligations that travel with it.
-      oneOf:
-        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseAani'
-        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseFts'
-        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseLfi'
-        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseUnrouted'
-    CbuaePaymentLogPaymentResponseAani:
-      description: >
-        A payment the LFI routed to AANI, the UAE instant payment platform.
-      type: object
-      required:
-        - paymentRail
-        - status
-      additionalProperties: false
-      properties:
-        id:
-          description: |
-            A unique id for the payment in uuid-v4 format.
-          type: string
-        paymentRail:
-          description: >
-            Identifies AANI as the rail the payment was routed to.
-          type: string
-          enum:
-            - AANI
-          example: AANI
-        status:
-          description: >
-            The current status of the payment.
-
-            * `AcceptedSettlementCompleted`: **not terminal.** The LFI has passed the payment to AANI and is awaiting
-              confirmation.
-
-            * `AcceptedWithoutPosting`: terminal. AANI has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `rejectReasonCode` carries the reason.
-          type: string
-          enum:
-            - AcceptedSettlementCompleted
-            - AcceptedWithoutPosting
-            - Rejected
-        paymentTransactionId:
-          description: >
-            The AANI-generated end to end transaction identifier, as issued to the Originating LFI. This is not the same
-            value as the `transactionId` in the Bank Data Sharing API. It is absent where the payment was rejected
-            before AANI issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
-        creationDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment was created
-        statusUpdateDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment status was last updated
-        OpenFinanceBilling:
-          $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
-        rejectReasonCode:
-          $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeAani'
-    CbuaePaymentLogPaymentResponseFts:
-      description: >
-        A payment the LFI routed to UAEFTS, the CBUAE funds transfer system.
-      type: object
-      required:
-        - paymentRail
-        - status
-      additionalProperties: false
-      properties:
-        id:
-          description: |
-            A unique id for the payment in uuid-v4 format.
-          type: string
-        paymentRail:
-          description: >
-            Identifies UAEFTS as the rail the payment was routed to.
-          type: string
-          enum:
-            - FTS
-          example: FTS
-        status:
-          description: >
-            The current status of the payment.
-
-            * `AcceptedSettlementCompleted`: **not terminal.** The LFI has passed the payment to UAEFTS and is awaiting
-              confirmation.
-
-            * `AcceptedCreditSettlementCompleted`: terminal. UAEFTS has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `rejectReasonCode` carries the reason.
-          type: string
-          enum:
-            - AcceptedSettlementCompleted
-            - AcceptedCreditSettlementCompleted
-            - Rejected
-        paymentTransactionId:
-          description: >
-            The UAEFTS-generated end to end transaction identifier, as issued to the Originating LFI. This is not the
-            same value as the `transactionId` in the Bank Data Sharing API. It is absent where the payment was rejected
-            before UAEFTS issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
-        creationDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment was created
-        statusUpdateDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment status was last updated
-        OpenFinanceBilling:
-          $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
-        rejectReasonCode:
-          $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeFts'
-    CbuaePaymentLogPaymentResponseLfi:
-      description: >
-        A payment the LFI settled on its own ledger. The debtor and creditor accounts are both held at the LFI, so the
-        payment did not reach an external rail.
-      type: object
-      required:
-        - paymentRail
-        - status
-      additionalProperties: false
-      properties:
-        id:
-          description: |
-            A unique id for the payment in uuid-v4 format.
-          type: string
-        paymentRail:
-          description: >
-            Identifies the LFI's own ledger as where the payment was settled.
-          type: string
-          enum:
-            - LFI
-          example: LFI
-        status:
-          description: >
-            The current status of the payment. Both values are terminal: settlement is internal to the LFI, so there is
-            no hand-off to an external rail to report as an intermediate step.
-
-            * `AcceptedCreditSettlementCompleted`: the LFI has booked the payment on its own ledger and the funds are
-              available to the creditor.
-
-            * `Rejected`: the payment will not be settled, and `rejectReasonCode` carries the reason.
-          type: string
-          enum:
-            - AcceptedCreditSettlementCompleted
-            - Rejected
-        creationDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment was created
-        statusUpdateDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment status was last updated
-        OpenFinanceBilling:
-          $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
-        rejectReasonCode:
-          $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeLfi'
-    CbuaePaymentLogPaymentResponseUnrouted:
-      description: >
-        A payment the LFI has not routed to a rail. `paymentRail` is absent, because no rail has been selected yet or
-        none ever was: the payment is either still pending at the LFI, or was rejected before the LFI submitted it
-        anywhere.
-
-        A payment in this state has not been patched with a rail. Once the LFI patches `paymentResponse.paymentRail` the
-        record takes the shape of that rail instead.
-      type: object
-      required:
-        - status
-      additionalProperties: false
-      properties:
-        id:
-          description: |
-            A unique id for the payment in uuid-v4 format.
-          type: string
-        status:
-          description: >
-            The current status of the payment.
-
-            * `Pending`: the LFI has the payment and has not yet routed it to a rail. Further checks and a status
-              update will follow.
-
-            * `Rejected`: terminal. The LFI rejected the payment before selecting a rail, and `rejectReasonCode`
-              carries the reason.
-          type: string
-          enum:
-            - Pending
-            - Rejected
-        creationDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment was created
-        statusUpdateDateTime:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: An ISO date-time representing when the payment status was last updated
-        OpenFinanceBilling:
-          $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
-        rejectReasonCode:
-          $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCode'
-    CbuaePatchPaymentRecordBody:
-      description: >
-        Describes the fields to be patched and their corresponding values.
-
-        `paymentResponse.paymentRail` selects the body. The LFI MUST send it on every patch, and the rail it names
-        determines which statuses the payment can move to, which of the remaining fields the LFI may send, and which
-        reject reason code namespace applies. Each rail is described in its own Schema Object.
-
-        The rail records how the payment was **executed**, not how it was requested. Where an LFI's routing rules settle
-        an instant payment on another rail, the value reports the rail actually used.
-
-        * `AANI`: Settled over AANI, the UAE instant payment platform.
-
-        * `FTS`: Settled over UAEFTS, the CBUAE funds transfer system.
-
-        * `LFI`: Settled internally by the LFI. The debtor and creditor accounts are both held at the LFI, so the
-        payment was booked on the LFI's own ledger and did not reach an external rail.
-
-        Every reject reason code sent with a payment is namespaced to the rail named on it: `AANI.*` with `AANI`,
-        `FTS.*` with `FTS`, and `LFI.*` with `LFI`. A payment rejected at the LFI before it reached AANI or UAEFTS is
-        still reported against the rail it was routed to, and carries that rail's reason codes.
-
-        Where the rail issues an end to end transaction identifier, `paymentResponse.paymentTransactionId` carries it. A
-        payment booked on the LFI's own ledger has no such identifier.
-
-        A payment settles over exactly one rail. This holds for file payments as well as single payments — a file
-        payment is settled in its entirety over one rail, so a single value describes the whole record.
-      oneOf:
-        - $ref: '#/components/schemas/CbuaePatchPaymentRecordBodyAani'
-        - $ref: '#/components/schemas/CbuaePatchPaymentRecordBodyFts'
-        - $ref: '#/components/schemas/CbuaePatchPaymentRecordBodyLfi'
-      discriminator:
-        propertyName: paymentResponse.paymentRail
-        mapping:
-          AANI: '#/components/schemas/CbuaePatchPaymentRecordBodyAani'
-          FTS: '#/components/schemas/CbuaePatchPaymentRecordBodyFts'
-          LFI: '#/components/schemas/CbuaePatchPaymentRecordBodyLfi'
-    CbuaePatchPaymentRecordBodyAani:
-      description: >
-        A patch to a payment the LFI has routed to AANI, the UAE instant payment platform.
-      type: object
-      required:
-        - paymentResponse.paymentRail
-        - paymentResponse.status
-      additionalProperties: false
-      properties:
-        paymentResponse.paymentRail:
-          description: >
-            Identifies AANI as the rail the payment was routed to.
-          type: string
-          enum:
-            - AANI
-          example: AANI
-        paymentResponse.status:
-          description: >
-            The current status of the payment, mapped to the payment state model defined in the Open Finance Framework
-            standards.
-
-            * `AcceptedSettlementCompleted`: **not terminal.** The LFI has passed the payment to AANI and is awaiting
-              confirmation. Once AANI confirms the payment the LFI MUST patch the record again, to
-              `AcceptedWithoutPosting`.
-
-            * `AcceptedWithoutPosting`: terminal. AANI has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `paymentResponse.rejectReasonCode` MUST be
-              sent with it.
-          type: string
-          enum:
-            - AcceptedSettlementCompleted
-            - AcceptedWithoutPosting
-            - Rejected
-        paymentResponse.paymentTransactionId:
-          description: |
-            The AANI-generated end to end transaction identifier, as issued to the Originating LFI. This is not the
-            same value as the `transactionId` in the Bank Data Sharing API.
-
-            The LFI MUST populate this field once AANI has issued it — that is, alongside
-            `AcceptedSettlementCompleted` and `AcceptedWithoutPosting`. It is omitted where the payment was rejected
-            before AANI issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
-        paymentResponse.rejectReasonCode:
-          $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeAani'
-    CbuaePatchPaymentRecordBodyFts:
-      description: >
-        A patch to a payment the LFI has routed to UAEFTS, the CBUAE funds transfer system.
-      type: object
-      required:
-        - paymentResponse.paymentRail
-        - paymentResponse.status
-      additionalProperties: false
-      properties:
-        paymentResponse.paymentRail:
-          description: >
-            Identifies UAEFTS as the rail the payment was routed to.
-          type: string
-          enum:
-            - FTS
-          example: FTS
-        paymentResponse.status:
-          description: >
-            The current status of the payment, mapped to the payment state model defined in the Open Finance Framework
-            standards.
-
-            * `AcceptedSettlementCompleted`: **not terminal.** The LFI has passed the payment to UAEFTS and is awaiting
-              confirmation. Once UAEFTS confirms the payment the LFI MUST patch the record again, to
-              `AcceptedCreditSettlementCompleted`.
-
-            * `AcceptedCreditSettlementCompleted`: terminal. UAEFTS has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `paymentResponse.rejectReasonCode` MUST be
-              sent with it.
-          type: string
-          enum:
-            - AcceptedSettlementCompleted
-            - AcceptedCreditSettlementCompleted
-            - Rejected
-        paymentResponse.paymentTransactionId:
-          description: |
-            The UAEFTS-generated end to end transaction identifier, as issued to the Originating LFI. This is not the
-            same value as the `transactionId` in the Bank Data Sharing API.
-
-            The LFI MUST populate this field once UAEFTS has issued it — that is, alongside
-            `AcceptedSettlementCompleted` and `AcceptedCreditSettlementCompleted`. It is omitted where the payment was
-            rejected before UAEFTS issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
-        paymentResponse.rejectReasonCode:
-          $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeFts'
-    CbuaePatchPaymentRecordBodyLfi:
-      description: >
-        A patch to a payment the LFI settled on its own ledger. The debtor and creditor accounts are both held at the
-        LFI, so the payment did not reach an external rail.
-      type: object
-      required:
-        - paymentResponse.paymentRail
-        - paymentResponse.status
-      additionalProperties: false
-      properties:
-        paymentResponse.paymentRail:
-          description: >
-            Identifies the LFI's own ledger as where the payment was settled.
-          type: string
-          enum:
-            - LFI
-          example: LFI
-        paymentResponse.status:
-          description: >
-            The current status of the payment, mapped to the payment state model defined in the Open Finance Framework
-            standards.
-
-            * `AcceptedCreditSettlementCompleted`: terminal. The LFI has booked the payment on its own ledger and the
-              funds are available to the creditor.
-
-            * `Rejected`: terminal. The payment will not be settled, and `paymentResponse.rejectReasonCode` MUST be
-              sent with it.
-
-            Both statuses are terminal. Settlement is internal to the LFI, so there is no hand-off to an external rail
-            to report as an intermediate step.
-          type: string
-          enum:
-            - AcceptedCreditSettlementCompleted
-            - Rejected
-        paymentResponse.rejectReasonCode:
-          $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeLfi'
-    AEServiceInitiationOpenFinancePaymentBilling:
-      type: object
-      properties:
-        Type:
-          type: string
-          enum:
-            - Collection
-            - LargeValueCollection
-            - PushP2P
-            - PullP2P
-            - Me2Me
-          description: The type payment for billing
-        MerchantId:
-          description: MerchantId
-          type: string
-          minLength: 8
-          maxLength: 20
-        NumberOfSuccessfulTransactions:
-          type: integer
-          description: |
-            Number of individual transactions successfully executed by the LFI.
-            This is returned by the LFI after the file is fully processed.
       additionalProperties: false
     AEInsuranceConsentBody:
       type: object
@@ -2016,7 +734,6 @@ components:
             - FinancialAdvice
       description: Billing parameters specified by the TPP
       additionalProperties: false
-
     AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingFromDate:
       type: string
       format: date
@@ -2029,7 +746,6 @@ components:
 
 
         All dates in the JSON payloads are represented in ISO 8601 date format.  For example: 2025-01-01
-
     AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingToDate:
       type: string
       format: date
@@ -2041,9 +757,7 @@ components:
         transaction or the last statement generated.
 
 
-        All dates in the JSON payloads are represented in ISO 8601 date format.  For example: 2025-12-31    
-
-
+        All dates in the JSON payloads are represented in ISO 8601 date format.  For example: 2025-12-31
     AEAccountAccessConsentBody:
       type: object
       required:
@@ -2425,13 +1139,6 @@ components:
             additionalProperties: false
           additionalProperties: false
       additionalProperties: false
-    AEReference:
-      description: |
-        A reason or reference in relation to a payment.
-        Reason or reference for the beneficiary regarding the Payment
-      type: string
-      minLength: 1
-      maxLength: 35
     AEPaymentConsentResponse:
       description: |
         Payment Consent Response Schema
@@ -2556,26 +1263,6 @@ components:
           - ReadBalances
           - ReadRefundAccount
       minItems: 1
-    AEFileNumberOfTransactions:
-      type: integer
-      description: |
-        Number of individual transactions contained in the payment information group.
-    AEControlSum:
-      description: |
-        Total of all individual amounts included in the group, irrespective of currencies.
-      type: string
-      pattern: ^\d{1,16}\.\d{2}$
-      example: '100.00'
-    AEFileType:
-      type: string
-      description: Specifies the payment file type
-      minLength: 1
-      maxLength: 40
-    AEFileHash:
-      type: string
-      description: A base64 encoding of a SHA256 hash of the file to be uploaded.
-      minLength: 1
-      maxLength: 44
     AEConsentExpirationDateTime:
       allOf:
         - $ref: '#/components/schemas/AEDateTime'
@@ -2775,30 +1462,6 @@ components:
           description: |
             The Sponsored TPP Identification
       additionalProperties: false
-    AEFilePaymentConsent:
-      type: object
-      description: |
-        A file based payment consent.
-        A Consent definition for defining Multi Payments
-      required:
-        - FileType
-        - FileHash
-        - NumberOfTransactions
-        - ControlSum
-      properties:
-        FileType:
-          $ref: '#/components/schemas/AEFileType'
-        FileHash:
-          $ref: '#/components/schemas/AEFileHash'
-        FileReference:
-          $ref: '#/components/schemas/AEReference'
-        NumberOfTransactions:
-          $ref: '#/components/schemas/AEFileNumberOfTransactions'
-        ControlSum:
-          $ref: '#/components/schemas/AEControlSum'
-        RequestedExecutionDate:
-          $ref: '#/components/schemas/AERequestedExecutionDate'
-      additionalProperties: false
     AEPaymentConsumption:
       type: object
       description: |
@@ -2936,173 +1599,6 @@ components:
       description: |
         * Payments: Specifies the start date of when a payment schedule begins.
       format: date
-    AEPaymentAndFilePaymentRequest:
-      description: The payment request body as received from the TPP
-      oneOf:
-        - $ref: '#/components/schemas/AEPaymentRequest'
-        - $ref: '#/components/schemas/AEFilePaymentRequest'
-    AEPaymentRequest:
-      description: |
-        Payment Request Schema
-      type: object
-      additionalProperties: false
-      required:
-        - Data
-      properties:
-        Data:
-          type: object
-          additionalProperties: false
-          required:
-            - ConsentId
-            - Instruction
-            - PaymentPurposeCode
-          properties:
-            ConsentId:
-              $ref: '#/components/schemas/AEConsentId'
-            Instruction:
-              $ref: '#/components/schemas/AEPaymentInstruction'
-            CurrencyRequest:
-              $ref: '#/components/schemas/AECurrencyRequest'
-            PersonalIdentifiableInformation:
-              description: >-
-                Personal Identifiable Information, represented in both encoded and decoded form using a `anyOf`, to help
-                implementers readily understand both the structure and serialized form of the property.
-
-
-                **Implementations MUST reflect the AEJWEPaymentPII Schema Object** **structure and the notes provided**
-                **on implementing a JWS and JWE. The decoded forms of PII objects are for guidance on content only,**
-                **to help with parsing the JWS payload once the JWE has been decrypted.**
-
-
-              anyOf:
-                - $ref: '#/components/schemas/AEPaymentInitiationPII'
-                - $ref: '#/components/schemas/AEBankServiceInitiation.AEDomesticPaymentPIIProperties'
-                - $ref: '#/components/schemas/AEBankServiceInitiation.AEInternationalPaymentPIIProperties'
-                - $ref: '#/components/schemas/AEJWEPaymentPII'
-            PaymentPurposeCode:
-              $ref: '#/components/schemas/AEPaymentPurposeCode'
-            DebtorReference:
-              $ref: '#/components/schemas/AEServiceInitiationDebtorReference'
-            CreditorReference:
-              $ref: '#/components/schemas/AEServiceInitiationCreditorReference'
-    AEPaymentInitiationPII:
-      title: Payment Initiation PII, to v2.0
-      type: object
-      additionalProperties: false
-      deprecated: true
-      description: >
-        Elements of Personal Identifiable Information data.
-
-        **PII up to v2.0. Deprecated at v2.1 for description split by Domestic and International payments.**
-      properties:
-        Initiation:
-          type: object
-          additionalProperties: false
-          description: >-
-            The Initiation payload is sent by the initiating party to the LFI. It is used to request movement of funds
-            from the debtor account to a creditor.
-          properties:
-            CreditorAgent:
-              $ref: '#/components/schemas/AECreditorAgent'
-            Creditor:
-              type: object
-              additionalProperties: false
-              description: Party to which an amount of money is due.
-              properties:
-                Name:
-                  description: |
-                    Name by which a party is known and which is usually used to identify that party.
-                    This may be used to identify the Creditor for international payments.
-                  type: string
-                  minLength: 1
-                  maxLength: 140
-                PostalAddress:
-                  $ref: '#/components/schemas/AEAddress'
-            CreditorAccount:
-              $ref: '#/components/schemas/AECreditorAccount'
-            ConfirmationOfPayeeResponse:
-              $ref: '#/components/schemas/AEConfirmationOfPayeeResponse'
-        Risk:
-          $ref: '#/components/schemas/AERisk'
-    AECreditorAgent:
-      description: |
-        Refers to the Financial Institution.
-      type: object
-      required:
-        - SchemeName
-        - Identification
-      properties:
-        SchemeName:
-          description: |
-            The identification scheme for uniquely identifying the Agent.
-
-            * BICFI: The BIC/SWIFT Code
-            * Other: Identifier based on non-SWIFT payment system or local market scheme.
-          type: string
-          enum:
-            - BICFI
-            - Other
-        Identification:
-          description: Identifier that can be the BIC/SWIFT code or target payment scheme identifier.
-          type: string
-        Name:
-          description: Name by which an agent is known and which is usually used to identify that agent.
-          type: string
-          minLength: 1
-          maxLength: 140
-        PostalAddress:
-          $ref: '#/components/schemas/AEAddress'
-    AECreditorAccount:
-      description: Unambiguous identification of the account of the creditor to which a credit entry will be posted.
-      type: object
-      additionalProperties: false
-      required:
-        - SchemeName
-        - Identification
-        - Name
-      properties:
-        SchemeName:
-          $ref: '#/components/schemas/AECreditorExternalAccountIdentificationCode'
-        Identification:
-          $ref: '#/components/schemas/AEIdentification'
-        Name:
-          $ref: '#/components/schemas/AEName'
-        TradingName:
-          $ref: '#/components/schemas/AETradingName'
-    AEFilePaymentRequest:
-      description: |
-        File Payment Request Schema
-      type: object
-      additionalProperties: false
-      required:
-        - Data
-      properties:
-        Data:
-          type: object
-          additionalProperties: false
-          required:
-            - ConsentId
-            - PaymentPurposeCode
-          properties:
-            ConsentId:
-              $ref: '#/components/schemas/AEConsentId'
-            Instruction:
-              $ref: '#/components/schemas/AEFilePaymentConsent'
-            PaymentPurposeCode:
-              $ref: '#/components/schemas/AEPaymentPurposeCode'
-            DebtorReference:
-              $ref: '#/components/schemas/AEServiceInitiationDebtorReference'
-    AEPaymentInstruction:
-      type: object
-      additionalProperties: false
-      required:
-        - Amount
-      description: >-
-        The Initiation payload is sent by the initiating party to the LFI. It is used to request movement of funds from
-        the debtor account to a creditor for a single payment.
-      properties:
-        Amount:
-          $ref: '#/components/schemas/AEActiveCurrencyAmount'
     consent:
       description: >
 
@@ -3125,40 +1621,6 @@ components:
               enum:
                 - App
                 - Web
-    multiConsentResponse:
-      type: object
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/consent'
-        meta:
-          $ref: '#/components/schemas/paginationMetadata'
-    ConsentPostResponse:
-      type: object
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          $ref: '#/components/schemas/newConsent'
-        meta:
-          $ref: '#/components/schemas/meta'
-    RevokeConsent:
-      type: object
-      required:
-        - revokedBy
-      properties:
-        revokedBy:
-          $ref: '#/components/schemas/AERevokedBy'
-        revokedByPsu:
-          type: object
-          properties:
-            userId:
-              type: string
     AuthorizationDetails:
       description: |
         The request body for creating a new consent.
@@ -3334,17 +1796,8 @@ components:
             ^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)
           deprecated: true
         - description: |-
-            **DEPRECATED AT v2.1 - OPEN STRINGS ARE NO LONGER ALLOWED.**
-
             A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of
             a given payment instruction.
-          type: string
-          minLength: 1
-          maxLength: 35
-          deprecated: true
-        - description: |-
-            A Creditor Reference is a note for a given Creditor or Creditor LFI that supports reconciliation of
-            a given payment instruction. Supports a restricted character set.
           type: string
           minLength: 1
           maxLength: 35
@@ -3386,17 +1839,8 @@ components:
           pattern: ^TPP=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12},(Merchant=[A-Z0-9]{3}-[A-Z]{4}-TL.+-[0-9]{4}|),BIC=[A-Z0-9]{4}[A-Z0-9]{2}[A-Z0-9]{2}([A-Z0-9]{3}){0,1}($|,.+$)
           deprecated: true
         - description: |-
-            **DEPRECATED AT v2.1 - OPEN STRINGS ARE NO LONGER ALLOWED.**
-
             A Debtor Reference is a note is for the reference of a given User that may be available as
             additional information in relation to a given payment instruction.
-          type: string
-          minLength: 1
-          maxLength: 35
-          deprecated: true
-        - description: |-
-            A Debtor Reference is a note is for the reference of a given User that may be available as
-            additional information in relation to a given payment instruction. Supports a restricted character set.
           type: string
           minLength: 1
           maxLength: 35
@@ -3460,10 +1904,16 @@ components:
       description: A Consent definition for defining Bulk/Batch Payments
       additionalProperties: false
     AEServiceInitiationReference:
-      type: string
-      minLength: 1
-      maxLength: 35
-      description: A reason or reference in relation to a payment.
+      anyOf:
+        - type: string
+          minLength: 1
+          maxLength: 120
+          description: >
+            **DEPRECATED AT v2.1**. A reason or reference in relation to a payment.
+        - type: string
+          minLength: 1
+          maxLength: 35
+          description: A reason or reference in relation to a payment.
     AEServiceInitiationLongLivedPaymentConsent:
       type: object
       required:
@@ -3662,10 +2112,10 @@ components:
         PaymentExecutionDate:
           type: string
           format: date
-          description: |2-
-                Used to specify the expected payment execution date/time.
-                All dates in the JSON payloads are represented in ISO 8601 date format.
-                An example is: 2023-04-05
+          description: |
+            Used to specify the expected payment execution date/time.
+            All dates in the JSON payloads are represented in ISO 8601 date format.
+            An example is: 2023-04-05
         Amount:
           $ref: '#/components/schemas/AEAmountAndCurrency'
       additionalProperties: false
@@ -3716,9 +2166,9 @@ components:
         payment consent will be authorized by the User during the payment journey, and the payment will be executed by
         the TPP immediately.
 
-        **Support for Single Future-Dated Payments warehoused at the LFI is removed from v2.1 of the standards.**
-        **This property is therefore deprecated, and the Schema Object is retained to provide compatibility with**
-        **existing consent resources.**
+        **Support for Single Future-Dated Payments warehoused at the LFI is removed from v2.1 of the standards.** **This
+        property is therefore deprecated, and the Schema Object is retained to provide compatibility with** **existing
+        consent resources.**
       additionalProperties: false
       deprecated: true
     AEServiceInitiationSingleInstantPayment:
@@ -3784,15 +2234,14 @@ components:
         using JSON data structures.
 
         The decrypted JWS content has the structure of the AEPaymentPII schema.
-      example: eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkEyNTZHQ00ifQ....
+      example: eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkEyNTZHQ00ifQ.... 
     AEPaymentConsentPII:
       title: Payment Initiation PII, to v2.0
       type: object
       additionalProperties: false
       deprecated: true
-      description: >
+      description: |
         Elements of Personal Identifiable Information data.
-
         **PII up to v2.0. Deprecated at v2.1 for description split by Domestic and International payments.**
       properties:
         Initiation:
@@ -3846,7 +2295,7 @@ components:
               items:
                 $ref: '#/components/schemas/AECreditor'
         Risk:
-          $ref: '#/components/schemas/AERisk'
+          $ref: '#/components/schemas/AERisk' 
     AECreditor:
       additionalProperties: false
       type: object
@@ -3862,10 +2311,10 @@ components:
           properties:
             SchemeName:
               description: |
-               The identification scheme for uniquely identifying the Agent.
+                The identification scheme for uniquely identifying the Agent.
 
-                * BICFI: The BIC/SWIFT Code
-                * Other: Identifier based on non-SWIFT payment system or local market scheme.
+                 * BICFI: The BIC/SWIFT Code
+                 * Other: Identifier based on non-SWIFT payment system or local market scheme.
               type: string
               enum:
                 - BICFI
@@ -3902,6 +2351,7 @@ components:
             - SchemeName
             - Identification
             - Name
+            - Type
           properties:
             SchemeName:
               $ref: '#/components/schemas/AECreditorExternalAccountIdentificationCode'
@@ -3911,8 +2361,57 @@ components:
               $ref: '#/components/schemas/AEName'
             TradingName:
               $ref: '#/components/schemas/AETradingName'
+            Type:
+              type: string
+              enum:
+                - Individual
+                - Merchant
+                - Business
+                - Charity
+                - GovernmentBody
+                - Other
+              description: The Creditor (Payee) Type, based on an allowed list.
         ConfirmationOfPayeeResponse:
           $ref: '#/components/schemas/AEConfirmationOfPayeeResponse'
+    
+    AERisk:
+      additionalProperties: false
+      description: >
+        The Risk section is sent by the TPP to the LFI. It is used to specify additional details for risk/fraud scoring
+        regarding Payments.
+      type: object
+      properties:
+        DebtorIndicators:
+          $ref: '#/components/schemas/AEDebtorIndicators'
+        DestinationDeliveryAddress:
+          type: object
+          description: |
+            Destination Delivery Address
+          properties:
+            RecipientType:
+              type: string
+              description: The recipient of the goods whether an individual or a corporation.
+              enum:
+                - Individual
+                - Corporate
+            RecipientName:
+              type: object
+              description: The name of the recipient of the goods, whether an individual or a corporation.
+              properties:
+                en:
+                  type: string
+                  description: English value of the string
+                ar:
+                  type: string
+                  description: Arabic value of the string
+              additionalProperties: false
+            NationalAddress:
+              $ref: '#/components/schemas/AEAddress'
+          additionalProperties: false
+        TransactionIndicators:
+          $ref: '#/components/schemas/AETransactionIndicators'
+        CreditorIndicators:
+          $ref: '#/components/schemas/AECreditorIndicators'
     AEDebtorIndicators:
       type: object
       description: |
@@ -4275,44 +2774,6 @@ components:
 
             like their typing speed and typing patterns.
       additionalProperties: false
-    AERisk:
-      additionalProperties: false
-      description: >
-        The Risk section is sent by the TPP to the LFI. It is used to specify additional details for risk/fraud scoring
-        regarding Payments.
-      type: object
-      properties:
-        DebtorIndicators:
-          $ref: '#/components/schemas/AEDebtorIndicators'
-        DestinationDeliveryAddress:
-          type: object
-          description: |
-            Destination Delivery Address
-          properties:
-            RecipientType:
-              type: string
-              description: The recipient of the goods whether an individual or a corporation.
-              enum:
-                - Individual
-                - Corporate
-            RecipientName:
-              type: object
-              description: The name of the recipient of the goods, whether an individual or a corporation.
-              properties:
-                en:
-                  type: string
-                  description: English value of the string
-                ar:
-                  type: string
-                  description: Arabic value of the string
-              additionalProperties: false
-            NationalAddress:
-              $ref: '#/components/schemas/AEAddress'
-          additionalProperties: false
-        TransactionIndicators:
-          $ref: '#/components/schemas/AETransactionIndicators'
-        CreditorIndicators:
-          $ref: '#/components/schemas/AECreditorIndicators'
     AETransactionIndicators:
       type: object
       description: |
@@ -4642,95 +3103,6 @@ components:
             additionalProperties: false
           minItems: 1
           description: One-or-more addresses related to a given subject.
-    AEAddressTypeCode:
-      description: Specifies the nature of the Address.
-      type: string
-      enum:
-        - Business
-        - Correspondence
-        - Residential
-      example: Residential
-    AEShortAddress:
-      description: >-
-        A short address consists of four letters: region code, branch code, division code, unique code and a four-digit
-        number for the building.
-      type: string
-      minLength: 1
-      maxLength: 8
-      example: ABCD1234
-    AEUnitNumber:
-      description: Identifies the unit or apartment number.
-      type: string
-      minLength: 1
-      maxLength: 10
-      example: '6'
-    AEFloorNumber:
-      description: Identifies the building floor number.
-      type: string
-      minLength: 1
-      maxLength: 10
-      example: '2'
-    AEBuildingNumber:
-      description: Identifies the building number.
-      type: string
-      minLength: 1
-      maxLength: 10
-      example: '34'
-    AEStreetName:
-      description: Identifies the street name or road.
-      type: string
-      minLength: 1
-      maxLength: 70
-      example: Omar Bin Hassan Street
-    AEDistrict:
-      description: Identifies the district of a city.
-      type: string
-      minLength: 1
-      maxLength: 35
-      example: Olaya Dist.
-    AECountryCode:
-      description: Indicates the country code in which the address is located (References ISO 3166-1 alpha-2).
-      type: string
-      pattern: ^[A-Z]{2,2}$
-      example: SA
-    AEPostalCode:
-      description: ' Identifies the postal code; a unique code assigned to a specific geographic area for efficient mail sorting and delivery purposes.'
-      type: string
-      minLength: 1
-      maxLength: 10
-      example: '12345'
-    AEPOBox:
-      description: ' Identifies the POBox.'
-      type: string
-      minLength: 1
-      maxLength: 10
-      example: '11562'
-    AEZipCode:
-      description: >-
-        Identifies the ZIP code; a unique code assigned to a specific geographic area for efficient mail sorting and
-        delivery purposes.
-      type: string
-      minLength: 1
-      maxLength: 10
-      example: '12366'
-    AESecondaryNumber:
-      description: 4 numbers representing the accurate location coordinates of the address
-      type: string
-      minLength: 4
-      maxLength: 4
-      example: '1233'
-    AECity:
-      description: Identifies the name of the city or town where the address is situated.
-      type: string
-      minLength: 1
-      maxLength: 35
-      example: Riyadh
-    AERegion:
-      description: Identifies the region.
-      type: string
-      minLength: 1
-      maxLength: 35
-      example: North
     AECreditorExternalAccountIdentificationCode:
       description: Name of the identification scheme, in a coded form as published in an external list.
       type: string
@@ -4903,6 +3275,7 @@ components:
           description: Identifier
           example: abcd1234
       additionalProperties: false
+
     EventNotification:
       type: object
       description: |
@@ -4931,367 +3304,128 @@ components:
               example: false
           additionalProperties: false
       additionalProperties: false
-    HealthCheckCertResponse:
+
+    ValidateResponseStatusEnum:
+      type: string
+      enum:
+        - valid
+        - invalid
+    consentValidateResponse:
       type: object
       properties:
-        connectionEstablished:
-          type: boolean
-        mtlsStatus:
-          type: string
-          enum:
-            - established
-            - not-established
-        hostName:
-          type: string
-        clientCertificate:
+        data:
           type: object
           properties:
-            subject:
+            status:
+              $ref: '#/components/schemas/ValidateResponseStatusEnum'
+            code:
               type: string
-            issuer:
+            description:
               type: string
-          required:
-            - subject
-            - issuer
-      required:
-        - connectionEstablished
-        - mtlsStatus
-        - hostName
-        - clientCertificate
-    AEConsentUsage:
+        meta:
+          $ref: '#/components/schemas/Meta'
+    Meta:
       type: object
-      description: |
-        Contains information about the last time the consent was used.
-      properties:
-        lastDataShared:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: >-
-                The last time the data was shared with the TPP. This is updated by the CM when the data is shared with
-                the TPP.
-        lastServiceInitiationAttempt:
-          allOf:
-            - $ref: '#/components/schemas/AEDateTime'
-            - description: >-
-                The last time the payment was initiated by TPP. This is updated by the CM when payment is initiated by
-                TPP.
-    paginationMetadata:
-      description: Pagination metadata that describes the response
+      additionalProperties: false
+    Error:
+      description: Default error response payload structure for Ozone Connect
       type: object
-      required:
-        - totalPages
-        - totalRecords
       properties:
-        pageNumber:
-          description: The current page number
-          type: integer
-          minimum: 1
-        pageSize:
-          description: Number of records in the current page
-          type: integer
-          minimum: 1
-        totalPages:
-          description: Total number of pages available for response
-          type: integer
-          minimum: 0
-        totalRecords:
-          description: Total number of records across all pages
-          type: integer
-          minimum: 0
-    insurancePolicyIds:
+        errorCode:
+          type: string
+          description: Error code identifying the problem that occurred
+        errorMessage:
+          type: string
+          description: Message describing what problem has occurred
+    AEAddressTypeCode:
+      description: Specifies the nature of the Address.
+      type: string
+      enum:
+        - Business
+        - Correspondence
+        - Residential
+      example: Residential
+    AEShortAddress:
       description: >-
-        List of insurance policy identifiers that have been selected and authorized by the User when consenting to
-        insurance policy access. The LFI **MUST** patch these values onto the consent after the User has selected them,
-        to ensure the policies are correctly retrieved based on the consent in operations such as `get
-        /life-insurance-policies`.
-      type: array
-      minItems: 1
-      items:
-        description: >-
-          An insurance policy identifier, set by the LFI to uniquely identify a given policy when addressed through an
-          API operation e.g. `get /life-insurance-policies/{insurancePolicyId}`. For the sake of clarify this is **NOT**
-          the policy reference understood by the User.
-        type: string
-    AEInsurance.AEInsuranceQuoteEventBrokerInstructions:
-      type: object
-      minProperties: 1
-      properties:
-        ActionRequired:
-          type: string
-          minLength: 1
-          maxLength: 1000
-          description: Free-text description that provides confirmation of the action required by the Broker.
-        Reason:
-          allOf:
-            - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteStatusUpdateReason'
-          description: Free-text explanation of why the action must be performed by the Broker.
-        Url:
-          type: string
-          format: uri
-          description: >-
-            URL provided by the LFI for the Broker to collect a one-off premium payment or set up recurring premium
-            payments.
-    AEInsurance.AEInsuranceQuoteStatusUpdateReason:
+        A short address consists of four letters: region code, branch code, division code, unique code and a four-digit
+        number for the building.
       type: string
       minLength: 1
-      maxLength: 1000
-    AEInsurance.AEDocumentProperties:
-      type: object
-      required:
-        - Type
-        - FileName
-        - ContentType
-        - Content
-        - HashType
-        - Hash
-      properties:
-        Type:
-          type: string
-          description: The type of document that has been provided.  For example, Policy Booklet, Terms & Conditions
-        FileName:
-          type: string
-          description: >-
-            Original file name for operator reference (no paths). Should include  a suitable extension (e.g.,
-            policy.pdf, terms.pdf).
-        ContentType:
-          type: string
-          enum:
-            - application/pdf
-            - image/jpeg
-            - image/png
-          description: >-
-            Content (MIME) type of the document, using IANA-registered media types, and based on types supported in the
-            Open Finance Framework.
-        Content:
-          type: string
-          format: base64
-          description: >-
-            Base64-encoded representation of the document content.  The encoded string must be generated from the raw
-            file bytes and decoded by the LFI to restore the original file.
-        HashType:
-          type: string
-          enum:
-            - SHA256
-          description: Approach used to create checksum or hash of the file. SHA256 is supported.
-        Hash:
-          type: string
-          description: >-
-            Checksum of the original file bytes created using the method indicated by `HashType`. Required to enable
-            integrity verification by comparing with the hash or checksum calculated on the decoded file.
-        AdditionalInformation:
-          type: string
-          maxLength: 1000
-          description: Optional free text notes providing context on the document.
-    AEInsurance.AEInsuranceEmirate:
+      maxLength: 8
+      example: ABCD1234
+    AEUnitNumber:
+      description: Identifies the unit or apartment number.
       type: string
-      enum:
-        - AbuDhabi
-        - Ajman
-        - Dubai
-        - Fujairah
-        - RasAlKhaimah
-        - Sharjah
-        - UmmAlQuwain
-    AEInsurance.AEInsuranceQuoteEventCompletedStatus:
-      title: Completed Status
-      type: object
-      required:
-        - QuoteStatus
-        - PolicyTerm
-        - Premium
-        - CustomerPaidInFull
-        - PolicyCountrySubDivision
-      properties:
-        QuoteStatus:
-          type: string
-          enum:
-            - Completed
-          description: Completed status.
-        PolicyStartDate:
-          type: string
-          format: date
-          description: Policy start date
-        PolicyEndDate:
-          type: string
-          format: date
-          description: Policy end date
-        PolicyTerm:
-          type: string
-          pattern: ^P(\d+Y)?(\d+M)?$
-          format: duration
-          description: The insurance policy term in years and months, using ISO 8601 compatible duration format
-          example: P2Y3M
-        Premium:
-          type: object
-          properties:
-            OneYearPremiumExcludingVAT:
-              allOf:
-                - $ref: '#/components/schemas/AEInsurance.AEActiveCurrencyAmount'
-              description: >-
-                The details of the final insurance premium, reflecting the total value of premiums excluding VAT payable
-                either annually or over the life of the policy when the coverage period is less than one year.
-            VATAmount:
-              allOf:
-                - $ref: '#/components/schemas/AEInsurance.AEActiveCurrencyAmount'
-              description: The Premium VAT amount.
-            TotalOneYearPremium:
-              allOf:
-                - $ref: '#/components/schemas/AEInsurance.AEActiveCurrencyAmount'
-              description: >-
-                The details of the final insurance premium, reflecting the total value of premiums including VAT payable
-                either annually or over the life of the policy when the coverage period is less than one year.
-            TotalPolicyPremium:
-              allOf:
-                - $ref: '#/components/schemas/AEInsurance.AEActiveCurrencyAmount'
-              description: The total value of premiums, including VAT, payable over the life of the policy.
-          required:
-            - OneYearPremiumExcludingVAT
-            - VATAmount
-            - TotalOneYearPremium
-          description: Details for the policy premium.
-        CustomerSalary:
-          type: string
-          enum:
-            - Under4K
-            - Over4K
-          description: >-
-            Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
-            for Health Insurance.
-        Commission:
-          type: object
-          properties:
-            CommissionAmount:
-              allOf:
-                - $ref: '#/components/schemas/AEInsurance.AEActiveCurrencyAmount'
-              description: >-
-                The total monetary value of the commission paid to the TPP if the User proceeds with the quote
-                application and purchases the policy based on the quote information provided.
-            PaymentMethod:
-              type: string
-              enum:
-                - DirectToTPP
-                - ThroughAPIHub
-              description: >-
-                The method to be used to pay the commission to the TPP if the User elects to proceed with the
-                application and successfully purchases the policy.
-          required:
-            - PaymentMethod
-          description: Commission amount, where the LFI is responsible for calculating the value.
-        Documents:
-          type: array
-          items:
-            $ref: '#/components/schemas/AEInsurance.AEDocumentProperties'
-          minItems: 1
-          description: Policy documents to be issued to the Customer via the TPP.
-        CustomerPaidInFull:
-          type: boolean
-          description: Indicates the Customer has paid for the policy in full.
-        PolicyCountrySubDivision:
-          allOf:
-            - $ref: '#/components/schemas/AEInsurance.AEInsuranceEmirate'
-          description: The Emirate state where the policy was issued.
-      description: Quote has been Completed.
-    AEInsurance.AEActiveCurrencyAmount:
-      type: object
-      required:
-        - Currency
-        - Amount
-      properties:
-        Currency:
-          $ref: '#/components/schemas/AEInsurance.AEActiveOrHistoricCurrencyCode'
-        Amount:
-          $ref: '#/components/schemas/AEInsurance.AEActiveOrHistoricAmount'
-      description: The Currency and Amount relating to the Payment, Refund or Request to Pay
-    AEInsurance.AEActiveOrHistoricAmount:
+      minLength: 1
+      maxLength: 10
+      example: '6'
+    AEFloorNumber:
+      description: Identifies the building floor number.
       type: string
-      pattern: ^\d{1,16}\.\d{2}$
+      minLength: 1
+      maxLength: 10
+      example: '2'
+    AEBuildingNumber:
+      description: Identifies the building number.
+      type: string
+      minLength: 1
+      maxLength: 10
+      example: '34'
+    AEStreetName:
+      description: Identifies the street name or road.
+      type: string
+      minLength: 1
+      maxLength: 70
+      example: Omar Bin Hassan Street
+    AESecondaryNumber:
+      description: 4 numbers representing the accurate location coordinates of the address
+      type: string
+      minLength: 4
+      maxLength: 4
+      example: '1233'
+    AEDistrict:
+      description: Identifies the district of a city.
+      type: string
+      minLength: 1
+      maxLength: 35
+      example: Olaya Dist.
+    AEPostalCode:
+      description: ' Identifies the postal code; a unique code assigned to a specific geographic area for efficient mail sorting and delivery purposes.'
+      type: string
+      minLength: 1
+      maxLength: 10
+      example: '12345'
+    AEPOBox:
+      description: ' Identifies the POBox.'
+      type: string
+      minLength: 1
+      maxLength: 10
+      example: '11562'
+    AEZipCode:
       description: >-
-        A number of monetary units specified in an active currency where the unit of currency is explicit and compliant
-        with ISO 4217.
-      example: '100.00'
-    AEInsurance.AEActiveOrHistoricCurrencyCode:
+        Identifies the ZIP code; a unique code assigned to a specific geographic area for efficient mail sorting and
+        delivery purposes.
       type: string
-      pattern: ^[A-Z]{3,3}$
-      description: >-
-        A 3 character alphabetic code allocated to a currency under an international currency identification scheme, as
-        described in the latest edition of the international standard ISO 4217 'Codes for the representation of
-        currencies and funds'.
-      example: AED
-    AEInsurance.AEInsuranceQuoteNegativeTerminalStatusCodes:
+      minLength: 1
+      maxLength: 10
+      example: '12366'
+    AECity:
+      description: Identifies the name of the city or town where the address is situated.
       type: string
-      enum:
-        - Expired
-        - Rejected
-        - CustomerCancelled
-        - LFICancelled
-    AEInsurance.AEInsuranceEventCompletionPendingStatusCodes:
+      minLength: 1
+      maxLength: 35
+      example: Riyadh
+    AERegion:
+      description: Identifies the region.
       type: string
-      enum:
-        - ApplicationPending
-        - ApplicationApproved
-        - PaymentRequired
-        - PolicyIssued
-    AEInsurance.AEInsuranceQuoteEventTerminalStatus:
-      title: Terminal Status
-      type: object
-      required:
-        - QuoteStatus
-      properties:
-        QuoteStatus:
-          allOf:
-            - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteNegativeTerminalStatusCodes'
-          description: Terminal quote status.
-        Reason:
-          allOf:
-            - $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteStatusUpdateReason'
-          description: Optional explanation for the unsuccessful completion of the quote.
-      description: Quote status updates indicating a terminal state.
-    AEInsurance.AEInsuranceQuoteEventPendingCompletionStatus:
-      title: Pending Completion Status
-      type: object
-      required:
-        - QuoteStatus
-      properties:
-        QuoteStatus:
-          allOf:
-            - $ref: '#/components/schemas/AEInsurance.AEInsuranceEventCompletionPendingStatusCodes'
-          description: Pending completion quote status.
-        BrokerInstructions:
-          type: array
-          items:
-            $ref: '#/components/schemas/AEInsurance.AEInsuranceQuoteEventBrokerInstructions'
-          minItems: 1
-          description: Instructions and actions required by the Broker to allow the application to proceed.
-        Documents:
-          type: array
-          items:
-            $ref: '#/components/schemas/AEInsurance.AEDocumentProperties'
-          minItems: 1
-          description: Policy documents to be issued to the Customer via the TPP.
-        InsurancePolicyId:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceResourceIdentifierType'
-          description: Unique policy identifier for a given policy. Optionally provided when the `QuoteStatus` is 
-            `PolicyIssued`
-        ConfirmedPolicyStartDate:
-          $ref: '#/components/schemas/AEInsurancePolicyConfirmedPolicyStartDateStartDate1Type'
-        ConfirmedPolicyEndDate:
-          $ref: '#/components/schemas/AEInsurancePolicyConfirmedPolicyEndDateStartDate1Type'
-      description: Quote status updates indicating a pending state, with optional instructions for TPPs.
-    AEInsurance.AEInsuranceQuoteEventAvailableStatus:
-      title: Available Status
-      type: object
-      required:
-        - QuoteStatus
-      properties:
-        QuoteStatus:
-          description: Available quote status.
-          type: string
-          enum:
-            - Available
-
-  # PII properties split between Domestic and International, as described by v2.1 of the standards
-
+      minLength: 1
+      maxLength: 35
+      example: North
+    AECountryCode:
+      description: Indicates the country code in which the address is located (References ISO 3166-1 alpha-2).
+      type: string
+      pattern: ^[A-Z]{2,2}$
+      example: SA
     AEBankServiceInitiationRichAuthorizationRequests.AEDomesticPaymentPII:
       type: object
       properties:
@@ -6489,118 +4623,111 @@ components:
       description: >-
         Name of the identification scheme, in a coded form as published in an external list. For international payments
         TPP may use `IBAN`, but must use `AccountNumber` where a local scheme is used to identify the Creditor Account.
-
-    AEBankServiceInitiation.AEDomesticPaymentPIIProperties:
-      title: Domestic Payment PII Schema Object
-      type: object
-      additionalProperties: false
-      description: Elements of Personal Identifiable Information data
-      properties:
-        Initiation:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEDomesticCreditor'
-        Risk:
-          $ref: '#/components/schemas/AERisk'
-
-    AEBankServiceInitiation.AEInternationalPaymentPIIProperties:
-      title: International Payment PII Schema Object
-      type: object
-      properties:
-        Initiation:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEInternationalCreditor'
-        Risk:
-          $ref: '#/components/schemas/AERisk'
-      additionalProperties: false
-
-    AEInsuranceResourceIdentifierType:
-      type: string
-      minLength: 1
-      maxLength: 128
-      description: |-
-        Unique identifier for a given insurance policy. 
-
-        A uuid v4 is recommended for consistency but not mandatory.
-
-    AEInsurancePolicyConfirmedPolicyStartDateStartDate1Type:
-      type: string
-      format: date
-      description: LFI confirmed or revised start date for policy plan at issuance. Optionally provided when 
-        `QuoteStatus` is `PolicyIssued`.
-
-    AEInsurancePolicyConfirmedPolicyEndDateStartDate1Type:
-      type: string
-      format: date
-      description: LFI confirmed or revised end date for policy plan at issuance. Optionally provided when 
-        `QuoteStatus` is `PolicyIssued`.
-
   parameters:
-    consentId:
-      name: consentId
-      in: path
+    aspspId:
+      name: o3-aspsp-id
+      in: header
       schema:
         type: string
       required: true
-      description: |
-        Identifies the consent by an id
-    id:
-      name: id
-      in: path
-      schema:
-        type: string
-      required: true
-      description: |
-        Identifies the payment by an id
-    userId:
-      name: userId
-      in: path
-      schema:
-        type: string
-      required: true
-      description: |
-        Identifies the PSU associated with a consent.
-
-        This should match up with the `psuIdentifier.userId` field.
-    page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      required: false
-      description: |
-        The page number to retrieve in a paginated response
-    pageSize:
-      name: pageSize
-      in: query
-      schema:
-        type: integer
-        minimum: 1
-      required: false
-      description: |
-        The maximum rows to retrieve in a given page. Defaults to 25 if not specified.
-    consentType:
-      name: consentType
-      in: query
-      schema:
-        type: string
-      description: Consents of particular accountId
-      required: false
-    status:
-      name: status
-      in: query
-      schema:
-        type: string
-      description: Status of the consent
-      required: false
-    logId:
-      name: logId
+      deprecated: true
       description: >-
-        Unique identifier for a given log entry, which relates to the original unique identifier created for resource.
-        For example, for an FX Quote this will be the `FxQuoteId` value.
-      in: path
-      required: true
+        Identifier for the financial institution that the request is targetted to. This header is deprecated and will be
+        removed in a future version of Ozone Connect. Use `o3-provider-id` instead.
+    providerId:
+      name: o3-provider-id
+      in: header
       schema:
         type: string
+      required: true
+      description: Identifier for the financial institution that the request is targetted to
+    callerOrgId:
+      name: o3-caller-org-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the organization calling the API
+    callerClientId:
+      name: o3-caller-client-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the OIDC clientId calling the API
+    callerSoftwareStatementId:
+      name: o3-caller-software-statement-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: An identifier for the software statement calling the API
+    apiUri:
+      name: o3-api-uri
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The parameterised URL of the API being called by the caller
+    apiOperation:
+      name: o3-api-operation
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The API operation carried out by the caller (e.g. GET, POST, PUT, DELETE, PATCH)
+    consentId:
+      name: o3-consent-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: The consentId for which this call is being made
+    callerInteractionId:
+      name: o3-caller-interaction-id
+      in: header
+      schema:
+        type: string
+      required: false
+      description: The interaction ID passed in by the caller, if any
+    ozoneInteractionId:
+      name: o3-ozone-interaction-id
+      in: header
+      schema:
+        type: string
+      required: true
+      description: >-
+        An interaction ID generated by Ozone if the caller did not send in one. If the callerInteractionId is specified,
+        this takes the same value.
+    psuIdentifier:
+      name: o3-psu-identifier
+      in: header
+      schema:
+        type: string
+      required: false
+      description: A Base64 encoded representation of the psuIdentifier JSON object.
   securitySchemes:
+    OzoneConnectApiKey:
+      description: >-
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using an API Key, which
+        is a secret shared between the API Hub and the LFI.
+      type: apiKey
+      in: header
+      name: Authorization
+    OzoneConnectClientCredentials:
+      type: oauth2
+      description: >
+        Communications between the API Hub and the LFI Ozone Connect implementation are secured using a Client
+        Credentials grant type.
+
+
+        LFIs must host an OAuth 2.0 Authorization Server to utilise this security pattern. Scope values are set during
+        the onboarding process, and represented by a placeholder in this API description.
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.lfi.ae/token
+          scopes:
+            placeholder: Placeholder for scopes, which are set by the LFI during onboarding
     OzoneConnectJwtAuth:
       description: >
         Communications between the API Hub and the LFI Ozone Connect implementation are secured using the "JWT Auth"
@@ -6614,6 +4741,3 @@ components:
         it is specific to Ozone Connect. Please refer to API Hub documentation for further details.
       type: http
       scheme: Ozone-Connect-JWT-Auth
-  responses:
-    noContentResponse:
-      description: Indicates a successful operation. The response does not have a body.

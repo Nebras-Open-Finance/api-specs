@@ -618,6 +618,16 @@ paths:
         * ReadTransactionsDetail
 
         Refer to the Permissions and Data Clusters section of the Customer Data page for further information.
+
+        Transactions MUST be returned in descending `BookingDateTime` order, newest first. Where two transactions share
+        the same `BookingDateTime`, `TransactionId` SHOULD be used as a descending tiebreaker so that the ordering is
+        stable.
+
+        Ordering is applied to the filtered result set before pagination, so the first page always contains the most
+        recent transactions matching the request. The `fromBookingDateTime` and `toBookingDateTime` parameters filter
+        the result set, they do not change its order.
+
+        No sort control is offered: a TPP cannot request ascending order.
       operationId: GetAccountsAccountIdTransactions
       parameters:
         - $ref: '#/components/parameters/Authorization'
@@ -782,6 +792,15 @@ paths:
         * ReadStatements
 
         Refer to the Permissions and Data Clusters section of the Customer Data page for further information.
+
+        Statements MUST be returned in descending `OpeningDate` order, newest first. Where two statements share the same
+        `OpeningDate`, `StatementId` SHOULD be used as a descending tiebreaker so that the ordering is stable.
+
+        Ordering is applied to the filtered result set before pagination, so the first page always contains the most
+        recent statements matching the request. The `fromStatementDate` and `toStatementDate` parameters filter the
+        result set, they do not change its order.
+
+        No sort control is offered: a TPP cannot request ascending order.
       operationId: GetAccountAccountIdStatements
       parameters:
         - $ref: '#/components/parameters/Authorization'
@@ -1130,6 +1149,20 @@ components:
           schema:
             $ref: '#/components/schemas/AEConsentsByBaseConsentIdResponseSigned'
   schemas:
+    AEDateTime:
+      title: AEDateTime
+      description: |
+        An instant in time, per ISO 8601 / RFC 3339, with a mandatory offset. Recipients MUST apply the offset, and
+        MUST NOT read the date and time components as local time. Encodings of the same instant are equivalent and MUST
+        behave identically: `2027-07-22T00:00:00Z` and `2027-07-22T04:00:00+04:00` identify the same moment.
+
+        Issuers SHOULD emit UTC, using `Z` or `+00:00`. The negative zero offset `-00:00` MUST NOT be used. Fractional
+        seconds are optional and carry no specified precision; implementations MUST accept both their presence and
+        their absence.
+      type: string
+      format: date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|\+\d{2}:\d{2}|-(?:0[1-9]|1[0-2]):\d{2})$'
+      example: '2027-07-22T00:00:00Z'
     Jwt:
       description: |
         [https://www.rfc-editor.org/rfc/rfc7519](https://www.rfc-editor.org/rfc/rfc7519)
@@ -1568,13 +1601,9 @@ components:
       format: int32
       minimum: 0
     TransactionDateTime:
-      description: |
-        The Date Time of when the transaction occurred.
-        All dates in the JSON payloads are represented in ISO 8601 date-time format. 
-        All date-time fields in responses must include the timezone. 
-        An example is below: 2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: The Date Time of when the transaction occurred.
     PaymentMode:
       description: The mode of payment
       type: string
@@ -1680,12 +1709,7 @@ components:
       example: UTC+03:00
       pattern: ^UTC[+-]([01]\d|2[0-4])(:?[0-5]\d)?$
     ISODateTime:
-      description: |-
-        All dates in the JSON payloads are represented in ISO 8601 date-time format. 
-        All date-time fields in responses must include the timezone. An example is below:
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      $ref: '#/components/schemas/AEDateTime'
     StandingOrderId:
       description: >-
         A unique and immutable identifier produced by the LFI to identify the account resource. This identifier has no
@@ -1795,45 +1819,21 @@ components:
       minLength: 1
       maxLength: 50
     FirstPaymentDateTime:
-      description: >-
-        The date on which the first payment for a Standing Order schedule will be made.All dates in the JSON payloads
-        are represented in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: The date on which the first payment for a Standing Order schedule will be made.
     NextPaymentDateTime:
-      description: >-
-        The date on which the next payment for a Standing Order schedule will be made.All dates in the JSON payloads are
-        represented in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: The date on which the next payment for a Standing Order schedule will be made.
     LastPaymentDateTime:
-      description: >-
-        The date on which the last (most recent) payment for a Standing Order schedule was made.All dates in the JSON
-        payloads are represented in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: The date on which the last (most recent) payment for a Standing Order schedule was made.
     FinalPaymentDateTime:
-      description: >-
-        The date on which the final payment for a Standing Order schedule will be made.All dates in the JSON payloads
-        are represented in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: The date on which the final payment for a Standing Order schedule will be made.
     NumberOfPayments:
       description: >-
         Number of the payments that will be made in completing this frequency sequence including any executed since the
@@ -1878,15 +1878,9 @@ components:
         - Quarterly
         - Weekly
     PreviousPaymentDateTime:
-      description: >-
-        The date of most recent direct debit collection to the User 1 account. All dates in the JSON payloads are
-        represented in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: The date of most recent direct debit collection to the User 1 account.
     AEActiveOrHistoricCurrencyAndAmount_0:
       type: object
       required:
@@ -2188,15 +2182,11 @@ components:
         - Arrival
         - Execution
     ScheduledPaymentDateTime:
-      description: >-
-        Date (and time) information related to the scheduled payment (Arrival or Execution) based on the ScheduleType
-        field. All dates in the JSON payloads are represented in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: >-
+            Date (and time) information related to the scheduled payment (Arrival or Execution) based on the
+            ScheduleType field.
     ScheduledPaymentId:
       description: >-
         A unique and immutable identifier produced by the LFI to identify the scheduled payment resource. This
@@ -2345,37 +2335,31 @@ components:
         - Mutable
         - Immutable
     BookingDateTime:
-      description: >
-        Date and time when a transaction entry is posted to an account on the account servicer's books.
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: >-
+            Date and time when a transaction entry is posted to an account on the account servicer's books.
 
-        Usage: Booking date is the expected booking date, unless the status is booked, in which case it is the actual
-        booking date.
-
-        All dates in the JSON payloads are represented in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below: 2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+            Usage: Booking date is the expected booking date, unless the status is booked, in which case it is the
+            actual booking date.
     ValueDateTime:
-      description: >
-        Date and time at which assets become available to the account owner in case of a credit entry, or cease to be
-        available to the account owner in case of a debit transaction entry. 
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: >-
+            Date and time at which assets become available to the account owner in case of a credit entry, or cease to
+            be available to the account owner in case of a debit transaction entry.
 
-        Usage: If transaction entry status is pending and value date is present, then the value date refers to an
-        expected/requested value date. 
+            Usage: If transaction entry status is pending and value date is present, then the value date refers to an
+            expected/requested value date.
 
-        For transaction entries subject to availability/float and for which availability information is provided, the
-        value date must not be used. In this case the availability component identifies the number of availability days.
+            For transaction entries subject to availability/float and for which availability information is provided,
+            the value date must not be used. In this case the availability component identifies the number of
+            availability days.
 
-        Availability float refers to the time period between fund deposits and clearing.
+            Availability float refers to the time period between fund deposits and clearing.
 
-        The float is essentially double-counted money: a paid sum which, due to delays in processing, appears
-        simultaneously in the accounts of the Debtor and the Creditor.
-
-        All dates in the JSON payloads are represented in ISO 8601 date-time format. All date-time fields in responses
-        must include the timezone. An example is below: 2017-04-05T10:43:07+00:00"
-      type: string
-      format: date-time
+            The float is essentially double-counted money: a paid sum which, due to delays in processing, appears
+            simultaneously in the accounts of the Debtor and the Creditor.
     TransactionInformation:
       description: >
         Further details of the transaction. This is the transaction narrative, which is unstructured text.
@@ -2397,15 +2381,9 @@ components:
       minLength: 1
       maxLength: 40
     StatusUpdateDateTime:
-      description: >-
-        Date and time at which the account resource status was updated. All dates in the JSON payloads are represented
-        in ISO 8601 date-time format. 
-
-        All date-time fields in responses must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: Date and time at which the account resource status was updated.
     AEAccountStatusCode:
       description: >
         Specifies the status of account resource in code form.
@@ -2473,21 +2451,18 @@ components:
       minLength: 1
       maxLength: 70
     OpeningDate:
-      description: >-
-        Date on which the account and its related basic services by LFI started to be operational for User 1. All dates
-        in the JSON payloads are represented in ISO 8601 date-time format. All date-time fields in responses must
-        include the timezone. An example is below: 2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: >-
+            Date on which the account and its related basic services by LFI started to be operational for User 1.
     MaturityDate:
-      description: >
-        * Fixed Term Savings Account
-          MaturityDate is the date on which the savings mature and the balance can be withdrawn by the User without penalty
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: >-
+            * Fixed Term Savings Account
 
-        * All dates in the JSON payloads are represented in ISO 8601 date-time format. All date-time fields in responses
-        must include the timezone. An example is: 2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+            MaturityDate is the date on which the savings mature and the balance can be withdrawn by the User without
+            penalty
     AEExternalAccountIdentificationCode:
       description: Name of the identification scheme for the account. Encoded with allowable values published in an external list.
       type: string
@@ -3101,15 +3076,9 @@ components:
           minLength: 1
           maxLength: 35
         QuotationDate:
-          description: >-
-            Date and time at which an exchange rate is quoted.All dates in the JSON payloads are represented in ISO 8601
-            date-time format. 
-
-            All date-time fields in responses must include the timezone. An example is below:
-
-            2017-04-05T10:43:07+00:00
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which an exchange rate is quoted.
         InstructedAmount:
           type: object
           required:
@@ -3667,12 +3636,9 @@ components:
         Type:
           $ref: '#/components/schemas/AEBalanceTypeCode'
         DateTime:
-          description: >-
-            Indicates the date (and time) that the account balance was checked.All dates in the JSON payloads are
-            represented in ISO 8601 date-time format. All date-time fields in responses must include the timezone. An
-            example is below: 2017-04-05T10:43:07+00:00
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Indicates the date (and time) that the account balance was checked.
         Amount:
           type: object
           required:
@@ -4467,9 +4433,9 @@ components:
         Profession:
           type: string
         UpdatedAt:
-          description: The date and time at which the claims were last updated, in ISO 8601 format
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the claims were last updated
       description: >
         Standard Claims: 
 
@@ -6006,6 +5972,11 @@ components:
       description: Billing parameters specified by the TPP.
       additionalProperties: false
 
+    AEBankDataSharingRichAuthorizationRequests.AuthorizationExpirationDateTime:
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: >-
+            The date and time by which a Consent (in AwaitingAuthorization status) must be Authorized by the User.
     AEBankDataSharingRichAuthorizationRequests.OnBehalfOf:
       type: object
       properties:
@@ -6039,6 +6010,8 @@ components:
               $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentId'
             BaseConsentId:
               $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEBaseConsentId'
+            AuthorizationExpirationDateTime:
+              $ref: '#/components/schemas/AEBankDataSharingRichAuthorizationRequests.AuthorizationExpirationDateTime'
             CreationDateTime:
               $ref: '#/components/schemas/AEConsentStatus.AECreationDateTime'
             Status:
@@ -6053,14 +6026,14 @@ components:
             ExpirationDateTime:
               $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentExpirationDateTime'
             TransactionFromDateTime:
-              type: string
-              format: date-time
-              description: '**DEPRECATED AT V2.1, REPLACED BY `FromDate`**'
+              allOf:
+                - $ref: '#/components/schemas/AEDateTime'
+                - description: "**DEPRECATED AT V2.1, REPLACED BY `FromDate`**"
               deprecated: true
             TransactionToDateTime:
-              type: string
-              format: date-time
-              description: '**DEPRECATED AT V2.1, REPLACED BY `ToDate`**'
+              allOf:
+                - $ref: '#/components/schemas/AEDateTime'
+                - description: "**DEPRECATED AT V2.1, REPLACED BY `ToDate`**"
               deprecated: true
             FromDate:
               $ref: '#/components/schemas/AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingFromDate'
@@ -6098,14 +6071,9 @@ components:
           $ref: '#/components/schemas/AEStandardModels.AEMeta'
       additionalProperties: false
     AEConsentStatus.AECreationDateTime:
-      type: string
-      format: date-time
-      description: >-
-        Date and time at which the Consent was created. All dates in the JSON payloads are represented in ISO 8601
-        date-time format.
-
-
-        All date-time fields in responses must include the timezone, for example: 2023-04-05T10:43:07+00:00
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: Date and time at which the Consent was created.
     AEPushedAuthorizationRequests.AEBaseConsentId:
       type: string
       minLength: 1
@@ -6118,14 +6086,9 @@ components:
         It must be provided when long-lived consent parameters are updated/renewed for a current consent that has not
         yet finished.
     AEPushedAuthorizationRequests.AEConsentExpirationDateTime:
-      type: string
-      format: date-time
-      description: |-
-        Specified date and time the consent will expire.
-
-        All dates in the JSON payloads are represented in ISO 8601 date-time format.
-
-        All date-time fields in responses must include the timezone, for example: 2023-04-05T10:43:07+00:00
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: Specified date and time the consent will expire.
     AEPushedAuthorizationRequests.AEConsentId:
       type: string
       minLength: 1
@@ -6154,14 +6117,9 @@ components:
          | Consumed | Terminal | The consented action(s) have either been completed successfully.|
          | Suspended | In Use | The consent has been suspended, pending further enquiries.|
     AEConsentStatus.AEStatusUpdateDateTime:
-      type: string
-      format: date-time
-      description: >-
-        Date and time at which the resource status was updated. All dates in the JSON payloads are represented in ISO
-        8601 date-time format.
-
-
-        All date-time fields in responses must include the timezone, for example: 2023-04-05T10:43:07+00:00
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: Date and time at which the resource status was updated.
     AEBankDataSharingConsentPermissionCodes:
       type: string
       enum:
@@ -6313,16 +6271,9 @@ components:
           type: string
           format: uuid
         AttestationReceivedDateTime:
-          type: string
-          format: date-time
-          description: >-
-            Date and time at which the API Hub received the Attestation.
-
-
-            All dates in the JSON payloads are represented in ISO 8601 date-time format.
-
-            All date-time fields in responses must include the timezone, as shown in this example:
-            2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which the API Hub received the Attestation.
         RegulatoryDeadlineMetIndicator:
           type: boolean
           description: >-
@@ -6416,13 +6367,15 @@ components:
             - $ref: '#/components/schemas/AEAccountAccessTPPAttestationDataCategory1Codes'
           description: The category of data to which the attestation applies.
         AttestationDate:
-          type: string
-          format: date-time
-          description: |-
-            Date and time at which the attestation for the data category is made.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Date and time at which the attestation for the data category is made.
 
-            This must be in the past, later than `ConsentRevocationDateTime` where provided, and earlier than
-            `AttestationStatusAppliedDateTime`.
+
+                This must be in the past, later than `ConsentRevocationDateTime` where provided, and earlier than
+
+                `AttestationStatusAppliedDateTime`.
         RetentionReason:
           allOf:
             - $ref: '#/components/schemas/AETPPAttestationRetentionReason1Codes'
@@ -6597,26 +6550,25 @@ components:
             The Attestation Type, with the value `DataRetentionDeletion` to indicate an attestation on data retention
             for consented data held by the TPP.
         AttestationStatusAppliedDateTime:
-          type: string
-          format: date-time
-          description: |-
-            Date and time at which the Attestation is valid from. This must be in the past.
-
-            All dates in the JSON payloads are represented in ISO 8601 date-time format.
-            All date-time fields must include the timezone, as shown in this example: 2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which the Attestation is valid from. This must be in the past.
         DataAccessCeasedDateTime:
-          type: string
-          format: date-time
-          description: Date and time at which TPP data access ceased. This must be in the past.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which TPP data access ceased. This must be in the past.
         ConsentRevocationDateTime:
-          type: string
-          format: date-time
-          description: |-
-            Date and time at which the User revoked the Consent at the TPP.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Date and time at which the User revoked the Consent at the TPP.
 
-            Only provided where the consent was revoked at the TPP, and did not expire or was not consumed.
-            Where provided this must be in the past, and earlier than the date and time at which the consent
-            was revoked at the API Hub.
+
+                Only provided where the consent was revoked at the TPP, and did not expire or was not consumed.
+
+                Where provided this must be in the past, and earlier than the date and time at which the consent
+
+                was revoked at the API Hub.
         DataActions:
           type: array
           items:
@@ -6794,8 +6746,7 @@ components:
         NB Time component is optional - set to 00:00:00 for just Date.
         If the Date Time contains a timezone, the LFI must ignore the timezone component.
       schema:
-        type: string
-        format: date-time
+        $ref: '#/components/schemas/AEDateTime'
     ToBookingDateTimeParam:
       in: query
       name: toBookingDateTime
@@ -6804,8 +6755,7 @@ components:
         NB Time component is optional - set to 00:00:00 for just Date.
         If the Date Time contains a timezone, the LFI must ignore the timezone component.
       schema:
-        type: string
-        format: date-time
+        $ref: '#/components/schemas/AEDateTime'
     baseConsentId:
       in: query
       name: baseConsentId

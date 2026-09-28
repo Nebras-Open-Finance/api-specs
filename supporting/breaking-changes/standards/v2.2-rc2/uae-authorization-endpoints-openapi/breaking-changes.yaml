@@ -1,0 +1,81 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rules:
+    - response-property-type-changed
+    - request-property-type-changed
+    - request-property-all-of-added
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Every date-time field now expresses its type through the shared `AEDateTime`
+    Schema Object instead of repeating `type: string` / `format: date-time`
+    inline. A field that carries its own description becomes an `allOf` of
+    `AEDateTime` and a description-only subschema; a field whose description said
+    nothing beyond the encoding boilerplate becomes a plain `$ref`. Per OFP-014.
+
+    OFP-014 exists because the specs described the encoding of a date-time and
+    never said that the value identifies an instant. Nothing in the ecosystem
+    catches an implementation that reads `2027-07-22T00:00:00Z` as local
+    midnight: the value is well formed, the API Hub stores it unchanged, and the
+    receiving system records a time four hours adrift. That has already failed a
+    live integration, where a correctly formed UTC consent expiry was read as
+    local time and short-window consents arrived already expired. `AEDateTime`
+    states the missing semantics once — the offset is part of the value, the
+    recipient must apply it, and two encodings of the same instant must behave
+    identically — in place of ~20 near-identical field descriptions.
+
+    oasdiff reports this as a type change because it does not merge `allOf`
+    before comparing: with `type` and `format` now reached through the
+    reference, it reads the composed type as empty and the added reference as a
+    new `allOf` member. The effective schema is unchanged. Every field is still
+    `type: string` with `format: date-time`, and every value that validated
+    before still validates, apart from the two forms the pattern now rejects
+    (recorded separately below).
+
+    Impact on TPPs: none. The wire format does not change, and a consumer
+    that resolves `$ref` and `allOf` — as any OpenAPI tooling must — sees the
+    same type it saw before. A consumer that generates code from the document
+    may see the field emitted through a shared date-time type rather than a
+    per-field one.
+
+- rule: request-property-pattern-added
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `AEDateTime` carries a `pattern` that requires an offset and forbids the
+    negative zero offset `-00:00`. Per OFP-014, enforcement option 1.
+
+    The prose in `AEDateTime` says the offset is mandatory and that `-00:00`
+    must not be used; the pattern is what makes those two statements testable
+    rather than advisory. Every other offset stays conformant, so
+    `2027-07-22T00:00:00Z`, `2027-07-22T00:00:00.123456Z` and
+    `2027-07-22T04:00:00+04:00` are all accepted, and only
+    `2027-07-22T00:00:00-00:00` and an offset-less `2027-07-22T00:00:00` are
+    rejected. Requiring UTC outright — which would also reject `+04:00` — is the
+    breaking change OFP-014 defers to a major version, and is not made here.
+
+    Acceptance rationale: the migration cost is close to zero. `-00:00` is
+    prohibited by RFC 3339 for exactly the reason OFP-014 cares about (it
+    declares the offset unknown, which is meaningless for an instant), and no
+    producer in the ecosystem is known to emit it. A value with no offset at all
+    was already non-conformant under the existing prose — "all date-time fields
+    in responses must include the timezone" — so the pattern enforces a rule the
+    standard already stated rather than introducing one.
+
+    Impact: a producer emitting `-00:00`, or omitting the offset, is now
+    rejected at the schema rather than silently accepted and misread downstream.
+    Emitting `Z` or `+00:00` instead is a one-line change and is what the
+    standard already asked for.

@@ -5581,6 +5581,20 @@ components:
       schema:
         type: string
   schemas:
+    AEDateTime:
+      title: AEDateTime
+      description: |
+        An instant in time, per ISO 8601 / RFC 3339, with a mandatory offset. Recipients MUST apply the offset, and
+        MUST NOT read the date and time components as local time. Encodings of the same instant are equivalent and MUST
+        behave identically: `2027-07-22T00:00:00Z` and `2027-07-22T04:00:00+04:00` identify the same moment.
+
+        Issuers SHOULD emit UTC, using `Z` or `+00:00`. The negative zero offset `-00:00` MUST NOT be used. Fractional
+        seconds are optional and carry no specified precision; implementations MUST accept both their presence and
+        their absence.
+      type: string
+      format: date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|\+\d{2}:\d{2}|-(?:0[1-9]|1[0-2]):\d{2})$'
+      example: '2027-07-22T00:00:00Z'
     AEActiveCurrencyAmount:
       type: object
       required:
@@ -5608,6 +5622,11 @@ components:
         described in the latest edition of the international standard ISO 4217 'Codes for the representation of
         currencies and funds'.
       example: AED
+    AEAuthorizationExpirationDateTime:
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: >-
+            The date and time by which a Consent (in AwaitingAuthorization status) must be Authorized by the User.
     AEConsentPermissionCodes:
       type: string
       enum:
@@ -6590,13 +6609,13 @@ components:
             Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
             for Health Insurance.
         QuoteCreationDateTime:
-          type: string
-          format: date-time
-          description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
         PolicyIssuanceRequest:
           type: object
           properties:
@@ -7256,11 +7275,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AEEmploymentInsuranceQuoteReadPolicyIssuedResponse1Properties:
       type: object
@@ -7404,15 +7423,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1
@@ -8926,13 +8945,13 @@ components:
             Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
             for Health Insurance.
         QuoteCreationDateTime:
-          type: string
-          format: date-time
-          description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
         PolicyIssuanceRequest:
           type: object
           properties:
@@ -9655,15 +9674,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1
@@ -9954,11 +9973,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AEHealthInsuranceQuoteReadPolicyIssuedResponseProperties:
       type: object
@@ -10210,15 +10229,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1
@@ -10411,11 +10430,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AEHealthInsuranceQuoteTypeOfSmokingCodes:
       type: string
@@ -11231,13 +11250,13 @@ components:
             Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
             for Health Insurance.
         QuoteCreationDateTime:
-          type: string
-          format: date-time
-          description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
         PolicyIssuanceRequest:
           type: object
           properties:
@@ -12226,11 +12245,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AEHomeInsuranceQuoteReadPolicyIssuedResponse1Properties:
       type: object
@@ -12420,15 +12439,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1
@@ -14568,11 +14587,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AEInsuranceQuoteTPPPaymentMethod1Type:
       type: string
@@ -15014,13 +15033,15 @@ components:
             - $ref: '#/components/schemas/AEInsuranceTPPAttestationDataCategory1Codes'
           description: The category of data to which the attestation applies.
         AttestationDate:
-          type: string
-          format: date-time
-          description: |-
-            Date and time at which the attestation for the data category is made.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Date and time at which the attestation for the data category is made.
 
-            This must be in the past, later than `ConsentRevocationDateTime` where provided, and earlier than
-            `AttestationStatusAppliedDateTime`.
+
+                This must be in the past, later than `ConsentRevocationDateTime` where provided, and earlier than
+
+                `AttestationStatusAppliedDateTime`.
         RetentionReason:
           allOf:
             - $ref: '#/components/schemas/AETPPAttestationRetentionReason1Codes'
@@ -16202,13 +16223,13 @@ components:
             Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
             for Health Insurance.
         QuoteCreationDateTime:
-          type: string
-          format: date-time
-          description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
         PolicyIssuanceRequest:
           type: object
           properties:
@@ -17400,11 +17421,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AELifeInsuranceQuoteReadPolicyIssuedResponse1Properties:
       type: object
@@ -17551,15 +17572,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1
@@ -17973,9 +17994,9 @@ components:
                     type: string
                     description: As per CBUAE schema, severity of accident
                   IncidentDateTime:
-                    type: string
-                    format: date-time
-                    description: Incident date and time
+                    allOf:
+                      - $ref: '#/components/schemas/AEDateTime'
+                      - description: Incident date and time
                   ClaimantAtFault:
                     type: boolean
                     description: Is the claimant at fault?
@@ -18475,13 +18496,13 @@ components:
             Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
             for Health Insurance.
         QuoteCreationDateTime:
-          type: string
-          format: date-time
-          description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
         PolicyIssuanceRequest:
           type: object
           properties:
@@ -19209,11 +19230,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AEMotorInsuranceQuoteReadPolicyIssuedResponse1Properties:
       type: object
@@ -19733,15 +19754,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1
@@ -20195,6 +20216,8 @@ components:
           $ref: '#/components/schemas/uuid'
         BaseConsentId:
           $ref: '#/components/schemas/uuid'
+        AuthorizationExpirationDateTime:
+          $ref: '#/components/schemas/AEAuthorizationExpirationDateTime'
         Permissions:
           type: array
           items:
@@ -20206,17 +20229,12 @@ components:
             This is a list of the data groups being consented by the User, and requested for authorization with the
             LFI.    
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            Specified date and time the permissions will expire.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Specified date and time the permissions will expire.
 
-            If this is not populated, the permissions will be open ended.All dates in the JSON payloads are represented
-            in ISO 8601 date-time format. 
-
-            All date-time fields in responses must include the timezone. An example is below:
-
-            2017-04-05T10:43:07+00:00
+                If this is not populated, the permissions will be open ended.
         OnBehalfOf:
           $ref: '#/components/schemas/AEOnBehalfOf'
         OpenFinanceBilling:
@@ -20242,27 +20260,17 @@ components:
             - Purpose
           additionalProperties: false
         CreationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            Date and time at which the resource was created. All dates in the JSON payloads are represented in ISO 8601
-            date-time format.
-
-            All date-time fields in responses must include the timezone, as shown in this example:
-            2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which the resource was created.
         Status:
           allOf:
             - $ref: '#/components/schemas/AEConsentStatusCode'
           description: Specifies the status of consent resource in code form.
         StatusUpdateDateTime:
-          type: string
-          format: date-time
-          description: >-
-            Date and time at which the account resource status was updated. All dates in the JSON payloads are
-            represented in ISO 8601 date-time format.
-
-            All date-time fields in responses must include the timezone, as shown in this example:
-            2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which the account resource status was updated.
         RevokedBy:
           allOf:
             - $ref: '#/components/schemas/AERevokedByCode'
@@ -21234,13 +21242,13 @@ components:
             Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
             for Health Insurance.
         QuoteCreationDateTime:
-          type: string
-          format: date-time
-          description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
         PolicyIssuanceRequest:
           type: object
           properties:
@@ -22255,11 +22263,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AERentersInsuranceQuoteReadPolicyIssuedResponse1Properties:
       type: object
@@ -22426,15 +22434,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1
@@ -22630,16 +22638,9 @@ components:
             - $ref: '#/components/schemas/uuid'
           description: A unique identifier for the Attestation submitted by the TPP.
         AttestationReceivedDateTime:
-          type: string
-          format: date-time
-          description: >-
-            Date and time at which the API Hub received the Attestation.
-
-
-            All dates in the JSON payloads are represented in ISO 8601 date-time format.
-
-            All date-time fields in responses must include the timezone, as shown in this example:
-            2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which the API Hub received the Attestation.
         RegulatoryDeadlineMetIndicator:
           type: boolean
           description: >-
@@ -22807,26 +22808,25 @@ components:
             The Attestation Type, with the value `DataRetentionDeletion` to indicate an attestation on data retention
             for consented data held by the TPP.
         AttestationStatusAppliedDateTime:
-          type: string
-          format: date-time
-          description: |-
-            Date and time at which the Attestation is valid from. This must be in the past.
-
-            All dates in the JSON payloads are represented in ISO 8601 date-time format.
-            All date-time fields must include the timezone, as shown in this example: 2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which the Attestation is valid from. This must be in the past.
         DataAccessCeasedDateTime:
-          type: string
-          format: date-time
-          description: Date and time at which TPP data access ceased. This must be in the past.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which TPP data access ceased. This must be in the past.
         ConsentRevocationDateTime:
-          type: string
-          format: date-time
-          description: |-
-            Date and time at which the User revoked the Consent at the TPP.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Date and time at which the User revoked the Consent at the TPP.
 
-            Only provided where the consent was revoked at the TPP, and did not expire or was not consumed.
-            Where provided this must be in the past, and earlier than the date and time at which the consent
-            was revoked at the API Hub.
+
+                Only provided where the consent was revoked at the TPP, and did not expire or was not consumed.
+
+                Where provided this must be in the past, and earlier than the date and time at which the consent
+
+                was revoked at the API Hub.
         DataActions:
           type: array
           items:
@@ -23256,13 +23256,13 @@ components:
             Confirmation whether the customer monthly salary is less than or greater than AED 4,000 each month. Required
             for Health Insurance.
         QuoteCreationDateTime:
-          type: string
-          format: date-time
-          description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The quote creation date and time, as supplied by the LFI in the property `CreationDateTime`.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The expiration date of the quote, as provided in the quote response, if provided by the LFI.
         PolicyIssuanceRequest:
           type: object
           properties:
@@ -24112,11 +24112,11 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         PremiumTargetDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
-            hours from quote resource creation.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The target date and time at which the insurer will generate a quote premium. Maximum allowed time is 24
+                hours from quote resource creation.
       additionalProperties: false
     AETravelInsuranceQuoteReadPolicyIssuedResponse1Properties:
       type: object
@@ -24389,15 +24389,15 @@ components:
         QuoteReference:
           $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
         CreationDateTime:
-          type: string
-          format: date-time
-          description: The date and time at which the quote was created.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time at which the quote was created.
         ExpirationDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
-            be valid for up to 30 days as per the Standards.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                The expiration date of the quote, after which it is no longer valid. If no date is provided the quote
+                will be valid for up to 30 days as per the Standards.
         PlanName:
           type: string
           minLength: 1

@@ -300,7 +300,16 @@ paths:
       tags:
         - transactions
       summary: Fetch transactions for the account specified by the accountId
-      description: Return all transactions for the account, filtered on date range parameters as required.
+      description: >
+        Return all transactions for the account, filtered on date range parameters as required.
+
+        Transactions MUST be returned in descending `bookingDateTime` order, newest first. Where two transactions share
+        the same `bookingDateTime`, `transactionId` SHOULD be used as a descending tiebreaker so that the ordering is
+        stable.
+
+        The LFI must apply this ordering to the filtered result set before `page` and `page-size` are applied, so that
+        page 1 always contains the most recent transactions matching the request and a transaction does not move between
+        pages while a result set is being paged through.
       operationId: findTransactionsByAccountId
       parameters:
         - $ref: '#/components/parameters/providerId'
@@ -738,6 +747,15 @@ paths:
       tags:
         - statements
       summary: Get statements for a given account
+      description: >
+        Return the statements for the account specified by the accountId, filtered on date range parameters as required.
+
+        Statements MUST be returned in descending `OpeningDate` order, newest first. Where two statements share the same
+        `OpeningDate`, `StatementId` SHOULD be used as a descending tiebreaker so that the ordering is stable.
+
+        The LFI must apply this ordering to the filtered result set before `page` and `page-size` are applied, so that
+        page 1 always contains the most recent statements matching the request and a statement does not move between
+        pages while a result set is being paged through.
       operationId: getStatementsByAccountId
       parameters:
         - $ref: '#/components/parameters/providerId'
@@ -789,13 +807,13 @@ paths:
                     - type: object
                       properties:
                         firstAvailableDateTime:
-                          description: The first date and time for which statement data is available for the account
-                          type: string
-                          format: date-time
+                          allOf:
+                            - $ref: '#/components/schemas/AEDateTime'
+                            - description: The first date and time for which statement data is available for the account
                         lastAvailableDateTime:
-                          description: The last date and time for which statement data is available for the account
-                          type: string
-                          format: date-time
+                          allOf:
+                            - $ref: '#/components/schemas/AEDateTime'
+                            - description: The last date and time for which statement data is available for the account
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -858,6 +876,20 @@ components:
               errorMessage:
                 $ref: '#/components/schemas/ErrorMessage'
   schemas:
+    AEDateTime:
+      title: AEDateTime
+      description: |
+        An instant in time, per ISO 8601 / RFC 3339, with a mandatory offset. Recipients MUST apply the offset, and
+        MUST NOT read the date and time components as local time. Encodings of the same instant are equivalent and MUST
+        behave identically: `2027-07-22T00:00:00Z` and `2027-07-22T04:00:00+04:00` identify the same moment.
+
+        Issuers SHOULD emit UTC, using `Z` or `+00:00`. The negative zero offset `-00:00` MUST NOT be used. Fractional
+        seconds are optional and carry no specified precision; implementations MUST accept both their presence and
+        their absence.
+      type: string
+      format: date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|\+\d{2}:\d{2}|-(?:0[1-9]|1[0-2]):\d{2})$'
+      example: '2027-07-22T00:00:00Z'
     AccountsResponse:
       type: object
       description: |
@@ -968,9 +1000,9 @@ components:
             - Suspended
             - Closed
         statusUpdateDateTime:
-          description: Date and time at which the resource status was updated.
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which the resource status was updated.
         currency:
           $ref: '#/components/schemas/TCurrency'
         accountType:
@@ -991,18 +1023,19 @@ components:
             of the account at the financial instituation
           type: string
         openingDate:
-          description: >-
-            Date on which the account and its related basic services by financial institution started to be operational
-            for User 1
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Date on which the account and its related basic services by financial institution started to be
+                operational for User 1
         maturityDate:
-          description: |
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                * Fixed Term Savings Account
 
-            * Fixed Term Savings Account
-              MaturityDate is the date on which the savings mature and the balance can be withdrawn by the User without penalty
-          type: string
-          format: date-time
+                MaturityDate is the date on which the savings mature and the balance can be withdrawn by the User
+                without penalty
         accountNumbers:
           type: array
           items:
@@ -1576,9 +1609,9 @@ components:
           type: string
           description: The customer profession
         updatedAt:
-          type: string
-          format: date-time
-          description: The date at which the customer data was last updated
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date at which the customer data was last updated
       description: >
         Standard Claims:
 
@@ -1680,12 +1713,9 @@ components:
                       The properties of each assurance process implemented by the LFI to verify the details of a given
                       customer
             time:
-              type: string
-              format: date-time
-              description: >
-                Representing the date and time when the identity verification process took place. All dates in the JSON
-                payloads are represented in ISO 8601 date-time format. All date-time fields in responses must include
-                the timezone. An example is below: 2017-04-05T10:43:07+00:00
+              allOf:
+                - $ref: '#/components/schemas/AEDateTime'
+                - description: Representing the date and time when the identity verification process took place.
             verificationProcess:
               type: string
               description: |
@@ -2004,14 +2034,9 @@ components:
         Information about the source of this record
       additionalProperties: false
     ISODateTime:
-      title: ISODateTime
-      description: >-
-        All dates in the JSON payloads are represented in ISO 8601 date-time format.All date-time fields in responses
-        must include the timezone. An example is below:
-
-        2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - title: ISODateTime
     ProductIdentifier:
       type: object
       properties:
@@ -2271,15 +2296,16 @@ components:
             - Mutable
             - Immutable
         bookingDateTime:
-          description: Date and time when a transaction entry is posted to an account on the account servicer's books.
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Date and time when a transaction entry is posted to an account on the account servicer's books.
         valueDateTime:
-          description: >-
-            Date and time at which assets become available to the account owner in case of a credit entry, or cease to
-            be available to the account owner in case of a debit transaction entry.
-          type: string
-          format: date-time
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: >-
+                Date and time at which assets become available to the account owner in case of a credit entry, or cease
+                to be available to the account owner in case of a debit transaction entry.
         transactionInformation:
           description: >
             Further details of the transaction. This is the transaction narrative, which is unstructured text.
@@ -2649,15 +2675,9 @@ components:
           type: string
           description: Unique identification to unambiguously identify the foreign exchange contract.
         quotationDate:
-          type: string
-          format: date-time
-          description: >-
-            Date and time at which an exchange rate is quoted.All dates in the JSON payloads are represented in ISO 8601
-            date-time format.
-
-            All date-time fields in responses must include the timezone. An example is below:
-
-            2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Date and time at which an exchange rate is quoted.
         instructedAmount:
           $ref: '#/components/schemas/OBActiveOrHistoricCurrencyAndAmount_8'
       required:
@@ -2758,15 +2778,9 @@ components:
             - Quarterly
             - Weekly
         previousPaymentDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The date of most recent direct debit collection to the User account. All dates in the JSON payloads are
-            represented in ISO 8601 date-time format.
-
-            All date-time fields in responses must include the timezone. An example is below:
-
-            2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date of most recent direct debit collection to the User account.
         previousPaymentAmount:
           $ref: '#/components/schemas/OBActiveOrHistoricCurrencyAndAmount_8'
       required:
@@ -2821,15 +2835,9 @@ components:
             - Arrival
             - Execution
         scheduledPaymentDateTime:
-          type: string
-          format: date-time
-          description: >-
-            The date and time of the scheduled payment. All dates in the JSON payloads are represented in ISO 8601
-            date-time format.
-
-            All date-time fields in responses must include the timezone. An example is below:
-
-            2017-04-05T10:43:07+00:00
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date and time of the scheduled payment.
         creditorReference:
           type: string
           description: The creditor reference for the scheduled payment.
@@ -2929,21 +2937,21 @@ components:
         purpose:
           $ref: '#/components/schemas/PurposeSO'
         firstPaymentDateTime:
-          type: string
-          format: date-time
-          description: The date on which the first payment for a Standing Order schedule will be made.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date on which the first payment for a Standing Order schedule will be made.
         nextPaymentDateTime:
-          type: string
-          format: date-time
-          description: The date on which the next payment for a Standing Order schedule will be made.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date on which the next payment for a Standing Order schedule will be made.
         lastPaymentDateTime:
-          type: string
-          format: date-time
-          description: The date on which the last (most recent) payment for a Standing Order schedule was made.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date on which the last (most recent) payment for a Standing Order schedule was made.
         finalPaymentDateTime:
-          type: string
-          format: date-time
-          description: The date on which the final payment for a Standing Order schedule will be made.
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: The date on which the final payment for a Standing Order schedule will be made.
         numberOfPayments:
           type: string
           description: >-
@@ -3331,21 +3339,16 @@ components:
       description: |
         The Beneficiary account holder nick name
     TransactionDateTime:
-      title: TransactionDateTime
-      description: |
-        The Date Time of when the transaction occurred.
-        All dates in the JSON payloads are represented in ISO 8601 date-time format.
-        All date-time fields in responses must include the timezone.
-        An example is below: 2017-04-05T10:43:07+00:00
-      type: string
-      format: date-time
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - title: TransactionDateTime
+          description: The Date Time of when the transaction occurred.
     LocalTimeZone:
       anyOf:
-        - title: LocalTimeZone
-          description: |
-            Timezone as date-time format date - now deprecated as incorrect
-          type: "string"
-          format: "date-time"
+        - allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - title: LocalTimeZone
+              description: Timezone as date-time format date - now deprecated as incorrect
           deprecated: true
         - description: >
             The UTC offset of the local date and time of where the transaction occurred.
@@ -3513,9 +3516,9 @@ components:
           format: date
           deprecated: true
           x-deprecated-in-version: v1.2.1
-        - description: Filter-based on date and time
-          type: string
-          format: date-time
+        - allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Filter-based on date and time
     Error403:
       description: >-
         Error code identifying the problem that occurred. The first part of the code is the namespace, which is the name
@@ -4705,10 +4708,9 @@ components:
         - Debit
 
     AEBalanceCheckDateTime:
-      description: Indicates the date (and time) that the account balance was checked
-      type: string
-      format: date-time
-
+      allOf:
+        - $ref: '#/components/schemas/AEDateTime'
+        - description: Indicates the date (and time) that the account balance was checked
 
     AEProductExpectedProfitRate1Properties:
       description: Properties of a deposit rate for a given Sharia product
