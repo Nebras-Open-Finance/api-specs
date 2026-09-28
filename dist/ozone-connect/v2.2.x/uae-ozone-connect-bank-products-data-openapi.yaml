@@ -49,6 +49,20 @@ info:
     **Please adhere to the deprecated flags in your implementation. Do not implement deprecated properties when**
     **implementing new functionality.**
 
+    ### v2.2.2
+
+    * Changed `post /leads` to constrain the personal-data fields it accepts. `Data.EmiratesId` on both the request
+      and the response now carries `pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$`, matching the Emirates ID pattern
+      already used by the Insurance API descriptions. Per OFP-009.
+
+    * Changed `GivenName`, `LastName` and `FullName` on `AEUserName` to accept Latin letters, space, apostrophe,
+      period and hyphen only, and `BusinessName` to accept those plus digits, ampersand, comma, parentheses and
+      forward slash. Field lengths are unchanged. Per OFP-009.
+
+    * Changed `AddressLine` on `AEResidentialAddress` to accept the ISO 20022 `PostalAddress27` `x` character set,
+      as already applied to the reference fields in the Bank Service Initiation API description. Field lengths and
+      item counts are unchanged. Per OFP-009.
+
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards
@@ -76,7 +90,7 @@ info:
       so that the same rate structure is used by both `DepositRates` and `ExpectedProfitRates`. No change to the
       properties returned.
 
-  version: v2.2.1
+  version: v2.2.2
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -265,6 +279,7 @@ components:
               $ref: '#/components/schemas/AEUserName'
             EmiratesId:
               type: string
+              pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
               description: Emirates ID number of the Party
             Nationality:
               type: string
@@ -311,6 +326,7 @@ components:
               $ref: '#/components/schemas/AEUserName'
             EmiratesId:
               type: string
+              pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
               description: Emirates ID number of the Party
             Nationality:
               type: string
@@ -1362,11 +1378,13 @@ components:
           type: string
           minLength: 1
           maxLength: 70
+          pattern: ^[A-Za-z '.-]+$
           description: The given or first name of the lead
         LastName:
           type: string
           minLength: 1
           maxLength: 70
+          pattern: ^[A-Za-z '.-]+$
           description: The family or surname of the lead
       description: The name of a personal account
       additionalProperties: false
@@ -1379,6 +1397,7 @@ components:
           type: string
           minLength: 1
           maxLength: 140
+          pattern: ^[A-Za-z '.-]+$
           description: The full name of the lead
       description: The full name of a personal account
       additionalProperties: false
@@ -1391,6 +1410,7 @@ components:
           type: string
           minLength: 1
           maxLength: 140
+          pattern: ^[A-Za-z0-9 &'.,()\/-]+$
           description: The business name of the lead
       description: The name of a business account
       additionalProperties: false
@@ -1417,6 +1437,7 @@ components:
             type: string
             minLength: 1
             maxLength: 70
+            pattern: ^[A-Za-z0-9 \/?:().,'+-]+$
         BuildingNumber:
           description: The unit, apartment, or villa number within a building or community
           type: string

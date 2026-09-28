@@ -4406,22 +4406,28 @@ components:
             The full name of the account holder, as it appears on the account, as a single string. Used where LFIs hold
             the account name as a single value.
           type: string
+          pattern: ^[A-Za-z '.-]+$
         GivenName:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: >-
             Given name of the Party. Given name (also called forename) is used to differentiate from the surname or
             family name.
         Surname:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: Surname of the Party
         MiddleName:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: Middle name of the Party
         Nickname:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: Nickname of the Party
         EmiratesId:
           type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
           description: Emirates ID number of the Party
         EmiratesIdExpiryDate:
           type: string
@@ -4487,6 +4493,7 @@ components:
           type: string
           minLength: 1
           maxLength: 140
+          pattern: ^[A-Za-z0-9 &'.,()\/-]+$
           description: The name of the business
         TradeLicenceNumber:
           type: string

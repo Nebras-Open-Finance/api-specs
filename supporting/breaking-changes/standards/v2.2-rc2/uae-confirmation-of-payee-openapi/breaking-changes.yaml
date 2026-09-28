@@ -1,0 +1,66 @@
+# Accepted breaking changes introduced in this version of the spec.
+#
+# Each entry is matched against oasdiff's ERR-level output. An entry is
+# considered matching if its `rule` (or any of its `rules`) matches AND any
+# of its `endpoints` matches the (method, path) of the change. Matched
+# changes are filtered out before the test asserts.
+#
+# Format:
+#   - rule: <oasdiff rule code>   # or `rules: [a, b, c]` for multiple
+#     endpoints:
+#       - method: GET
+#         path: /some/path/{Param}
+#     signedOffBy: Name - Role, Org
+#     rationale: |
+#       Free text written from the perspective of the change author,
+#       explaining what changed, why, and the impact on consumers.
+
+- rule: response-required-property-removed
+  endpoints:
+    - method: POST
+      path: /discovery
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Confirmation of Payee discovery response returns an array of
+    confirmation sources rather than exactly one.
+
+    This corrects a live defect. Discovery resolves a Creditor Account IBAN to
+    the endpoints at which the CoP check should be performed, but an LFI does
+    not expose one resource server per institution — it exposes one per
+    account segment (retail, corporate, SME). The IBAN alone identifies the
+    bank; it does not identify the segment. With `Data` modelled as a single
+    `AEConfirmationSourceProperties` object, the Hub had to pick exactly one
+    of the LFI's endpoints and discard the rest, so TPPs are today being
+    pointed at the wrong resource server for the account they are checking:
+    the bank matches but the segment does not, and a CoP check against a
+    corporate IBAN is sent to an endpoint that cannot service it. The TPP has
+    no way to recover, because the alternative endpoints were never returned.
+
+    In v2.2, `Data` becomes an object carrying a `ConfirmationSource` array
+    whose items are the unchanged `AEConfirmationSourceProperties` schema. The
+    Hub returns every endpoint pair that may service the supplied IBAN, and
+    the TPP invokes the CoP operation against each in the order returned until
+    a match is obtained. `ConfirmationSource` is required and `minItems: 0`, so
+    an account that is not serviced by any participating LFI is expressed as an
+    empty array on a 200 rather than requiring an error status. This follows
+    the Data-is-an-object-holding-a-named-array convention used across the UAE
+    standards (for example `Data.Account` in uae-account-information-openapi)
+    rather than making `Data` itself an array.
+
+    oasdiff reports this as `response-required-property-removed` on POST
+    /discovery, once for `message/Data/DiscoveryEndpointUrl` and once for
+    `message/Data/ResourceServerUrl`: both properties move one level down,
+    from `Data` to each item of `Data/ConfirmationSource`.
+
+    Acceptance rationale: Confirmation of Payee discovery operates on
+    non-consented data. The request carries a Creditor Account IBAN and the
+    response carries endpoint URLs; no consent is created, referenced or
+    relied upon, and no customer data is exchanged on this operation. The
+    change therefore has no consent-lifecycle or data-sharing impact, and it
+    fixes a defect that is failing CoP checks in production today.
+
+    Impact: a TPP must read the discovery result from
+    `Data.ConfirmationSource[]` instead of `Data`, and must handle both the
+    empty case and the multiple-source case. Nothing about the shape of an
+    individual source changes: `DiscoveryEndpointUrl` and `ResourceServerUrl`
+    keep their types, lengths and meanings.

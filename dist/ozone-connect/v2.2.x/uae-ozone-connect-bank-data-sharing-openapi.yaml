@@ -58,6 +58,18 @@ info:
     **implementing new functionality.**
 
 
+    ### v2.2.3
+
+    * Changed `emiratesId` on `CustomerPersonClaims` to carry
+      `pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$`, so the Emirates ID returned by `get /customer` and
+      `get /accounts/{accountId}/customer` is well-formed. This is the pattern already used by the Insurance API
+      description and, from v2.2, by `post /leads` in the Bank Products Data API description. Per OFP-009.
+
+    * Changed `fullName`, `givenName`, `familyName`, `middleName` and `nickname` on `CustomerPersonClaims` to accept
+      Latin letters, space, apostrophe, period and hyphen only, and `businessName` on `CustomerCorporateClaims` to
+      accept those plus digits, ampersand, comma, parentheses and forward slash. Field lengths are unchanged.
+      Per OFP-009.
+
     ### v2.2.2
 
     * Changed `transactionInformation` on `CbuaeTransaction` to be required, so every transaction returned by
@@ -119,7 +131,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-  version: v2.2.2
+  version: v2.2.3
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -1435,6 +1447,7 @@ components:
           type: string
           minLength: 1
           maxLength: 140
+          pattern: ^[A-Za-z0-9 &'.,()\/-]+$
           description: The name of the business.
         tradeLicenceNumber:
           type: string
@@ -1485,22 +1498,28 @@ components:
             The full name of the account holder, as it appears on the account, as a single string. Used where LFIs hold
             the account name as a single value.
           type: string
+          pattern: ^[A-Za-z '.-]+$
         givenName:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: >-
             Given name of the Party. Given name (also called forename) is used to differentiate from the surname or
             family name.
         familyName:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: Surname of the Party
         middleName:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: Middle name of the Party
         nickname:
           type: string
+          pattern: ^[A-Za-z '.-]+$
           description: Nickname of the Party
         emiratesId:
           type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
           description: Emirates ID number of the Party
         emiratesIdExpiryDate:
           type: string

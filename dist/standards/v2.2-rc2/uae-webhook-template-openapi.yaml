@@ -2023,6 +2023,8 @@ components:
               $ref: '#/components/schemas/UAEPaymentAPI.AEConsentId'
             PaymentTransactionId:
               $ref: '#/components/schemas/UAEPaymentAPI.AEPaymentTransactionId'
+            PaymentRail:
+              $ref: '#/components/schemas/UAEPaymentAPI.AEPaymentRail'
             Status:
               $ref: '#/components/schemas/UAEPaymentAPI.AEPaymentStatus'
             StatusUpdateDateTime:
@@ -2468,6 +2470,38 @@ components:
       description: >-
         A category code that relates to the type of services or goods that corresponds to the underlying purpose of the
         payment. The code must conform to the published Aani payment purpose code list.
+    UAEPaymentAPI.AEPaymentRail:
+      type: string
+      enum:
+        - AANI
+        - FTS
+        - LFI
+      description: >
+        The payment rail over which the LFI settled the payment.
+
+        The value records how the payment was **executed**, not how it was requested. Where an LFI's routing rules
+        settle an instant payment on another rail, this field reports the rail actually used.
+
+        * `AANI`: Settled over AANI, the UAE instant payment platform.
+
+        * `FTS`: Settled over UAEFTS, the CBUAE funds transfer system.
+
+        * `LFI`: Settled internally by the LFI. The debtor and creditor accounts are both held at the LFI, so the
+        payment was booked on the LFI's own ledger and did not reach an external rail.
+
+        The rail determines the namespace of every `RejectReasonCode` entry carried with the event: `AANI.*` with
+        `AANI`, `FTS.*` with `FTS`, and `LFI.*` with `LFI`. A payment rejected at the LFI before it reached AANI or
+        UAEFTS is still reported against the rail it was routed to, and carries that rail's reason codes.
+
+        Where the rail issues an end to end transaction identifier, `PaymentTransactionId` carries it. A payment booked
+        on the LFI's own ledger has no such identifier.
+
+        The field is absent until the LFI has routed the payment, so an event for a payment still `Pending` at the LFI
+        may not carry it.
+
+        A payment settles over exactly one rail. This holds for file payments as well as single payments — a file
+        payment is settled in its entirety over one rail, so a single value describes the whole record.
+      example: AANI
     UAEPaymentAPI.AEPaymentStatus:
       type: string
       enum:

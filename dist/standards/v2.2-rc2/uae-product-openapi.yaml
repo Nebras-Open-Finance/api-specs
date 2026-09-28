@@ -1378,6 +1378,7 @@ components:
               $ref: "#/components/schemas/AEUserName"
             EmiratesId:
               type: string
+              pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
               description: Emirates ID number of the Party
             Nationality:
               type: string
@@ -1426,6 +1427,7 @@ components:
               $ref: "#/components/schemas/AEUserName"
             EmiratesId:
               type: string
+              pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
               description: Emirates ID number of the Party
             Nationality:
               type: string
@@ -1455,11 +1457,13 @@ components:
           type: string
           minLength: 1
           maxLength: 70
+          pattern: ^[A-Za-z '.-]+$
           description: The given or first name of the lead
         LastName:
           type: string
           minLength: 1
           maxLength: 70
+          pattern: ^[A-Za-z '.-]+$
           description: The family or surname of the lead
       description: The name of a personal account
       additionalProperties: false
@@ -1472,6 +1476,7 @@ components:
           type: string
           minLength: 1
           maxLength: 140
+          pattern: ^[A-Za-z '.-]+$
           description: The full name of the lead
       description: The full name of a personal account
       additionalProperties: false
@@ -1484,6 +1489,7 @@ components:
           type: string
           minLength: 1
           maxLength: 140
+          pattern: ^[A-Za-z0-9 &'.,()\/-]+$
           description: The business name of the lead
       description: The name of a business account
       additionalProperties: false
@@ -1510,6 +1516,7 @@ components:
             type: string
             minLength: 1
             maxLength: 70
+            pattern: ^[A-Za-z0-9 \/?:().,'+-]+$
         BuildingNumber:
           description: The unit, apartment, or villa number within a building or community
           type: string
