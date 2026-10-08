@@ -32,6 +32,16 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.2
+
+
+    * Changed every date-time field to reference the shared `AEDateTime` Schema Object. `AEDateTime` states that a
+      date-time value identifies an instant, that the offset is part of the value and must be applied by the
+      recipient, and that two encodings of the same instant are equivalent and must behave identically. It carries
+      a `pattern` requiring an offset and forbidding `-00:00`; all other offsets remain conformant. Each field
+      description now states only what is specific to that field. Per OFP-014.
+
+
     ### v2.2.1
 
 
@@ -85,7 +95,7 @@ info:
     * Initial version that delivers v2.1 requirements (see separate, detailed changelog for changes from last v2.1.x
     version).
 
-  version: v2.2.1
+  version: v2.2.2
 tags:
   - name: Employment Insurance
     description: Employment Insurance Operations
