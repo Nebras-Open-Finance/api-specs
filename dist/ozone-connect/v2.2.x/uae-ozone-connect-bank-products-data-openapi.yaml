@@ -49,6 +49,12 @@ info:
     **Please adhere to the deprecated flags in your implementation. Do not implement deprecated properties when**
     **implementing new functionality.**
 
+    ### v2.2.2
+
+    * Changed `get /products` to return `Links.ShariaCertificate`, an optional array of one-or-more links to the
+      Sharia Certificates for the product, so that an LFI can make its Sharia Certificates available to a TPP as
+      part of a product offer.
+
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards
@@ -76,7 +82,7 @@ info:
       so that the same rate structure is used by both `DepositRates` and `ExpectedProfitRates`. No change to the
       properties returned.
 
-  version: v2.2.1
+  version: v2.2.2
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -456,6 +462,15 @@ components:
           description: A link to the Card Image for the product.
           type: string
           format: uri
+        ShariaCertificate:
+          description: >-
+            One or more links to the Sharia Certificates for the product, allowing an LFI to make its Sharia
+            Certificates available to a TPP as part of a product offer.
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uri
     Eligibility:
       type: object
       description: |

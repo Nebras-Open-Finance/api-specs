@@ -6170,13 +6170,12 @@ components:
       type: object
       oneOf:
         - $ref: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-        - $ref: '#/components/schemas/AEEmploymentInsuranceQuoteResponse1Properties'
+        - $ref: '#/components/schemas/AEEmploymentInsuranceQuoteAvailableResponse1Properties'
       discriminator:
         propertyName: QuoteStatus
         mapping:
           Pending: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-          Available: '#/components/schemas/AEEmploymentInsuranceQuoteResponse1Properties'
-      additionalProperties: false
+          Available: '#/components/schemas/AEEmploymentInsuranceQuoteAvailableResponse1Properties'
     AEEmploymentInsuranceExistingInsurance1Properties:
       type: object
       properties:
@@ -6239,10 +6238,6 @@ components:
               allOf:
                 - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
               description: The marital status of the individual.
-            ResidentialLocation:
-              allOf:
-                - $ref: '#/components/schemas/AEInsuranceEmirate'
-              description: Residential Location of the individual.
             LandlineNumber:
               allOf:
                 - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -6256,6 +6251,9 @@ components:
               allOf:
                 - $ref: '#/components/schemas/AECustomerPrimaryLanguage'
               description: Primary language spoken by the insurance policy customer
+            ResidentialLocation:
+              type: string
+              description: Residential Location of the individual.
             MobileNumber:
               allOf:
                 - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -6967,6 +6965,213 @@ components:
             - $ref: '#/components/schemas/AEActiveCurrencyAmount'
           description: The amount of the additional compensation
       additionalProperties: false
+    AEEmploymentInsuranceQuoteAvailableResponse1Properties:
+      type: object
+      required:
+        - QuoteStatus
+        - QuoteId
+        - QuoteReference
+        - CreationDateTime
+        - ServiceRating
+        - PolicyIssuanceAllowed
+        - CoverType
+        - PolicyStartDate
+        - PolicyEndDate
+      properties:
+        QuoteStatus:
+          type: string
+          enum:
+            - Available
+          description: The current status of the quote
+        QuoteId:
+          $ref: '#/components/schemas/AEInsuranceQuoteIdType'
+        QuoteReference:
+          $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
+        CreationDateTime:
+          type: string
+          format: date-time
+          description: The date and time at which the quote was created.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
+            be valid for up to 30 days as per the Standards.
+        PlanName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The specific name of the insurance plan.
+        PolicyLimit:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          description: The limit of the quoted insurance policy.
+          additionalProperties: false
+        Commission:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCommission'
+          description: >-
+            An object containing details of the commission amount that would be payable to the TPP if the User proceeded
+            with the insurance application and purchased the policy based on the provided information
+        AvailableAddOns:
+          type: array
+          items:
+            type: object
+            properties:
+              CoverName:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Name of the insurance cover add-on
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: Description of the insurance cover add-on
+              Amount:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: Premium value of the insurance cover add-on
+              CoverLimit:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the benefit coverage limit that could be paid if a claim was made.
+              CoverInclusionAndExclusionDescriptions:
+                type: array
+                items:
+                  type: string
+                minItems: 1
+                description: Included inclusions and exclusions for cover type.
+              PolicyExcess:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the amount that would be deductible from any claim.
+              CoverId:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Cover identifier, as assigned by the Insurer.
+            required:
+              - CoverName
+              - Description
+              - CoverId
+            additionalProperties: false
+          minItems: 1
+          description: An object containing details of optional add-ons available for the quoted policy
+        RequiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceDocumentRequirement'
+          minItems: 1
+          description: >-
+            A list of documents required that must be provided by the User to the LFI to proceed with the policy
+            purchase
+        DiscountOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePremiumDiscountOffers'
+          minItems: 1
+          description: An object containing details of any discounts or offers applied to the quote
+        ServiceRating:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceServiceRating'
+          description: An object containing ratings or reviews of the insurer's service quality
+        SpecialConditionsApplicable:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceSpecialConditions'
+          description: >-
+            Provides special conditions or clauses applicable to the policy specified by the LFI, which must be
+            displayed to the User if provided.
+        PolicyIssuanceAllowed:
+          type: object
+          properties:
+            CustomerVerification:
+              type: boolean
+              description: Broker allowed to complete capture of customer verification information and documents for this quote.
+            Payment:
+              type: boolean
+              description: Broker allowed to host payment checkout.
+            PolicyDocuments:
+              type: boolean
+              description: Broker allowed to provide policy documents to customer.
+          required:
+            - CustomerVerification
+            - Payment
+            - PolicyDocuments
+          description: Broker requests to handle following steps of policy issuance process.
+          additionalProperties: false
+        Takaful:
+          type: boolean
+          description: Indicates whether the policy is Sharia compliant.
+        AlternativeBrandName:
+          type: string
+          description: Provides and alternative brand name where the product is Sharia compliant
+        PolicyDocuments:
+          type: array
+          items:
+            type: object
+            properties:
+              Uri:
+                type: string
+                format: uri
+                minLength: 1
+                maxLength: 1024
+                description: Policy Document URI
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: |-
+                  Description of Policy Document.
+
+                  Omitted if not provided by LFI.
+            required:
+              - Uri
+            additionalProperties: false
+          minItems: 1
+        PolicyExcess:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          additionalProperties: false
+        Premium:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePremiumProperties'
+          minProperties: 1
+          description: An object containing details of the quoted insurance premium.
+        CoverType:
+          $ref: '#/components/schemas/AEEmploymentInsuranceCoverType1Codes'
+        PolicyCover:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceQuotePolicyCover'
+          minItems: 1
+          description: >-
+            An array containing options for policy cover, which contain information about the cover and benefits
+            included in the quoted policies.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised start date for policy plan.
+        PolicyEndDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised end date for policy plan.
+      additionalProperties: false
     AEEmploymentInsuranceQuoteEmploymentProperties:
       type: object
       required:
@@ -7314,7 +7519,6 @@ components:
           PaymentRequired: '#/components/schemas/AEEmploymentInsuranceQuoteReadPaymentRequiredResponse1Properties'
           PolicyIssued: '#/components/schemas/AEEmploymentInsuranceQuoteReadPolicyIssuedResponse1Properties'
           Rejected: '#/components/schemas/AEEmploymentInsuranceQuoteReadRejectedResponse1Properties'
-      additionalProperties: false
     AEEmploymentInsuranceQuoteRequestProperties:
       type: object
       required:
@@ -7907,7 +8111,6 @@ components:
         mapping:
           Pending: '#/components/schemas/AEHealthInsuranceQuoteResponsePendingProperties'
           Available: '#/components/schemas/AEHealthInsuranceQuoteResponseAvailableProperties'
-      additionalProperties: false
     AEHealthInsuranceDataSharingClaimsHistoryStatusCodes:
       type: string
       enum:
@@ -7982,10 +8185,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
           description: The marital status of the individual.
-        ResidentialLocation:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceEmirate'
-          description: Residential Location of the individual.
         LandlineNumber:
           allOf:
             - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -7999,6 +8198,9 @@ components:
           allOf:
             - $ref: '#/components/schemas/AECustomerPrimaryLanguage'
           description: Primary language spoken by the insurance policy customer
+        ResidentialLocation:
+          type: string
+          description: Residential Location of the individual.
         MobileNumber:
           allOf:
             - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -8270,10 +8472,6 @@ components:
               allOf:
                 - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
               description: The marital status of the individual.
-            ResidentialLocation:
-              allOf:
-                - $ref: '#/components/schemas/AEInsuranceEmirate'
-              description: Residential Location of the individual.
             LandlineNumber:
               allOf:
                 - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -8301,6 +8499,9 @@ components:
                 $ref: '#/components/schemas/AEInsuranceAddress'
               minItems: 1
               description: Customer's address details
+            ResidentialLocation:
+              type: string
+              description: Residential Location of the individual.
             Employment:
               type: object
               properties:
@@ -10026,7 +10227,6 @@ components:
           PaymentRequired: '#/components/schemas/AEHealthInsuranceQuoteReadPaymentRequiredResponseProperties'
           PolicyIssued: '#/components/schemas/AEHealthInsuranceQuoteReadPolicyIssuedResponseProperties'
           Rejected: '#/components/schemas/AEHealthInsuranceQuoteReadRejectedResponseProperties'
-      additionalProperties: false
     AEHealthInsuranceQuoteRequestProperties:
       type: object
       required:
@@ -10601,13 +10801,12 @@ components:
       type: object
       oneOf:
         - $ref: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-        - $ref: '#/components/schemas/AEHomeInsuranceQuoteResponse1Properties'
+        - $ref: '#/components/schemas/AEHomeInsuranceQuoteAvailableResponse1Properties'
       discriminator:
         propertyName: QuoteStatus
         mapping:
           Pending: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-          Available: '#/components/schemas/AEHomeInsuranceQuoteResponse1Properties'
-      additionalProperties: false
+          Available: '#/components/schemas/AEHomeInsuranceQuoteAvailableResponse1Properties'
     AEHomeInsuranceDomesticHelperIndividualDetailsProperties:
       type: object
       required:
@@ -10686,7 +10885,7 @@ components:
           example: d330c5bb-0889-4596-86bb-17cc9a4a17b5
         PolicyHolder:
           allOf:
-            - $ref: '#/components/schemas/AEInsuranceCustomerQuoteProperties'
+            - $ref: '#/components/schemas/AEInsuranceDataSharingCustomerQuoteProperties'
           description: Information about the customer. Requires `ReadCustomerBasic` permission to be granted by the User.
         Identity:
           allOf:
@@ -11839,6 +12038,213 @@ components:
           description: Verified details captured by the TPP, when the TPP is a Broker. Omitted if not required.
           additionalProperties: false
       additionalProperties: false
+    AEHomeInsuranceQuoteAvailableResponse1Properties:
+      type: object
+      required:
+        - QuoteStatus
+        - QuoteId
+        - QuoteReference
+        - CreationDateTime
+        - ServiceRating
+        - PolicyIssuanceAllowed
+        - CoverType
+        - PolicyStartDate
+        - PolicyEndDate
+      properties:
+        QuoteStatus:
+          type: string
+          enum:
+            - Available
+          description: The current status of the quote
+        QuoteId:
+          $ref: '#/components/schemas/AEInsuranceQuoteIdType'
+        QuoteReference:
+          $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
+        CreationDateTime:
+          type: string
+          format: date-time
+          description: The date and time at which the quote was created.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
+            be valid for up to 30 days as per the Standards.
+        PlanName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The specific name of the insurance plan.
+        PolicyLimit:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          description: The limit of the quoted insurance policy.
+          additionalProperties: false
+        Commission:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCommission'
+          description: >-
+            An object containing details of the commission amount that would be payable to the TPP if the User proceeded
+            with the insurance application and purchased the policy based on the provided information
+        AvailableAddOns:
+          type: array
+          items:
+            type: object
+            properties:
+              CoverName:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Name of the insurance cover add-on
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: Description of the insurance cover add-on
+              Amount:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: Premium value of the insurance cover add-on
+              CoverLimit:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the benefit coverage limit that could be paid if a claim was made.
+              CoverInclusionAndExclusionDescriptions:
+                type: array
+                items:
+                  type: string
+                minItems: 1
+                description: Included inclusions and exclusions for cover type.
+              PolicyExcess:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the amount that would be deductible from any claim.
+              CoverId:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Cover identifier, as assigned by the Insurer.
+            required:
+              - CoverName
+              - Description
+              - CoverId
+            additionalProperties: false
+          minItems: 1
+          description: An object containing details of optional add-ons available for the quoted policy
+        RequiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceDocumentRequirement'
+          minItems: 1
+          description: >-
+            A list of documents required that must be provided by the User to the LFI to proceed with the policy
+            purchase
+        DiscountOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePremiumDiscountOffers'
+          minItems: 1
+          description: An object containing details of any discounts or offers applied to the quote
+        ServiceRating:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceServiceRating'
+          description: An object containing ratings or reviews of the insurer's service quality
+        SpecialConditionsApplicable:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceSpecialConditions'
+          description: >-
+            Provides special conditions or clauses applicable to the policy specified by the LFI, which must be
+            displayed to the User if provided.
+        PolicyIssuanceAllowed:
+          type: object
+          properties:
+            CustomerVerification:
+              type: boolean
+              description: Broker allowed to complete capture of customer verification information and documents for this quote.
+            Payment:
+              type: boolean
+              description: Broker allowed to host payment checkout.
+            PolicyDocuments:
+              type: boolean
+              description: Broker allowed to provide policy documents to customer.
+          required:
+            - CustomerVerification
+            - Payment
+            - PolicyDocuments
+          description: Broker requests to handle following steps of policy issuance process.
+          additionalProperties: false
+        Takaful:
+          type: boolean
+          description: Indicates whether the policy is Sharia compliant.
+        AlternativeBrandName:
+          type: string
+          description: Provides and alternative brand name where the product is Sharia compliant
+        PolicyDocuments:
+          type: array
+          items:
+            type: object
+            properties:
+              Uri:
+                type: string
+                format: uri
+                minLength: 1
+                maxLength: 1024
+                description: Policy Document URI
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: |-
+                  Description of Policy Document.
+
+                  Omitted if not provided by LFI.
+            required:
+              - Uri
+            additionalProperties: false
+          minItems: 1
+        PolicyExcess:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          additionalProperties: false
+        Premium:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePremiumProperties'
+          minProperties: 1
+          description: An object containing details of the quoted insurance premium.
+        CoverType:
+          $ref: '#/components/schemas/AEHomeInsuranceCoverType1Codes'
+        PolicyCover:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceQuotePolicyCover'
+          minItems: 1
+          description: >-
+            An array containing options for policy cover, which contain information about the cover and benefits
+            included in the quoted policies.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised start date for policy plan.
+        PolicyEndDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised end date for policy plan.
+      additionalProperties: false
     AEHomeInsuranceQuoteExistingHomeInsuranceProperties:
       type: object
       properties:
@@ -12284,7 +12690,6 @@ components:
           PaymentRequired: '#/components/schemas/AEHomeInsuranceQuoteReadPaymentRequiredResponse1Properties'
           PolicyIssued: '#/components/schemas/AEHomeInsuranceQuoteReadPolicyIssuedResponse1Properties'
           Rejected: '#/components/schemas/AEHomeInsuranceQuoteReadRejectedResponse1Properties'
-      additionalProperties: false
     AEHomeInsuranceQuoteRequestProperties:
       type: object
       required:
@@ -13019,81 +13424,6 @@ components:
     AEInsuranceCustomerPassportNumberType:
       type: string
       pattern: ^[A-Z0-9]+$
-    AEInsuranceCustomerQuoteProperties:
-      type: object
-      required:
-        - FirstName
-        - LastName
-        - Gender
-        - DateOfBirth
-        - Nationality
-        - MobileNumber
-        - EmailAddress
-        - Address
-      properties:
-        Salutation:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceSalutationCodes'
-          description: The salutation of the individual or customer.
-        FirstName:
-          type: string
-          minLength: 1
-          maxLength: 70
-          description: First Name of the individual.
-        MiddleName:
-          type: string
-          minLength: 1
-          maxLength: 70
-          description: Middle Name of the individual.
-        LastName:
-          type: string
-          minLength: 1
-          maxLength: 70
-          description: Last Name (Surname) of the individual.
-        Gender:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceGender'
-          description: The gender of the customer
-        DateOfBirth:
-          type: string
-          format: date
-          description: Date of birth of the individual.
-        MaritalStatus:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
-          description: The marital status of the individual.
-        ResidentialLocation:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceEmirate'
-          description: Residential Location of the individual.
-        LandlineNumber:
-          allOf:
-            - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
-          pattern: ^\+?[1-9]\d{1,14}$
-          description: The landline telephone number of the individual.
-        Nationality:
-          type: string
-          pattern: ^[A-Z]{3}$
-          description: The nationality of the individual based on the ISO 3166-1 alpha-3 codes
-        PrimaryLanguage:
-          allOf:
-            - $ref: '#/components/schemas/AECustomerPrimaryLanguage'
-          description: Primary language spoken by the insurance policy customer
-        MobileNumber:
-          allOf:
-            - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
-          description: The mobile telephone number of the individual.
-        EmailAddress:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceEmailAddressType'
-          description: Email address of the individual.
-        Address:
-          type: array
-          items:
-            $ref: '#/components/schemas/AEInsuranceAddress'
-          minItems: 1
-          description: Customer's address details
-      additionalProperties: false
     AEInsuranceDataSharingClaimsSummaryProperties:
       type: object
       required:
@@ -13404,10 +13734,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
           description: The marital status of the individual.
-        ResidentialLocation:
-          allOf:
-            - $ref: '#/components/schemas/AEInsuranceEmirate'
-          description: Residential Location of the individual.
         LandlineNumber:
           allOf:
             - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -13435,6 +13761,9 @@ components:
             $ref: '#/components/schemas/AEInsuranceAddress'
           minItems: 1
           description: Customer's address details
+        ResidentialLocation:
+          type: string
+          description: Residential Location of the individual.
         PreviousNameDetails:
           type: object
           properties:
@@ -13458,6 +13787,80 @@ components:
           type: string
           pattern: ^[A-Z]{3}$
           description: Place of Birth of the Insured Person
+      additionalProperties: false
+    AEInsuranceDataSharingCustomerQuoteProperties:
+      type: object
+      required:
+        - FirstName
+        - LastName
+        - Gender
+        - DateOfBirth
+        - Nationality
+        - MobileNumber
+        - EmailAddress
+        - Address
+      properties:
+        Salutation:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceSalutationCodes'
+          description: The salutation of the individual or customer.
+        FirstName:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: First Name of the individual.
+        MiddleName:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Middle Name of the individual.
+        LastName:
+          type: string
+          minLength: 1
+          maxLength: 70
+          description: Last Name (Surname) of the individual.
+        Gender:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceGender'
+          description: The gender of the customer
+        DateOfBirth:
+          type: string
+          format: date
+          description: Date of birth of the individual.
+        MaritalStatus:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
+          description: The marital status of the individual.
+        LandlineNumber:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
+          pattern: ^\+?[1-9]\d{1,14}$
+          description: The landline telephone number of the individual.
+        Nationality:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: The nationality of the individual based on the ISO 3166-1 alpha-3 codes
+        PrimaryLanguage:
+          allOf:
+            - $ref: '#/components/schemas/AECustomerPrimaryLanguage'
+          description: Primary language spoken by the insurance policy customer
+        MobileNumber:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
+          description: The mobile telephone number of the individual.
+        EmailAddress:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceEmailAddressType'
+          description: Email address of the individual.
+        Address:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceAddress'
+          minItems: 1
+          description: Customer's address details
+        ResidentialLocation:
+          type: string
+          description: Residential Location of the individual.
       additionalProperties: false
     AEInsuranceDataSharingPaymentFrequencyCode:
       type: string
@@ -13617,9 +14020,6 @@ components:
           type: array
           items:
             type: object
-            required:
-              - CreditDebitIndicator
-              - AdjustmentAmount
             properties:
               AdjustmentDate:
                 type: string
@@ -14863,13 +15263,13 @@ components:
                 from the date the claim was filed, for the specific type of insurance coverage requested in this quote.
             ClaimSettlementRatio:
               allOf:
-                - $ref: '#/components/schemas/AEInsuranceServiceRatingPercentage'
+                - $ref: '#/components/schemas/AEInsuranceServiceRatingRateOrRatio'
               description: >-
                 Indicates the percentage of claims successfully paid by the insurer (LFI) out of the total number of
                 claims filed for the type of insurance coverage requested in this quote.
             ClaimRejectionRate:
               allOf:
-                - $ref: '#/components/schemas/AEInsuranceServiceRatingPercentage'
+                - $ref: '#/components/schemas/AEInsuranceServiceRatingRateOrRatio'
               description: >-
                 Represents the percentage of claims that were rejected or denied by the insurer (LFI) relative to the
                 total number of claims received for the type of insurance coverage requested in this quote.
@@ -14971,16 +15371,10 @@ components:
             specific type of insurance requested in the quote.
           additionalProperties: false
       additionalProperties: false
-    AEInsuranceServiceRatingPercentage:
-      type: number
-      minimum: 0
-      maximum: 100
-      multipleOf: 0.1
-      description: Provides a percentage as decimal, to one decimal place.
     AEInsuranceServiceRatingRateOrRatio:
       type: number
-      multipleOf: 0.1
-      description: Provides a rate or ratio as decimal, to one decimal place.
+      description: A rate, ratio or percentage, expressed as a decimal. Values may exceed 100.
+      example: 152.35
     AEInsuranceSpecialConditions:
       type: string
       minLength: 1
@@ -15168,13 +15562,12 @@ components:
       type: object
       oneOf:
         - $ref: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-        - $ref: '#/components/schemas/AELifeInsuranceQuoteResponse1Properties'
+        - $ref: '#/components/schemas/AELifeInsuranceQuoteAvailableResponse1Properties'
       discriminator:
         propertyName: QuoteStatus
         mapping:
           Pending: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-          Available: '#/components/schemas/AELifeInsuranceQuoteResponse1Properties'
-      additionalProperties: false
+          Available: '#/components/schemas/AELifeInsuranceQuoteAvailableResponse1Properties'
     AELifeInsuranceExistingInsurance1Properties:
       type: object
       properties:
@@ -15343,10 +15736,6 @@ components:
               allOf:
                 - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
               description: The marital status of the individual.
-            ResidentialLocation:
-              allOf:
-                - $ref: '#/components/schemas/AEInsuranceEmirate'
-              description: Residential Location of the individual.
             LandlineNumber:
               allOf:
                 - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -15374,6 +15763,9 @@ components:
                 $ref: '#/components/schemas/AEInsuranceAddress'
               minItems: 1
               description: Customer's address details
+            ResidentialLocation:
+              type: string
+              description: Residential Location of the individual.
             PreviousNameDetails:
               type: object
               properties:
@@ -15703,10 +16095,6 @@ components:
                     allOf:
                       - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
                     description: The marital status of the individual.
-                  ResidentialLocation:
-                    allOf:
-                      - $ref: '#/components/schemas/AEInsuranceEmirate'
-                    description: Residential Location of the individual.
                   MobileNumber:
                     allOf:
                       - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -15804,6 +16192,9 @@ components:
                     description: Customer employment details
                     minProperties: 1
                     additionalProperties: false
+                  ResidentialLocation:
+                    type: string
+                    description: Residential Location of the individual.
                   LifeStyle:
                     type: object
                     properties:
@@ -16891,6 +17282,213 @@ components:
           description: Verified details captured by the TPP, when the TPP is a Broker. Omitted if not required.
           additionalProperties: false
       additionalProperties: false
+    AELifeInsuranceQuoteAvailableResponse1Properties:
+      type: object
+      required:
+        - QuoteStatus
+        - QuoteId
+        - QuoteReference
+        - CreationDateTime
+        - ServiceRating
+        - PolicyIssuanceAllowed
+        - CoverType
+        - PolicyStartDate
+        - PolicyEndDate
+      properties:
+        QuoteStatus:
+          type: string
+          enum:
+            - Available
+          description: The current status of the quote
+        QuoteId:
+          $ref: '#/components/schemas/AEInsuranceQuoteIdType'
+        QuoteReference:
+          $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
+        CreationDateTime:
+          type: string
+          format: date-time
+          description: The date and time at which the quote was created.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
+            be valid for up to 30 days as per the Standards.
+        PlanName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The specific name of the insurance plan.
+        PolicyLimit:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          description: The limit of the quoted insurance policy.
+          additionalProperties: false
+        Commission:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCommission'
+          description: >-
+            An object containing details of the commission amount that would be payable to the TPP if the User proceeded
+            with the insurance application and purchased the policy based on the provided information
+        AvailableAddOns:
+          type: array
+          items:
+            type: object
+            properties:
+              CoverName:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Name of the insurance cover add-on
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: Description of the insurance cover add-on
+              Amount:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: Premium value of the insurance cover add-on
+              CoverLimit:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the benefit coverage limit that could be paid if a claim was made.
+              CoverInclusionAndExclusionDescriptions:
+                type: array
+                items:
+                  type: string
+                minItems: 1
+                description: Included inclusions and exclusions for cover type.
+              PolicyExcess:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the amount that would be deductible from any claim.
+              CoverId:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Cover identifier, as assigned by the Insurer.
+            required:
+              - CoverName
+              - Description
+              - CoverId
+            additionalProperties: false
+          minItems: 1
+          description: An object containing details of optional add-ons available for the quoted policy
+        RequiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceDocumentRequirement'
+          minItems: 1
+          description: >-
+            A list of documents required that must be provided by the User to the LFI to proceed with the policy
+            purchase
+        DiscountOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePremiumDiscountOffers'
+          minItems: 1
+          description: An object containing details of any discounts or offers applied to the quote
+        ServiceRating:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceServiceRating'
+          description: An object containing ratings or reviews of the insurer's service quality
+        SpecialConditionsApplicable:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceSpecialConditions'
+          description: >-
+            Provides special conditions or clauses applicable to the policy specified by the LFI, which must be
+            displayed to the User if provided.
+        PolicyIssuanceAllowed:
+          type: object
+          properties:
+            CustomerVerification:
+              type: boolean
+              description: Broker allowed to complete capture of customer verification information and documents for this quote.
+            Payment:
+              type: boolean
+              description: Broker allowed to host payment checkout.
+            PolicyDocuments:
+              type: boolean
+              description: Broker allowed to provide policy documents to customer.
+          required:
+            - CustomerVerification
+            - Payment
+            - PolicyDocuments
+          description: Broker requests to handle following steps of policy issuance process.
+          additionalProperties: false
+        Takaful:
+          type: boolean
+          description: Indicates whether the policy is Sharia compliant.
+        AlternativeBrandName:
+          type: string
+          description: Provides and alternative brand name where the product is Sharia compliant
+        PolicyDocuments:
+          type: array
+          items:
+            type: object
+            properties:
+              Uri:
+                type: string
+                format: uri
+                minLength: 1
+                maxLength: 1024
+                description: Policy Document URI
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: |-
+                  Description of Policy Document.
+
+                  Omitted if not provided by LFI.
+            required:
+              - Uri
+            additionalProperties: false
+          minItems: 1
+        PolicyExcess:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          additionalProperties: false
+        Premium:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePremiumProperties'
+          minProperties: 1
+          description: An object containing details of the quoted insurance premium.
+        CoverType:
+          $ref: '#/components/schemas/AELifeInsuranceCoverType1Codes'
+        PolicyCover:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceQuotePolicyCover'
+          minItems: 1
+          description: >-
+            An array containing options for policy cover, which contain information about the cover and benefits
+            included in the quoted policies.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised start date for policy plan.
+        PolicyEndDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised end date for policy plan.
+      additionalProperties: false
     AELifeInsuranceQuoteCustomerProperties:
       type: object
       required:
@@ -17458,7 +18056,6 @@ components:
           PaymentRequired: '#/components/schemas/AELifeInsuranceQuoteReadPaymentRequiredResponse1Properties'
           PolicyIssued: '#/components/schemas/AELifeInsuranceQuoteReadPolicyIssuedResponse1Properties'
           Rejected: '#/components/schemas/AELifeInsuranceQuoteReadRejectedResponse1Properties'
-      additionalProperties: false
     AELifeInsuranceQuoteRequestProperties:
       type: object
       required:
@@ -17749,13 +18346,12 @@ components:
       type: object
       oneOf:
         - $ref: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-        - $ref: '#/components/schemas/AEMotorInsuranceQuoteResponse1Properties'
+        - $ref: '#/components/schemas/AEMotorInsuranceQuoteAvailableResponse1Properties'
       discriminator:
         propertyName: QuoteStatus
         mapping:
           Pending: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-          Available: '#/components/schemas/AEMotorInsuranceQuoteResponse1Properties'
-      additionalProperties: false
+          Available: '#/components/schemas/AEMotorInsuranceQuoteAvailableResponse1Properties'
     AEMotorInsuranceDataSharingCarRegistration:
       type: object
       required:
@@ -18965,6 +19561,263 @@ components:
           description: Verified details captured by the TPP, when the TPP is a Broker. Omitted if not required.
           additionalProperties: false
       additionalProperties: false
+    AEMotorInsuranceQuoteAvailableResponse1Properties:
+      type: object
+      required:
+        - QuoteStatus
+        - QuoteId
+        - QuoteReference
+        - CreationDateTime
+        - ServiceRating
+        - PolicyIssuanceAllowed
+        - CoverType
+        - PolicyStartDate
+        - PolicyEndDate
+      properties:
+        QuoteStatus:
+          type: string
+          enum:
+            - Available
+          description: The current status of the quote
+        QuoteId:
+          $ref: '#/components/schemas/AEInsuranceQuoteIdType'
+        QuoteReference:
+          $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
+        CreationDateTime:
+          type: string
+          format: date-time
+          description: The date and time at which the quote was created.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
+            be valid for up to 30 days as per the Standards.
+        PlanName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The specific name of the insurance plan.
+        PolicyLimit:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          description: The limit of the quoted insurance policy.
+          additionalProperties: false
+        Commission:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCommission'
+          description: >-
+            An object containing details of the commission amount that would be payable to the TPP if the User proceeded
+            with the insurance application and purchased the policy based on the provided information
+        AvailableAddOns:
+          type: array
+          items:
+            type: object
+            properties:
+              CoverName:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Name of the insurance cover add-on
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: Description of the insurance cover add-on
+              Amount:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: Premium value of the insurance cover add-on
+              CoverLimit:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the benefit coverage limit that could be paid if a claim was made.
+              CoverInclusionAndExclusionDescriptions:
+                type: array
+                items:
+                  type: string
+                minItems: 1
+                description: Included inclusions and exclusions for cover type.
+              PolicyExcess:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the amount that would be deductible from any claim.
+              CoverId:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Cover identifier, as assigned by the Insurer.
+            required:
+              - CoverName
+              - Description
+              - CoverId
+            additionalProperties: false
+          minItems: 1
+          description: An object containing details of optional add-ons available for the quoted policy
+        RequiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceDocumentRequirement'
+          minItems: 1
+          description: >-
+            A list of documents required that must be provided by the User to the LFI to proceed with the policy
+            purchase
+        DiscountOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePremiumDiscountOffers'
+          minItems: 1
+          description: An object containing details of any discounts or offers applied to the quote
+        ServiceRating:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceServiceRating'
+          description: An object containing ratings or reviews of the insurer's service quality
+        SpecialConditionsApplicable:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceSpecialConditions'
+          description: >-
+            Provides special conditions or clauses applicable to the policy specified by the LFI, which must be
+            displayed to the User if provided.
+        PolicyIssuanceAllowed:
+          type: object
+          properties:
+            CustomerVerification:
+              type: boolean
+              description: Broker allowed to complete capture of customer verification information and documents for this quote.
+            Payment:
+              type: boolean
+              description: Broker allowed to host payment checkout.
+            PolicyDocuments:
+              type: boolean
+              description: Broker allowed to provide policy documents to customer.
+          required:
+            - CustomerVerification
+            - Payment
+            - PolicyDocuments
+          description: Broker requests to handle following steps of policy issuance process.
+          additionalProperties: false
+        Takaful:
+          type: boolean
+          description: Indicates whether the policy is Sharia compliant.
+        AlternativeBrandName:
+          type: string
+          description: Provides and alternative brand name where the product is Sharia compliant
+        PolicyDocuments:
+          type: array
+          items:
+            type: object
+            properties:
+              Uri:
+                type: string
+                format: uri
+                minLength: 1
+                maxLength: 1024
+                description: Policy Document URI
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: |-
+                  Description of Policy Document.
+
+                  Omitted if not provided by LFI.
+            required:
+              - Uri
+            additionalProperties: false
+          minItems: 1
+        PolicyExcess:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          additionalProperties: false
+        Premium:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePremiumProperties'
+          minProperties: 1
+          description: An object containing details of the quoted insurance premium.
+        CoverType:
+          $ref: '#/components/schemas/AEMotorInsuranceCoverType1Codes'
+        PolicyCover:
+          type: array
+          items:
+            type: object
+            properties:
+              CoverId:
+                type: string
+                description: Insurers internal unique ID for specific cover
+              CoverType:
+                type: string
+                description: The category of Cover provided under the insurance policy
+              Description:
+                type: string
+                description: A description of the cover type
+              CoverIncludedByDefaultIndicator:
+                type: boolean
+                description: Indicates whether this Cover is included in the policy by default
+              CoverLimitAmount:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: >-
+                  Required if PolicyCoverIncluded is true (Yes) to provide confirmation of the maximum financial amount
+                  the insurer will cover for this specific Cover.
+              CoverFeatures:
+                type: string
+                description: The benefits or additional details related to the specific policy cover.
+              CoverExcess:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: >-
+                  Required if PolicyCoverIncluded is true (Yes) to confirm the deductible or out-of-pocket (excess)
+                  amount the policyholder must pay before the insurer covers the remaining claim.
+              CoverInclusionAndExclusionDescriptions:
+                type: array
+                items:
+                  type: string
+                minItems: 1
+                description: Included inclusions and exclusions for cover type.
+              CarValuation:
+                type: object
+                required:
+                  - Currency
+                  - Amount
+                properties:
+                  Currency:
+                    $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+                  Amount:
+                    $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+                additionalProperties: false
+            required:
+              - CoverType
+              - Description
+              - CoverIncludedByDefaultIndicator
+            additionalProperties: false
+          minItems: 1
+          description: >-
+            An array containing options for policy cover, which contain information about the cover and benefits
+            included in the quoted policies.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised start date for policy plan.
+        PolicyEndDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised end date for policy plan.
+      additionalProperties: false
     AEMotorInsuranceQuoteCarRegistrationProperties:
       type: object
       required:
@@ -19267,7 +20120,6 @@ components:
           PaymentRequired: '#/components/schemas/AEMotorInsuranceQuoteReadPaymentRequiredResponse1Properties'
           PolicyIssued: '#/components/schemas/AEMotorInsuranceQuoteReadPolicyIssuedResponse1Properties'
           Rejected: '#/components/schemas/AEMotorInsuranceQuoteReadRejectedResponse1Properties'
-      additionalProperties: false
     AEMotorInsuranceQuoteRequestProperties:
       type: object
       required:
@@ -20648,13 +21500,12 @@ components:
       type: object
       oneOf:
         - $ref: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-        - $ref: '#/components/schemas/AERentersInsuranceQuoteResponse1Properties'
+        - $ref: '#/components/schemas/AERentersInsuranceQuoteAvailableResponse1Properties'
       discriminator:
         propertyName: QuoteStatus
         mapping:
           Pending: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-          Available: '#/components/schemas/AERentersInsuranceQuoteResponse1Properties'
-      additionalProperties: false
+          Available: '#/components/schemas/AERentersInsuranceQuoteAvailableResponse1Properties'
     AERentersInsuranceImportantQuestions:
       type: object
       required:
@@ -20691,7 +21542,7 @@ components:
           example: d330c5bb-0889-4596-86bb-17cc9a4a17b5
         PolicyHolder:
           allOf:
-            - $ref: '#/components/schemas/AEInsuranceCustomerQuoteProperties'
+            - $ref: '#/components/schemas/AEInsuranceDataSharingCustomerQuoteProperties'
           description: Information about the customer. Requires `ReadCustomerBasic` permission to be granted by the User.
         Identity:
           allOf:
@@ -21788,6 +22639,213 @@ components:
           description: Verified details captured by the TPP, when the TPP is a Broker. Omitted if not required.
           additionalProperties: false
       additionalProperties: false
+    AERentersInsuranceQuoteAvailableResponse1Properties:
+      type: object
+      required:
+        - QuoteStatus
+        - QuoteId
+        - QuoteReference
+        - CreationDateTime
+        - ServiceRating
+        - PolicyIssuanceAllowed
+        - CoverType
+        - PolicyStartDate
+        - PolicyEndDate
+      properties:
+        QuoteStatus:
+          type: string
+          enum:
+            - Available
+          description: The current status of the quote
+        QuoteId:
+          $ref: '#/components/schemas/AEInsuranceQuoteIdType'
+        QuoteReference:
+          $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
+        CreationDateTime:
+          type: string
+          format: date-time
+          description: The date and time at which the quote was created.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
+            be valid for up to 30 days as per the Standards.
+        PlanName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The specific name of the insurance plan.
+        PolicyLimit:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          description: The limit of the quoted insurance policy.
+          additionalProperties: false
+        Commission:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCommission'
+          description: >-
+            An object containing details of the commission amount that would be payable to the TPP if the User proceeded
+            with the insurance application and purchased the policy based on the provided information
+        AvailableAddOns:
+          type: array
+          items:
+            type: object
+            properties:
+              CoverName:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Name of the insurance cover add-on
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: Description of the insurance cover add-on
+              Amount:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: Premium value of the insurance cover add-on
+              CoverLimit:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the benefit coverage limit that could be paid if a claim was made.
+              CoverInclusionAndExclusionDescriptions:
+                type: array
+                items:
+                  type: string
+                minItems: 1
+                description: Included inclusions and exclusions for cover type.
+              PolicyExcess:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the amount that would be deductible from any claim.
+              CoverId:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Cover identifier, as assigned by the Insurer.
+            required:
+              - CoverName
+              - Description
+              - CoverId
+            additionalProperties: false
+          minItems: 1
+          description: An object containing details of optional add-ons available for the quoted policy
+        RequiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceDocumentRequirement'
+          minItems: 1
+          description: >-
+            A list of documents required that must be provided by the User to the LFI to proceed with the policy
+            purchase
+        DiscountOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePremiumDiscountOffers'
+          minItems: 1
+          description: An object containing details of any discounts or offers applied to the quote
+        ServiceRating:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceServiceRating'
+          description: An object containing ratings or reviews of the insurer's service quality
+        SpecialConditionsApplicable:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceSpecialConditions'
+          description: >-
+            Provides special conditions or clauses applicable to the policy specified by the LFI, which must be
+            displayed to the User if provided.
+        PolicyIssuanceAllowed:
+          type: object
+          properties:
+            CustomerVerification:
+              type: boolean
+              description: Broker allowed to complete capture of customer verification information and documents for this quote.
+            Payment:
+              type: boolean
+              description: Broker allowed to host payment checkout.
+            PolicyDocuments:
+              type: boolean
+              description: Broker allowed to provide policy documents to customer.
+          required:
+            - CustomerVerification
+            - Payment
+            - PolicyDocuments
+          description: Broker requests to handle following steps of policy issuance process.
+          additionalProperties: false
+        Takaful:
+          type: boolean
+          description: Indicates whether the policy is Sharia compliant.
+        AlternativeBrandName:
+          type: string
+          description: Provides and alternative brand name where the product is Sharia compliant
+        PolicyDocuments:
+          type: array
+          items:
+            type: object
+            properties:
+              Uri:
+                type: string
+                format: uri
+                minLength: 1
+                maxLength: 1024
+                description: Policy Document URI
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: |-
+                  Description of Policy Document.
+
+                  Omitted if not provided by LFI.
+            required:
+              - Uri
+            additionalProperties: false
+          minItems: 1
+        PolicyExcess:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          additionalProperties: false
+        Premium:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePremiumProperties'
+          minProperties: 1
+          description: An object containing details of the quoted insurance premium.
+        CoverType:
+          $ref: '#/components/schemas/AERentersInsuranceCoverType1Codes'
+        PolicyCover:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceQuotePolicyCover'
+          minItems: 1
+          description: >-
+            An array containing options for policy cover, which contain information about the cover and benefits
+            included in the quoted policies.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised start date for policy plan.
+        PolicyEndDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised end date for policy plan.
+      additionalProperties: false
     AERentersInsuranceQuoteDomesticHelperIndividualDetailsProperties:
       type: object
       required:
@@ -22313,7 +23371,6 @@ components:
           PaymentRequired: '#/components/schemas/AERentersInsuranceQuoteReadPaymentRequiredResponse1Properties'
           PolicyIssued: '#/components/schemas/AERentersInsuranceQuoteReadPolicyIssuedResponse1Properties'
           Rejected: '#/components/schemas/AERentersInsuranceQuoteReadRejectedResponse1Properties'
-      additionalProperties: false
     AERentersInsuranceQuoteRequestProperties:
       type: object
       required:
@@ -22849,13 +23906,12 @@ components:
       type: object
       oneOf:
         - $ref: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-        - $ref: '#/components/schemas/AETravelInsuranceQuoteResponse1Properties'
+        - $ref: '#/components/schemas/AETravelInsuranceQuoteAvailableResponse1Properties'
       discriminator:
         propertyName: QuoteStatus
         mapping:
           Pending: '#/components/schemas/AEInsuranceQuoteResponsePendingProperties'
-          Available: '#/components/schemas/AETravelInsuranceQuoteResponse1Properties'
-      additionalProperties: false
+          Available: '#/components/schemas/AETravelInsuranceQuoteAvailableResponse1Properties'
     AETravelInsuranceDestinationCountry:
       type: string
       pattern: ^[A-Z]{3}$
@@ -22921,10 +23977,6 @@ components:
               allOf:
                 - $ref: '#/components/schemas/AEInsuranceMaritalStatus'
               description: The marital status of the individual.
-            ResidentialLocation:
-              allOf:
-                - $ref: '#/components/schemas/AEInsuranceEmirate'
-              description: Residential Location of the individual.
             LandlineNumber:
               allOf:
                 - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -22938,6 +23990,9 @@ components:
               allOf:
                 - $ref: '#/components/schemas/AECustomerPrimaryLanguage'
               description: Primary language spoken by the insurance policy customer
+            ResidentialLocation:
+              type: string
+              description: Residential Location of the individual.
             MobileNumber:
               allOf:
                 - $ref: '#/components/schemas/AEInsurancePhoneNumberType'
@@ -23720,6 +24775,213 @@ components:
           description: Verified details captured by the TPP, when the TPP is a Broker. Omitted if not required.
           additionalProperties: false
       additionalProperties: false
+    AETravelInsuranceQuoteAvailableResponse1Properties:
+      type: object
+      required:
+        - QuoteStatus
+        - QuoteId
+        - QuoteReference
+        - CreationDateTime
+        - ServiceRating
+        - PolicyIssuanceAllowed
+        - CoverType
+        - PolicyStartDate
+        - PolicyEndDate
+      properties:
+        QuoteStatus:
+          type: string
+          enum:
+            - Available
+          description: The current status of the quote
+        QuoteId:
+          $ref: '#/components/schemas/AEInsuranceQuoteIdType'
+        QuoteReference:
+          $ref: '#/components/schemas/AEInsuranceQuoteReferenceType'
+        CreationDateTime:
+          type: string
+          format: date-time
+          description: The date and time at which the quote was created.
+        ExpirationDateTime:
+          type: string
+          format: date-time
+          description: >-
+            The expiration date of the quote, after which it is no longer valid.  If no date is provided the quote will
+            be valid for up to 30 days as per the Standards.
+        PlanName:
+          type: string
+          minLength: 1
+          maxLength: 140
+          description: The specific name of the insurance plan.
+        PolicyLimit:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          description: The limit of the quoted insurance policy.
+          additionalProperties: false
+        Commission:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceCommission'
+          description: >-
+            An object containing details of the commission amount that would be payable to the TPP if the User proceeded
+            with the insurance application and purchased the policy based on the provided information
+        AvailableAddOns:
+          type: array
+          items:
+            type: object
+            properties:
+              CoverName:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Name of the insurance cover add-on
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 140
+                description: Description of the insurance cover add-on
+              Amount:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: Premium value of the insurance cover add-on
+              CoverLimit:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the benefit coverage limit that could be paid if a claim was made.
+              CoverInclusionAndExclusionDescriptions:
+                type: array
+                items:
+                  type: string
+                minItems: 1
+                description: Included inclusions and exclusions for cover type.
+              PolicyExcess:
+                allOf:
+                  - $ref: '#/components/schemas/AEActiveCurrencyAmount'
+                description: When applicable, the amount that would be deductible from any claim.
+              CoverId:
+                type: string
+                minLength: 1
+                maxLength: 70
+                description: Cover identifier, as assigned by the Insurer.
+            required:
+              - CoverName
+              - Description
+              - CoverId
+            additionalProperties: false
+          minItems: 1
+          description: An object containing details of optional add-ons available for the quoted policy
+        RequiredDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceDocumentRequirement'
+          minItems: 1
+          description: >-
+            A list of documents required that must be provided by the User to the LFI to proceed with the policy
+            purchase
+        DiscountOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsurancePremiumDiscountOffers'
+          minItems: 1
+          description: An object containing details of any discounts or offers applied to the quote
+        ServiceRating:
+          allOf:
+            - $ref: '#/components/schemas/AEInsuranceServiceRating'
+          description: An object containing ratings or reviews of the insurer's service quality
+        SpecialConditionsApplicable:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceSpecialConditions'
+          description: >-
+            Provides special conditions or clauses applicable to the policy specified by the LFI, which must be
+            displayed to the User if provided.
+        PolicyIssuanceAllowed:
+          type: object
+          properties:
+            CustomerVerification:
+              type: boolean
+              description: Broker allowed to complete capture of customer verification information and documents for this quote.
+            Payment:
+              type: boolean
+              description: Broker allowed to host payment checkout.
+            PolicyDocuments:
+              type: boolean
+              description: Broker allowed to provide policy documents to customer.
+          required:
+            - CustomerVerification
+            - Payment
+            - PolicyDocuments
+          description: Broker requests to handle following steps of policy issuance process.
+          additionalProperties: false
+        Takaful:
+          type: boolean
+          description: Indicates whether the policy is Sharia compliant.
+        AlternativeBrandName:
+          type: string
+          description: Provides and alternative brand name where the product is Sharia compliant
+        PolicyDocuments:
+          type: array
+          items:
+            type: object
+            properties:
+              Uri:
+                type: string
+                format: uri
+                minLength: 1
+                maxLength: 1024
+                description: Policy Document URI
+              Description:
+                type: string
+                minLength: 1
+                maxLength: 500
+                description: |-
+                  Description of Policy Document.
+
+                  Omitted if not provided by LFI.
+            required:
+              - Uri
+            additionalProperties: false
+          minItems: 1
+        PolicyExcess:
+          type: object
+          required:
+            - Currency
+            - Amount
+          properties:
+            Currency:
+              $ref: '#/components/schemas/AEActiveOrHistoricCurrencyCode'
+            Amount:
+              $ref: '#/components/schemas/AEActiveOrHistoricAmount'
+          additionalProperties: false
+        Premium:
+          allOf:
+            - $ref: '#/components/schemas/AEInsurancePremiumProperties'
+          minProperties: 1
+          description: An object containing details of the quoted insurance premium.
+        CoverType:
+          $ref: '#/components/schemas/AETravelInsuranceCoverType1Codes'
+        PolicyCover:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEInsuranceQuotePolicyCover'
+          minItems: 1
+          description: >-
+            An array containing options for policy cover, which contain information about the cover and benefits
+            included in the quoted policies.
+        PolicyStartDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised start date for policy plan.
+        PolicyEndDate:
+          type: string
+          format: date
+          description: LFI confirmed or revised end date for policy plan.
+      additionalProperties: false
     AETravelInsuranceQuoteHighRiskActivityProperties:
       type: object
       required:
@@ -24170,7 +25432,6 @@ components:
           PaymentRequired: '#/components/schemas/AETravelInsuranceQuoteReadPaymentRequiredResponse1Properties'
           PolicyIssued: '#/components/schemas/AETravelInsuranceQuoteReadPolicyIssuedResponse1Properties'
           Rejected: '#/components/schemas/AETravelInsuranceQuoteReadRejectedResponse1Properties'
-      additionalProperties: false
     AETravelInsuranceQuoteRequestProperties:
       type: object
       required:
