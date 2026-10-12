@@ -64,6 +64,9 @@ info:
       insurer, and the other two are measured in calendar days and in complaints per 1,000 active policies
       respectively.
 
+    * Changed `ClaimSettlementRatio` and `ClaimRejectionRate` to use AEInsuranceServiceRatingRateOrRatio, to avoid 
+      sprawl of objects and assumptions on the shape of LFI data as market adoption matures.
+
     * Added initial version that delivers v2.2 requirements.
   version: v2.2.2
 tags:
