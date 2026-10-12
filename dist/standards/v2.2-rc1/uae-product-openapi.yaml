@@ -456,6 +456,15 @@ components:
           description: A link to the Card Image for the product.
           type: string
           format: uri
+        ShariaCertificate:
+          description: >-
+            One or more links to the Sharia Certificates for the product, allowing an LFI to make its Sharia
+            Certificates available to a TPP as part of a product offer.
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uri
     Eligibility:
       type: object
       description: |
