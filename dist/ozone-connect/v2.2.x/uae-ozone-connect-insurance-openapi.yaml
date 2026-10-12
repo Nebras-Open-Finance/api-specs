@@ -38,8 +38,7 @@ info:
     * Changed `QuoteStatus` in 201 response from all Create Quote operations to correct issue with `Available` response
       where `discriminator` was incorrectly declared.
 
-    * Changed `ResidentialLocation` to a non-enumerated string for all policy
-      responses.
+    * Changed `ResidentialLocation` to a non-enumerated string for all policy responses.
 
 
     ### v2.2.1
