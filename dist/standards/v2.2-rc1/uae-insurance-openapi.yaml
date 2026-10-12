@@ -15154,7 +15154,7 @@ components:
       minLength: 1
       maxLength: 128
       description: |-
-        Unique identifier for a given insurance policy. 
+        Unique identifier for a given resource, for example a given insurance policy or quote.
 
         A uuid v4 is recommended for consistency but not mandatory.
     AEInsuranceSafetySecurityFeatures:

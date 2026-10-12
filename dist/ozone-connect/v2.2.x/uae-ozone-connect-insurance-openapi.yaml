@@ -62,8 +62,7 @@ info:
       `ServiceRating` properties `SolvencyRatio`, `ClaimsPaymentCapacityRatio`, `AverageClaimSettlementTime`, and
       `CustomerComplaintRate`. None of these is a 0-100 percentage: both ratios routinely exceed 100% for a solvent
       insurer, and the other two are measured in calendar days and in complaints per 1,000 active policies
-      respectively. The two genuine percentages, `ClaimSettlementRatio` and `ClaimRejectionRate`, now reference a new
-      `AEInsuranceServiceRatingPercentage` schema, which retains `maximum: 100` and adds `minimum: 0`.
+      respectively.
 
     * Added initial version that delivers v2.2 requirements.
   version: v2.2.2
@@ -13374,7 +13373,7 @@ components:
       minLength: 1
       maxLength: 128
       description: |-
-        Unique identifier for a given insurance policy. 
+        Unique identifier for a given resource, for example a given insurance policy or quote.
 
         A uuid v4 is recommended for consistency but not mandatory.
     AEInsurance.AEInsuranceSafetySecurityFeatures:
