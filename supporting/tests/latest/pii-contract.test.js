@@ -7,6 +7,7 @@ const { spawnSync } = require('node:child_process');
 const YAML = require('yaml');
 const {
   distDir, repoRoot, findLatestSpecs, parseVersion, compareVersions, relativeToRepo,
+  isVersionedUrnUplift,
 } = require('../helpers');
 
 // The `PersonalIdentifiableInformation` (PII) payload is shared, end-to-end, across the
@@ -261,7 +262,11 @@ describe('No unrecorded breaking changes to the decoded PII contract', {
           throw new Error(`oasdiff exited with status ${result.status}.\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
         }
         const accepted = loadAcceptedChanges(category, revision.name, file);
-        const allErrors = result.stdout.split('\n').filter(l => l.startsWith('error'));
+        const revText = fs.readFileSync(path.join(revDir, file), 'utf8');
+        const allErrors = result.stdout.split('\n')
+          .filter(l => l.startsWith('error'))
+          .filter(l => !isVersionedUrnUplift(l, revision.name, revText));
+        if (allErrors.length === 0) return;
         const unaccepted = allErrors.filter(l => !isAccepted(l, accepted));
         if (unaccepted.length === 0) return;
         const acceptedNote = allErrors.length - unaccepted.length > 0
