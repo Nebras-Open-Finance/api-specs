@@ -5030,14 +5030,14 @@ components:
       required: true
       description: Unique identifier for a given insurance policy
       schema:
-        $ref: '#/components/schemas/uuid'
+        $ref: '#/components/schemas/AEInsuranceResourceIdentifierType'
     AEInsuranceParameters.AEInsuranceQuoteId:
       name: QuoteId
       in: path
       required: true
       description: Unique identifier for a given quote
       schema:
-        $ref: '#/components/schemas/uuid'
+        $ref: '#/components/schemas/AEInsuranceResourceIdentifierType'
     Authorization:
       name: authorization
       in: header
@@ -13176,13 +13176,13 @@ components:
                 from the date the claim was filed, for the specific type of insurance coverage requested in this quote.
             ClaimSettlementRatio:
               allOf:
-                - $ref: '#/components/schemas/AEInsuranceServiceRatingPercentage'
+                - $ref: '#/components/schemas/AEInsuranceServiceRatingRateOrRatio'
               description: >-
                 Indicates the percentage of claims successfully paid by the insurer (LFI) out of the total number of
                 claims filed for the type of insurance coverage requested in this quote.
             ClaimRejectionRate:
               allOf:
-                - $ref: '#/components/schemas/AEInsuranceServiceRatingPercentage'
+                - $ref: '#/components/schemas/AEInsuranceServiceRatingRateOrRatio'
               description: >-
                 Represents the percentage of claims that were rejected or denied by the insurer (LFI) relative to the
                 total number of claims received for the type of insurance coverage requested in this quote.
@@ -13284,16 +13284,10 @@ components:
             specific type of insurance requested in the quote.
           additionalProperties: false
       additionalProperties: false
-    AEInsuranceServiceRatingPercentage:
-      type: number
-      minimum: 0
-      maximum: 100
-      multipleOf: 0.1
-      description: Provides a percentage as decimal, to one decimal place.
     AEInsuranceServiceRatingRateOrRatio:
       type: number
-      multipleOf: 0.1
-      description: Provides a rate or ratio as decimal, to one decimal place.
+      description: A rate, ratio or percentage, expressed as a decimal. Values may exceed 100.
+      example: 152.35
     AEInsuranceSpecialConditions:
       type: string
       minLength: 1
