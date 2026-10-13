@@ -15,43 +15,6 @@
 #       Free text written from the perspective of the change author,
 #       explaining what changed, why, and the impact on consumers.
 
-- rules:
-    - request-parameter-type-changed
-    - request-parameter-min-items-increased
-  endpoints:
-    - method: GET
-      path: /psu/{userId}/consents
-  signedOffBy: Thomas Catchpole - CTO, Nebras
-  rationale: |
-    The `status` query parameter on `GET /psu/{userId}/consents` was changed
-    from a bare `string` to an array of `AEConsentStatus`, serialised
-    comma-separated (`style: form`, `explode: false`) — for example
-    `?status=Authorized,Suspended`. This is v2.1-to-v2.2 change §2.
-
-    On the wire the single-valued form is unchanged: `?status=Authorized` is a
-    one-item list and behaves exactly as it did in v2.1, and omitting the
-    parameter still returns consents of every status. Every request an LFI
-    built against v2.1 sends today continues to work.
-
-    What does change is validation. In v2.1 the schema was an untyped `string`
-    with no enum, so an unrecognised value was accepted by the contract and
-    simply returned an empty array. From v2.2 each list item MUST be a member
-    of `AEConsentStatus` and any other value is rejected with `400`. An LFI
-    sending a status name the standard does not define was already getting no
-    results; it now gets an error that says so.
-
-    `request-parameter-min-items-increased` is reported for the same edit:
-    oasdiff reads the absent `minItems` on the v2.1 scalar as `0` and compares
-    it against the `minItems: 1` on the new array. A caller cannot send an
-    empty list — omitting the parameter is how "no filter" is expressed, as
-    before — so nothing that previously validated is now rejected.
-
-    The shared `#/components/parameters/status` component is deliberately
-    untouched. `GET /consents`, `GET /consent-groups/{consentGroupId}/consents`
-    and `GET /accounts/{accountId}/consents` continue to reference it and stay
-    single-valued and untyped in v2.2, so this change reaches one operation
-    only.
-
 - rule: request-property-any-of-removed
   endpoints:
     - method: POST
