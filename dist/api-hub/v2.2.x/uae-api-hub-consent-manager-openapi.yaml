@@ -50,9 +50,11 @@ info:
 
       * `AANI` — statuses `AcceptedSettlementCompleted`, `AcceptedWithoutPosting` and `Rejected`, where
         `AcceptedSettlementCompleted` is **not terminal** and records the payment having been passed to AANI; the LFI
-        patches again to `AcceptedWithoutPosting` once AANI confirms it. `paymentResponse.paymentTransactionId`
-        carries the AANI-issued identifier. `paymentResponse.OpenFinanceBilling` is not available on this rail, and
-        reject reason codes are `AANI.*` only.
+        patches again to `AcceptedWithoutPosting` once AANI confirms it. The body is a further `oneOf` selected by
+        `paymentResponse.status`. `paymentResponse.paymentTransactionId` is required on every patch and carries the
+        pacs.008 `TxId` the LFI assigned to the payment, which is not issued by AANI and MUST start with `OFP`.
+        `paymentResponse.rejectReasonCode` is required with `Rejected` and not allowed with any other status.
+        `paymentResponse.OpenFinanceBilling` is not available on this rail, and reject reason codes are `AANI.*` only.
 
       * `LFI` — statuses `AcceptedCreditSettlementCompleted` and `Rejected`, both terminal.
         `paymentResponse.paymentTransactionId` is not available, since nothing outside the LFI issues an identifier.
@@ -60,9 +62,11 @@ info:
 
       * `FTS` — statuses `AcceptedSettlementCompleted`, `AcceptedCreditSettlementCompleted` and `Rejected`, where
         `AcceptedSettlementCompleted` is **not terminal** and records the payment having been passed to UAEFTS; the LFI
-        patches again to `AcceptedCreditSettlementCompleted` once UAEFTS confirms it.
-        `paymentResponse.paymentTransactionId` carries the UAEFTS-issued identifier.
-        `paymentResponse.OpenFinanceBilling` is not available on this rail, and reject reason codes are `FTS.*` only.
+        patches again to `AcceptedCreditSettlementCompleted` once UAEFTS confirms it. The body is a further `oneOf`
+        selected by `paymentResponse.status`. `paymentResponse.paymentTransactionId` is required on every patch
+        and carries the payment's end to end transaction identifier on UAEFTS. `paymentResponse.rejectReasonCode` is
+        required with `Rejected` and not allowed with any other status. `paymentResponse.OpenFinanceBilling` is not
+        available on this rail, and reject reason codes are `FTS.*` only.
 
       `Pending` is no longer a patchable status on any rail, and `paymentResponse.OpenFinanceBilling` is no longer
       patchable through this operation on any rail.
@@ -1550,13 +1554,33 @@ components:
         - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseFts'
         - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseLfi'
         - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseUnrouted'
+    CbuaePaymentLogPaymentTransactionIdAani:
+      description: >
+        The Transaction Identification (`TxId`) the LFI assigned to the payment in the AANI pacs.008 credit transfer. It
+        is assigned by the Originating LFI, not issued by AANI, and passes unchanged through AANI to the Receiving LFI.
+        This is not the same value as the `transactionId` in the Bank Data Sharing API. The value MUST start with `OFP`.
+      type: string
+      minLength: 1
+      maxLength: 35
+      pattern: ^OFP
+      example: OFP7d2c1e9a4b6f4c0e8a1b
     CbuaePaymentLogPaymentResponseAani:
       description: >
         A payment the LFI routed to AANI, the UAE instant payment platform.
+
+        `status` selects the shape, exactly as it does on `patch /payment-log/{id}`: every payment carries
+        `paymentTransactionId`, and only a rejected payment carries `rejectReasonCode`.
+      oneOf:
+        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseAaniAccepted'
+        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseAaniRejected'
+    CbuaePaymentLogPaymentResponseAaniAccepted:
+      description: >
+        A payment the LFI routed to AANI and that AANI has accepted or is processing.
       type: object
       required:
         - paymentRail
         - status
+        - paymentTransactionId
       additionalProperties: false
       properties:
         id:
@@ -1578,21 +1602,54 @@ components:
               confirmation.
 
             * `AcceptedWithoutPosting`: terminal. AANI has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `rejectReasonCode` carries the reason.
           type: string
           enum:
             - AcceptedSettlementCompleted
             - AcceptedWithoutPosting
+        paymentTransactionId:
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdAani'
+        creationDateTime:
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: An ISO date-time representing when the payment was created
+        statusUpdateDateTime:
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: An ISO date-time representing when the payment status was last updated
+        OpenFinanceBilling:
+          $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
+    CbuaePaymentLogPaymentResponseAaniRejected:
+      description: >
+        A payment the LFI routed to AANI and that will not be settled.
+      type: object
+      required:
+        - paymentRail
+        - status
+        - paymentTransactionId
+        - rejectReasonCode
+      additionalProperties: false
+      properties:
+        id:
+          description: |
+            A unique id for the payment in uuid-v4 format.
+          type: string
+        paymentRail:
+          description: >
+            Identifies AANI as the rail the payment was routed to.
+          type: string
+          enum:
+            - AANI
+          example: AANI
+        status:
+          description: >
+            The current status of the payment.
+
+            * `Rejected`: terminal. The payment will not be settled, and `rejectReasonCode` carries the reason.
+          type: string
+          enum:
             - Rejected
         paymentTransactionId:
-          description: >
-            The AANI-generated end to end transaction identifier, as issued to the Originating LFI. This is not the same
-            value as the `transactionId` in the Bank Data Sharing API. It is absent where the payment was rejected
-            before AANI issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdAani'
         creationDateTime:
           allOf:
             - $ref: '#/components/schemas/AEDateTime'
@@ -1605,13 +1662,30 @@ components:
           $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
         rejectReasonCode:
           $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeAani'
+    CbuaePaymentLogPaymentTransactionIdFts:
+      description: >
+        The end to end transaction identifier for the payment on UAEFTS. This is not the same value as the
+        `transactionId` in the Bank Data Sharing API.
+      type: string
+      minLength: 1
+      maxLength: 40
     CbuaePaymentLogPaymentResponseFts:
       description: >
         A payment the LFI routed to UAEFTS, the CBUAE funds transfer system.
+
+        `status` selects the shape, exactly as it does on `patch /payment-log/{id}`: every payment carries
+        `paymentTransactionId`, and only a rejected payment carries `rejectReasonCode`.
+      oneOf:
+        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseFtsAccepted'
+        - $ref: '#/components/schemas/CbuaePaymentLogPaymentResponseFtsRejected'
+    CbuaePaymentLogPaymentResponseFtsAccepted:
+      description: >
+        A payment the LFI routed to UAEFTS and that UAEFTS has accepted or is processing.
       type: object
       required:
         - paymentRail
         - status
+        - paymentTransactionId
       additionalProperties: false
       properties:
         id:
@@ -1633,21 +1707,54 @@ components:
               confirmation.
 
             * `AcceptedCreditSettlementCompleted`: terminal. UAEFTS has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `rejectReasonCode` carries the reason.
           type: string
           enum:
             - AcceptedSettlementCompleted
             - AcceptedCreditSettlementCompleted
+        paymentTransactionId:
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdFts'
+        creationDateTime:
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: An ISO date-time representing when the payment was created
+        statusUpdateDateTime:
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: An ISO date-time representing when the payment status was last updated
+        OpenFinanceBilling:
+          $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
+    CbuaePaymentLogPaymentResponseFtsRejected:
+      description: >
+        A payment the LFI routed to UAEFTS and that will not be settled.
+      type: object
+      required:
+        - paymentRail
+        - status
+        - paymentTransactionId
+        - rejectReasonCode
+      additionalProperties: false
+      properties:
+        id:
+          description: |
+            A unique id for the payment in uuid-v4 format.
+          type: string
+        paymentRail:
+          description: >
+            Identifies UAEFTS as the rail the payment was routed to.
+          type: string
+          enum:
+            - FTS
+          example: FTS
+        status:
+          description: >
+            The current status of the payment.
+
+            * `Rejected`: terminal. The payment will not be settled, and `rejectReasonCode` carries the reason.
+          type: string
+          enum:
             - Rejected
         paymentTransactionId:
-          description: >
-            The UAEFTS-generated end to end transaction identifier, as issued to the Originating LFI. This is not the
-            same value as the `transactionId` in the Bank Data Sharing API. It is absent where the payment was rejected
-            before UAEFTS issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdFts'
         creationDateTime:
           allOf:
             - $ref: '#/components/schemas/AEDateTime'
@@ -1770,7 +1877,8 @@ components:
         `FTS.*` with `FTS`, and `LFI.*` with `LFI`. A payment rejected at the LFI before it reached AANI or UAEFTS is
         still reported against the rail it was routed to, and carries that rail's reason codes.
 
-        Where the rail issues an end to end transaction identifier, `paymentResponse.paymentTransactionId` carries it. A
+        `paymentResponse.paymentTransactionId` carries the payment's end to end transaction identifier where one exists:
+        on `AANI` the pacs.008 `TxId` assigned by the LFI, and on `FTS` the payment's UAEFTS transaction identifier. A
         payment booked on the LFI's own ledger has no such identifier.
 
         A payment settles over exactly one rail. This holds for file payments as well as single payments — a file
@@ -1788,10 +1896,25 @@ components:
     CbuaePatchPaymentRecordBodyAani:
       description: >
         A patch to a payment the LFI has routed to AANI, the UAE instant payment platform.
+
+        `paymentResponse.paymentTransactionId` is required on every patch. `paymentResponse.status` selects the body,
+        which determines whether `paymentResponse.rejectReasonCode` is sent:
+
+        * `AcceptedSettlementCompleted` or `AcceptedWithoutPosting`: `paymentResponse.rejectReasonCode` MUST NOT be sent. See
+          `CbuaePatchPaymentRecordBodyAaniAccepted`.
+
+        * `Rejected`: `paymentResponse.rejectReasonCode` is required. See `CbuaePatchPaymentRecordBodyAaniRejected`.
+      oneOf:
+        - $ref: '#/components/schemas/CbuaePatchPaymentRecordBodyAaniAccepted'
+        - $ref: '#/components/schemas/CbuaePatchPaymentRecordBodyAaniRejected'
+    CbuaePatchPaymentRecordBodyAaniAccepted:
+      description: >
+        A patch to a payment the LFI has routed to AANI and that AANI has accepted or is processing.
       type: object
       required:
         - paymentResponse.paymentRail
         - paymentResponse.status
+        - paymentResponse.paymentTransactionId
       additionalProperties: false
       properties:
         paymentResponse.paymentRail:
@@ -1811,34 +1934,66 @@ components:
               `AcceptedWithoutPosting`.
 
             * `AcceptedWithoutPosting`: terminal. AANI has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `paymentResponse.rejectReasonCode` MUST be
-              sent with it.
           type: string
           enum:
             - AcceptedSettlementCompleted
             - AcceptedWithoutPosting
+        paymentResponse.paymentTransactionId:
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdAani'
+    CbuaePatchPaymentRecordBodyAaniRejected:
+      description: >
+        A patch to a payment the LFI has routed to AANI and that will not be settled.
+      type: object
+      required:
+        - paymentResponse.paymentRail
+        - paymentResponse.status
+        - paymentResponse.paymentTransactionId
+        - paymentResponse.rejectReasonCode
+      additionalProperties: false
+      properties:
+        paymentResponse.paymentRail:
+          description: >
+            Identifies AANI as the rail the payment was routed to.
+          type: string
+          enum:
+            - AANI
+          example: AANI
+        paymentResponse.status:
+          description: >
+            The current status of the payment, mapped to the payment state model defined in the Open Finance Framework
+            standards.
+
+            * `Rejected`: terminal. The payment will not be settled, and `paymentResponse.rejectReasonCode` carries
+              the reason.
+          type: string
+          enum:
             - Rejected
         paymentResponse.paymentTransactionId:
-          description: |
-            The AANI-generated end to end transaction identifier, as issued to the Originating LFI. This is not the
-            same value as the `transactionId` in the Bank Data Sharing API.
-
-            The LFI MUST populate this field once AANI has issued it — that is, alongside
-            `AcceptedSettlementCompleted` and `AcceptedWithoutPosting`. It is omitted where the payment was rejected
-            before AANI issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdAani'
         paymentResponse.rejectReasonCode:
           $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeAani'
     CbuaePatchPaymentRecordBodyFts:
       description: >
         A patch to a payment the LFI has routed to UAEFTS, the CBUAE funds transfer system.
+
+        `paymentResponse.paymentTransactionId` is required on every patch. `paymentResponse.status` selects the body,
+        which determines whether `paymentResponse.rejectReasonCode` is sent:
+
+        * `AcceptedSettlementCompleted` or `AcceptedCreditSettlementCompleted`: `paymentResponse.rejectReasonCode` MUST NOT be sent. See
+          `CbuaePatchPaymentRecordBodyFtsAccepted`.
+
+        * `Rejected`: `paymentResponse.rejectReasonCode` is required. See `CbuaePatchPaymentRecordBodyFtsRejected`.
+      oneOf:
+        - $ref: '#/components/schemas/CbuaePatchPaymentRecordBodyFtsAccepted'
+        - $ref: '#/components/schemas/CbuaePatchPaymentRecordBodyFtsRejected'
+    CbuaePatchPaymentRecordBodyFtsAccepted:
+      description: >
+        A patch to a payment the LFI has routed to UAEFTS and that UAEFTS has accepted or is processing.
       type: object
       required:
         - paymentResponse.paymentRail
         - paymentResponse.status
+        - paymentResponse.paymentTransactionId
       additionalProperties: false
       properties:
         paymentResponse.paymentRail:
@@ -1858,25 +2013,42 @@ components:
               `AcceptedCreditSettlementCompleted`.
 
             * `AcceptedCreditSettlementCompleted`: terminal. UAEFTS has confirmed the payment.
-
-            * `Rejected`: terminal. The payment will not be settled, and `paymentResponse.rejectReasonCode` MUST be
-              sent with it.
           type: string
           enum:
             - AcceptedSettlementCompleted
             - AcceptedCreditSettlementCompleted
+        paymentResponse.paymentTransactionId:
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdFts'
+    CbuaePatchPaymentRecordBodyFtsRejected:
+      description: >
+        A patch to a payment the LFI has routed to UAEFTS and that will not be settled.
+      type: object
+      required:
+        - paymentResponse.paymentRail
+        - paymentResponse.status
+        - paymentResponse.paymentTransactionId
+        - paymentResponse.rejectReasonCode
+      additionalProperties: false
+      properties:
+        paymentResponse.paymentRail:
+          description: >
+            Identifies UAEFTS as the rail the payment was routed to.
+          type: string
+          enum:
+            - FTS
+          example: FTS
+        paymentResponse.status:
+          description: >
+            The current status of the payment, mapped to the payment state model defined in the Open Finance Framework
+            standards.
+
+            * `Rejected`: terminal. The payment will not be settled, and `paymentResponse.rejectReasonCode` carries
+              the reason.
+          type: string
+          enum:
             - Rejected
         paymentResponse.paymentTransactionId:
-          description: |
-            The UAEFTS-generated end to end transaction identifier, as issued to the Originating LFI. This is not the
-            same value as the `transactionId` in the Bank Data Sharing API.
-
-            The LFI MUST populate this field once UAEFTS has issued it — that is, alongside
-            `AcceptedSettlementCompleted` and `AcceptedCreditSettlementCompleted`. It is omitted where the payment was
-            rejected before UAEFTS issued an identifier.
-          type: string
-          minLength: 1
-          maxLength: 40
+          $ref: '#/components/schemas/CbuaePaymentLogPaymentTransactionIdFts'
         paymentResponse.rejectReasonCode:
           $ref: '#/components/schemas/CbuaePaymentLogRejectReasonCodeFts'
     CbuaePatchPaymentRecordBodyLfi:
