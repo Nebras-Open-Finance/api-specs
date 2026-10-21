@@ -1369,7 +1369,8 @@ components:
         The payment rail over which the LFI settled the payment.
 
         The value records how the payment was **executed**, not how it was requested. Where an LFI's routing rules
-        settle an instant payment on another rail, this field reports the rail actually used.
+        settle an instant payment on another rail, this field reports the rail actually used. Where the TPP set
+        `UseFTS` to `true` on a domestic payment that leaves the LFI, the value is always `FTS`.
 
         * `AANI`: Settled over AANI, the UAE instant payment platform.
 
@@ -1476,6 +1477,32 @@ components:
               $ref: '#/components/schemas/AECreditorReference'
             OpenFinanceBilling:
               $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
+            UseFTS:
+              $ref: '#/components/schemas/AEUseFTS'
+    AEUseFTS:
+      description: >
+        Requests that a domestic payment is settled over UAEFTS, the CBUAE funds transfer system, instead of AANI.
+
+
+        * `false` or absent: The LFI applies its default routing. The payment is settled over AANI, with UAEFTS as the
+        fallback where the LFI's routing rules require it.
+
+        * `true`: The LFI MUST route the payment to UAEFTS, and MUST NOT settle it over AANI. Where the LFI cannot settle
+        the payment over UAEFTS, it MUST reject the payment rather than fall back to AANI. The payment is reported with
+        `PaymentRail` `FTS`, and any rejection carries `FTS.*` reason codes.
+
+
+        The field applies only to domestic payments:
+
+
+        * Where the debtor and creditor accounts are both held at the LFI, the field has no effect. The LFI books the
+        payment on its own ledger and reports `PaymentRail` `LFI`.
+
+        * Where the request carries `CurrencyRequest`, the field has no effect and the LFI routes the payment as it
+        would otherwise.
+      type: boolean
+      default: false
+      example: true
     AEFilePaymentRequest:
       description: |
         File Payment Request Schema

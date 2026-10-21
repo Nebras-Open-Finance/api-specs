@@ -58,6 +58,19 @@ info:
     **implementing new functionality.**
 
 
+    ### v2.2.4
+
+    * Changed the `post /customers/action/cop-query` response so the optional structured name fields on
+      `CbuaeCopPersonName` are named `givenName` and `familyName`, replacing `firstName` and `lastName`. This aligns
+      them with `CustomerPersonClaims`.
+
+    * Removed `fullNameAr` from `CbuaeCopPersonName` and `businessNameAr` from `CbuaeCopBusinessName` in the
+      `post /customers/action/cop-query` response.
+
+    * Added required `accountStatus` to each entry in the `post /customers/action/cop-query` response. It uses the
+      same code set as `status` on the account resource. A joint account MUST return the same value on every entry.
+      The API Hub returns it to the TPP as `AccountStatus` in the Standards Confirmation of Payee API description.
+
     ### v2.2.3
 
     * Changed `emiratesId` on `CustomerPersonClaims` to carry
@@ -131,7 +144,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-  version: v2.2.3
+  version: v2.2.4
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -559,7 +572,8 @@ paths:
 
 
         This operation is not carried out under a consent, and the call will not have an `o3-consent-id` header. The
-        response MUST therefore carry only the name data this question requires, and no wider customer data.
+        response MUST therefore carry only the name data and account status this question requires, and no wider
+        customer data.
       operationId: findCustomerForCop
       parameters:
         - $ref: '#/components/parameters/providerId'
@@ -1368,6 +1382,7 @@ components:
       required:
         - id
         - name
+        - accountStatus
       additionalProperties: false
       properties:
         id:
@@ -1382,6 +1397,45 @@ components:
           oneOf:
             - $ref: '#/components/schemas/CbuaeCopPersonName'
             - $ref: '#/components/schemas/CbuaeCopBusinessName'
+        accountStatus:
+          description: >
+            The status of the account, using the same code set as `status` on the account resource returned by
+            `get /accounts/{accountId}`. A joint account MUST return the same value on every entry.
+
+
+            * Active: The account exist and is in an active state.
+
+
+            * Inactive: The account is deemed not active by the LFI. Please refer to the
+              [CBUAE Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for qualification of Inactive status.
+
+            * Dormant: Please refer to the [CBUAE
+            Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for the definition of Dormant status.
+
+            * Unclaimed: Please refer to the [CBUAE
+            Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for the definition of Unclaimed status.
+
+            * Deceased: The account holder has passed away.
+
+
+            * Suspended: The account has been temporarily deactivated by the LFI for reasons such as
+              suspicious activities or non-compliance with regulations. The account holder might
+              be unable to access funds or perform transactions until the bank's requirements
+              are met, and the suspension is lifted.
+
+            * Closed: The account is closed
+          type: string
+          enum:
+            - Active
+            - Inactive
+            - Dormant
+            - Unclaimed
+            - Deceased
+            - Suspended
+            - Closed
     CbuaeCopPersonName:
       description: >
         The name of a personal account holder, as held by the LFI.
@@ -1399,10 +1453,8 @@ components:
           type: string
           minLength: 1
           maxLength: 140
-        firstName:
-          description: >-
-            Given name of the account holder. Optional. Named `firstName` rather than the v2.1 `givenName`, which the
-            v2.1 schema already recorded as withdrawn.
+        givenName:
+          description: Given or first name of the account holder. Optional.
           type: string
           minLength: 1
           maxLength: 70
@@ -1411,19 +1463,11 @@ components:
           type: string
           minLength: 1
           maxLength: 70
-        lastName:
-          description: >-
-            Family name of the account holder. Optional. Named `lastName` rather than the v2.1 `familyName`, which the
-            v2.1 schema already recorded as withdrawn.
+        familyName:
+          description: Family name or surname of the account holder. Optional.
           type: string
           minLength: 1
           maxLength: 70
-        fullNameAr:
-          description: >-
-            The full name of the account holder in Arabic script, where the LFI holds one. Optional. Not matched today.
-          type: string
-          minLength: 1
-          maxLength: 140
         alsoKnownAs:
           description: >-
             Other names the account is legitimately known by — for example a maiden name, or a transliteration variant
@@ -1446,12 +1490,6 @@ components:
       properties:
         businessName:
           description: The registered business name on the account.
-          type: string
-          minLength: 1
-          maxLength: 140
-        businessNameAr:
-          description: >-
-            The registered business name in Arabic script, where the LFI holds one. Optional. Not matched today.
           type: string
           minLength: 1
           maxLength: 140

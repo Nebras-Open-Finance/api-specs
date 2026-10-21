@@ -30,6 +30,12 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.2.2
+
+    * Added optional `UseFTS` to the `post /payments` single payment request body, passed through from the TPP. When
+      `true` on a domestic payment, the LFI MUST settle it over UAEFTS and MUST reject it rather than fall back to
+      AANI. It has no effect on a payment booked on the LFI's own ledger, or on a request carrying `CurrencyRequest`.
+
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards
@@ -120,7 +126,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.2.1
+  version: v2.2.2
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -894,6 +900,32 @@ components:
               $ref: '#/components/schemas/AECreditorReference'
             OpenFinanceBilling:
               $ref: '#/components/schemas/AEServiceInitiationOpenFinancePaymentBilling'
+            UseFTS:
+              $ref: '#/components/schemas/AEUseFTS'
+    AEUseFTS:
+      description: >
+        Requests that a domestic payment is settled over UAEFTS, the CBUAE funds transfer system, instead of AANI.
+
+
+        * `false` or absent: The LFI applies its default routing. The payment is settled over AANI, with UAEFTS as the
+        fallback where the LFI's routing rules require it.
+
+        * `true`: The LFI MUST route the payment to UAEFTS, and MUST NOT settle it over AANI. Where the LFI cannot settle
+        the payment over UAEFTS, it MUST reject the payment rather than fall back to AANI. The payment is reported with
+        `paymentRail` `FTS`, and any rejection carries `FTS.*` reason codes.
+
+
+        The field applies only to domestic payments:
+
+
+        * Where the debtor and creditor accounts are both held at the LFI, the field has no effect. The LFI books the
+        payment on its own ledger and reports `paymentRail` `LFI`.
+
+        * Where the request carries `CurrencyRequest`, the field has no effect and the LFI routes the payment as it
+        would otherwise.
+      type: boolean
+      default: false
+      example: true
     AEServiceInitiationOpenFinancePaymentBilling:
       type: object
       required:
