@@ -58,6 +58,12 @@ info:
     **implementing new functionality.**
 
 
+    ### v2.2.5
+
+    * Changed the description of `PreviouslyClosedBooked` on `CbuaeBalanceType`, replacing the "TBC"
+      placeholder. It is the booked balance at the close of the most recent statement or accounting period,
+      and does not change until the next period closes.
+
     ### v2.2.4
 
     * Changed the `post /customers/action/cop-query` response so the optional structured name fields on
@@ -144,7 +150,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-  version: v2.2.4
+  version: v2.2.5
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -2165,7 +2171,9 @@ components:
         * 'OpeningCleared' - start of day balance including value of payments for cheques or payments which have been
         cleared.
 
-        * 'PreviouslyClosedBooked' -TBC.
+        * 'PreviouslyClosedBooked' - booked balance at the close of the most recent statement or accounting
+        period. It does not change until the next period closes. For a credit card, this is the statement
+        balance; for a finance or mortgage account, the balance at the last statement.
 
 
         Note: LFIs support different types for presenting account balance, so this list is used to support different LFI

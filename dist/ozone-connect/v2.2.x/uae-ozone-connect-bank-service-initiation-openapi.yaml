@@ -30,6 +30,12 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.2.3
+
+    * Changed the description of `PreviouslyClosedBooked` on `UAEAccountInformationAPI.AEBalanceTypeCode`, replacing the "TBC"
+      placeholder. It is the booked balance at the close of the most recent statement or accounting period,
+      and does not change until the next period closes.
+
     ### v2.2.2
 
     * Added optional `UseFTS` to the `post /payments` single payment request body, passed through from the TPP. When
@@ -129,7 +135,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.2.2
+  version: v2.2.3
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -3642,7 +3648,9 @@ components:
         * 'OpeningCleared' - start of day balance including value of payments for cheques or payments which have been
         cleared.
 
-        * 'PreviouslyClosedBooked' -TBC.
+        * 'PreviouslyClosedBooked' - booked balance at the close of the most recent statement or accounting
+        period. It does not change until the next period closes. For a credit card, this is the statement
+        balance; for a finance or mortgage account, the balance at the last statement.
 
 
         Note: LFIs support different types for presenting account balance, so this list is used to support different LFI

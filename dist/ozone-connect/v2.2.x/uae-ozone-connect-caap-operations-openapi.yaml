@@ -32,6 +32,12 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.2
+
+    * Changed the description of `PreviouslyClosedBooked` on `CbuaeBalanceType`, replacing the "TBC"
+      placeholder. It is the booked balance at the close of the most recent statement or accounting period,
+      and does not change until the next period closes.
+
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards
@@ -86,7 +92,7 @@ info:
 
 
     * Added initial version for compatibility with v2.1-rc2 of standards.
-  version: v2.2.1
+  version: v2.2.2
 tags:
   - name: User Verification
     description: Operations that allow a User to be verified in the API Hub
@@ -4907,7 +4913,9 @@ components:
         * 'OpeningCleared' - start of day balance including value of payments for cheques or payments which have been
         cleared.
 
-        * 'PreviouslyClosedBooked' -TBC.
+        * 'PreviouslyClosedBooked' - booked balance at the close of the most recent statement or accounting
+        period. It does not change until the next period closes. For a credit card, this is the statement
+        balance; for a finance or mortgage account, the balance at the last statement.
 
 
         Note: LFIs support different types for presenting account balance, so this list is used to support different LFI

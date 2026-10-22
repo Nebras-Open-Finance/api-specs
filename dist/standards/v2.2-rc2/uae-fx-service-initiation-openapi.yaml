@@ -1718,7 +1718,9 @@ components:
         * 'OpeningCleared' - start of day balance including value of payments for cheques or payments which have been
         cleared.
 
-        * 'PreviouslyClosedBooked' -TBC.
+        * 'PreviouslyClosedBooked' - booked balance at the close of the most recent statement or accounting
+        period. It does not change until the next period closes. For a credit card, this is the statement
+        balance; for a finance or mortgage account, the balance at the last statement.
 
 
         Note: LFIs support different types for presenting account balance, so this list is used to support different LFI
