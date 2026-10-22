@@ -87,6 +87,10 @@ info:
       written against v2.1 received every payment for the consent in one response and MUST now follow `page` to
       retrieve the rest.
 
+    * Documented the order in which `get /consent-groups/{consentGroupId}/consents` returns consents: newest first by
+      `consentBody.Data.CreationDateTime`, across pages, with the base consent last. Documentation only; the
+      operation's behaviour is unchanged.
+
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards.
@@ -356,6 +360,13 @@ paths:
         If no consents could be found, then an empty array is returned.
 
         For CBUAE, a consent group id is the `BaseConsentId`
+
+        Consents are returned newest first, ordered by `consentBody.Data.CreationDateTime` descending. This includes
+        the base consent, which is the oldest and so is returned last. The ordering applies across the whole result
+        set, so with `page` and `pageSize` the first page holds the most recent consents.
+
+        If the `consentGroupId` is the id of a consent that is not a base consent, then an empty array is returned
+        rather than an error.
       operationId: getConsentsInConsentGroup
       parameters:
         - name: consentGroupId
