@@ -76,7 +76,7 @@ paths:
   /discovery:
     post:
       operationId: ConfirmationOfPayeeDiscovery_signedDiscoveryRequest
-      summary: Discover the LFI or LFIs that will confirm the payee attributes
+      summary: Discover the LFI that will confirm the payee attributes
       description: >-
         Before a Confirmation of Payee (CoP) operation takes place the TPP will need to resolve the LFI that will
         service the account properties request. This requirement is based on the separation of concerns implemented in
@@ -85,13 +85,6 @@ paths:
 
         The TPP will call this endpoint with the Creditor Account IBAN, which will be used to resolve the correct URL
         with which to make the CoP operation.
-
-
-        The response carries an array of confirmation sources. An LFI exposes a separate Resource Server per account
-        segment (for example retail, corporate and SME), and the IBAN alone identifies the bank but not the segment, so
-        more than one entry may be returned for a single account. The TPP should invoke the CoP operation against each
-        entry in the order returned until a match is obtained. An empty array is returned when the account is not
-        serviced by any participating LFI.
       parameters:
         - $ref: '#/components/parameters/Authorization'
         - $ref: '#/components/parameters/x-customer-user-agent'
@@ -324,22 +317,7 @@ components:
         - Meta
       properties:
         Data:
-          type: object
-          description: Primary data for the resource
-          required:
-            - ConfirmationSource
-          properties:
-            ConfirmationSource:
-              type: array
-              minItems: 0
-              items:
-                $ref: '#/components/schemas/AEConfirmationSourceProperties'
-              description: >-
-                The set of Confirmation of Payee sources that may service the supplied Creditor Account. Each entry
-                identifies one endpoint pair at which the Confirmation of Payee operation can be invoked. More than one
-                entry may be returned where an LFI exposes a separate Resource Server per account segment. An empty
-                array is returned when the supplied account is not serviced by any participating LFI.
-          additionalProperties: false
+          $ref: '#/components/schemas/AEConfirmationSourceProperties'
         Links:
           $ref: '#/components/schemas/LinksSelf'
         Meta:
