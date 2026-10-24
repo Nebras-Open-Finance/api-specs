@@ -78,3 +78,40 @@
     rejected at the schema rather than silently accepted and misread downstream.
     Emitting `Z` or `+00:00` instead is a one-line change and is what the
     standard already asked for.
+
+- rules:
+    - request-property-type-changed
+    - response-property-type-changed
+  endpoints:
+    - method: POST
+      path: /
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `aud` claim of every signed message on this API is redefined from
+    `type: array, items: type: string` to `type: string`. This is a
+    clarification, not a change in behaviour: the API Hub only sends `aud`
+    as a single string, and the spec now matches it. It extends
+    v2.1-errata2 entry #5, which made the same correction to
+    uae-confirmation-of-payee-openapi, to the rest of the standards.
+
+    Affected: `AEWebhookEventSigned` (the Event Notification payload) and
+    `AEError400ResponseBodySigned`, `AEError403ResponseBodySigned` and
+    `AEError500ResponseBodySigned` (the errors a TPP returns to the sender).
+
+    The descriptions now name the one recipient each message is addressed to:
+    - on an Event Notification, the `client_id` of the TPP whose Webhook
+      receives it;
+    - on an error the TPP returns, the API Hub that delivered the event: the
+      `iss` of the rejected event, i.e. the API Hub authorisation server's
+      issuer identifier for the LFI that holds the consent. `aud` is omitted
+      when the event could not be decrypted and verified, because its `iss`
+      is not established.
+
+    Every signed message on this API has exactly one recipient, and
+    RFC 7519 §4.1.3 permits `aud` to be a single StringOrURI when the JWT
+    has one audience.
+
+    Impact: none for consumers integrated against the wire format, which
+    already carries a string. A consumer that strictly validated against the
+    array-only contract could not have decoded real API Hub traffic, so no
+    such consumer exists in working form.

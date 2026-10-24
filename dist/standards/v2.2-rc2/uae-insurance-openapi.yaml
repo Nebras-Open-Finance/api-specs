@@ -66,11 +66,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -135,11 +135,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -198,11 +199,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -409,11 +410,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -458,11 +459,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -555,11 +556,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -658,11 +659,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -724,11 +726,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -809,11 +811,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -878,11 +880,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -941,11 +944,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1152,11 +1155,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1201,11 +1204,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1298,11 +1301,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1401,11 +1404,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -1467,11 +1471,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1552,11 +1556,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1621,11 +1625,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -1684,11 +1689,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1895,11 +1900,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -1944,11 +1949,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -2041,11 +2046,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -2144,11 +2149,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -2210,11 +2216,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -2569,11 +2575,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -2638,11 +2644,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -2701,11 +2708,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -2912,11 +2919,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -2961,11 +2968,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3058,11 +3065,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3161,11 +3168,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -3227,11 +3235,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3312,11 +3320,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3381,11 +3389,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -3444,11 +3453,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3655,11 +3664,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3704,11 +3713,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3801,11 +3810,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -3904,11 +3913,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -3970,11 +3980,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4055,11 +4065,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4124,11 +4134,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -4187,11 +4198,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4398,11 +4409,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4447,11 +4458,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4544,11 +4555,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4647,11 +4658,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -4713,11 +4725,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4798,11 +4810,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -4867,11 +4879,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -4930,11 +4943,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -5141,11 +5154,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -5190,11 +5203,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -5287,11 +5300,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -5390,11 +5403,12 @@ paths:
                   description: >-
                     [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                 aud:
-                  type: array
-                  items:
-                    type: string
-                  description: >-
-                    [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                  type: string
+                  description: |
+                    The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+                    (`https://auth1.[LFICode].apihub.openfinance.ae`).
+                    A single string, not an array.
+                    [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                 iat:
                   type: number
                   description: >-
@@ -5456,11 +5470,11 @@ paths:
                     description: >-
                       [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)
                   aud:
-                    type: array
-                    items:
-                      type: string
-                    description: >-
-                      [https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
+                    type: string
+                    description: |
+                      The recipient of this response: the `client_id` of the TPP that made the request.
+                      A single string, not an array.
+                      [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
                   iat:
                     type: number
                     description: >-
@@ -5696,10 +5710,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -5751,10 +5767,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -5807,10 +5825,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -5879,10 +5899,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -5934,10 +5956,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -5989,10 +6013,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -6045,10 +6071,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -6081,10 +6109,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -7747,10 +7777,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -7826,10 +7857,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -7896,10 +7928,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20061,10 +20094,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20118,10 +20152,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20160,10 +20195,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20294,10 +20330,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20338,10 +20375,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20408,10 +20446,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20465,10 +20504,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20522,10 +20562,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20564,10 +20605,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -20621,10 +20663,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -22755,10 +22798,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this response: the `client_id` of the TPP that made the request.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -24602,10 +24646,12 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this request: the API Hub authorisation server's issuer identifier for the LFI
+            (`https://auth1.[LFICode].apihub.openfinance.ae`).
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'

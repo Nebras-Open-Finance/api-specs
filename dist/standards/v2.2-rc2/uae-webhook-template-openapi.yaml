@@ -999,10 +999,15 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this error: the API Hub that delivered the event notification.
+            Set it to the `iss` of the event being rejected, i.e. the API Hub authorisation
+            server's issuer identifier for the LFI that holds the consent
+            (`https://auth1.[LFICode].apihub.openfinance.ae`). Omit `aud` if the event could
+            not be decrypted and verified, so its `iss` is not established. Do not send a
+            placeholder value.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -1075,10 +1080,15 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this error: the API Hub that delivered the event notification.
+            Set it to the `iss` of the event being rejected, i.e. the API Hub authorisation
+            server's issuer identifier for the LFI that holds the consent
+            (`https://auth1.[LFICode].apihub.openfinance.ae`). Omit `aud` if the event could
+            not be decrypted and verified, so its `iss` is not established. Do not send a
+            placeholder value.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -1142,10 +1152,15 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this error: the API Hub that delivered the event notification.
+            Set it to the `iss` of the event being rejected, i.e. the API Hub authorisation
+            server's issuer identifier for the LFI that holds the consent
+            (`https://auth1.[LFICode].apihub.openfinance.ae`). Omit `aud` if the event could
+            not be decrypted and verified, so its `iss` is not established. Do not send a
+            placeholder value.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'
@@ -1902,10 +1917,11 @@ components:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.5)'
         aud:
-          type: array
-          items:
-            type: string
-          description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)'
+          type: string
+          description: |
+            The recipient of this event notification: the `client_id` of the TPP whose Webhook receives it.
+            A single string, not an array.
+            [RFC 7519 §4.1.3](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3)
         iat:
           type: number
           description: '[https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6](https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6)'

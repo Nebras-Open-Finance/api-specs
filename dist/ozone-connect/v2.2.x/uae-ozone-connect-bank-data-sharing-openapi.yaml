@@ -58,6 +58,17 @@ info:
     **implementing new functionality.**
 
 
+    ### v2.2.6
+
+    * Changed `salary` on `CustomerPersonClaims` (`get /customer` and `get /accounts/{accountId}/customer`) and
+      `exchangeRate` on `CurrencyExchange` from `string` to `number`. This aligns them with the types of the
+      corresponding properties in the Standards Account Information API description.
+
+    * Changed `BillerID` on `BillDetails`, `merchantId` on `MerchantDetails` and `TerminalId` (`terminalId` on
+      `CbuaeTransaction`) to carry `pattern: ^[0-9]+$`, so they contain digits only. This aligns them with the
+      numeric types of the corresponding properties in the Standards Account Information API description, while
+      keeping them strings so that leading zeros are retained and `TerminalId` keeps its 8 to 20 character length.
+
     ### v2.2.5
 
     * Changed the description of `PreviouslyClosedBooked` on `CbuaeBalanceType`, replacing the "TBC"
@@ -150,7 +161,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-  version: v2.2.5
+  version: v2.2.6
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -1610,7 +1621,7 @@ components:
           type: string
           description: The customer source of income
         salary:
-          type: string
+          type: number
           description: The customer salary
         nationality:
           type: string
@@ -2671,6 +2682,7 @@ components:
         merchantId:
           description: Merchant Id
           type: string
+          pattern: ^[0-9]+$
         merchantName:
           description: Name by which the merchant is known.
           type: string
@@ -2710,7 +2722,7 @@ components:
         unitCurrency:
           $ref: '#/components/schemas/TCurrency'
         exchangeRate:
-          type: string
+          type: number
           description: >-
             Factor used to convert an amount from one currency into another. This reflects the price at which one
             currency was bought with another currency.
@@ -3406,6 +3418,7 @@ components:
     TerminalId:
       description: ID of the Terminal if the transaction was initiated from a retail POS
       type: string
+      pattern: ^[0-9]+$
       minLength: 8
       maxLength: 20
     BillDetails:
@@ -3419,6 +3432,7 @@ components:
             end-user to refer to a specific SADAD biller (e.g. STC biller code
             is 001, water services biller code is 015, etc.)
           type: string
+          pattern: ^[0-9]+$
         BillNumber:
           description: Unique bill identifier within the account.
           type: string

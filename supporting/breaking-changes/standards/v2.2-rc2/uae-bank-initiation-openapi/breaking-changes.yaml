@@ -78,3 +78,64 @@
     rejected at the schema rather than silently accepted and misread downstream.
     Emitting `Z` or `+00:00` instead is a one-line change and is what the
     standard already asked for.
+
+- rules:
+    - request-property-type-changed
+    - response-property-type-changed
+  endpoints:
+    - method: GET
+      path: /payment-consents
+    - method: GET
+      path: /payment-consents/{ConsentId}
+    - method: PATCH
+      path: /payment-consents/{ConsentId}
+    - method: GET
+      path: /payment-consents/{ConsentId}/attestations
+    - method: POST
+      path: /payment-consents/{ConsentId}/attestations
+    - method: GET
+      path: /payment-consents/{ConsentId}/refund
+    - method: POST
+      path: /payment-consents/{ConsentId}/file
+    - method: POST
+      path: /payments
+    - method: GET
+      path: /payments
+    - method: GET
+      path: /payments/{PaymentId}
+    - method: POST
+      path: /file-payments
+    - method: GET
+      path: /file-payments
+    - method: GET
+      path: /file-payments/{PaymentId}
+    - method: GET
+      path: /file-payments/{PaymentId}/report
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `aud` claim of every signed message on this API is redefined from
+    `type: array, items: type: string` to `type: string`. This is a
+    clarification, not a change in behaviour: the API Hub only sends `aud`
+    as a single string, and the spec now matches it. It extends
+    v2.1-errata2 entry #5, which made the same correction to
+    uae-confirmation-of-payee-openapi, to the rest of the standards.
+
+    Affected: the shared `AEJwt` schema (inherited by every `*Signed` request
+    and response wrapper), `AECreateTPPAttestationSigned1Request` and
+    `AETPPAttestationSigned1Response`. The `Error400BadRequestSigned`,
+    `Error403ForbiddenSigned` and `Error500InternalServerErrorSigned`
+    examples now show `aud` as a string.
+
+    The descriptions now name the one recipient each message is addressed to:
+    - on a request, the API Hub authorisation server's issuer identifier for
+      the LFI (`https://auth1.[LFICode].apihub.openfinance.ae`);
+    - on a response, the `client_id` of the TPP that made the request.
+
+    Every signed message on this API has exactly one recipient, and
+    RFC 7519 §4.1.3 permits `aud` to be a single StringOrURI when the JWT
+    has one audience.
+
+    Impact: none for consumers integrated against the wire format, which
+    already carries a string. A consumer that strictly validated against the
+    array-only contract could not have decoded real API Hub traffic, so no
+    such consumer exists in working form.
