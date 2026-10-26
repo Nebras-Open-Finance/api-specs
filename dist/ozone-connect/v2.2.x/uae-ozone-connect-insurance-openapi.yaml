@@ -32,6 +32,12 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.3
+
+    * Added `format: uuid` to the `o3-consent-id` header on every operation. A ConsentId is only ever created by the TPP
+      in a Pushed Authorization Request (`post /par`), where the Standards already define it as `format: uuid`, so this
+      states the form of the value an LFI already receives.
+
     ### v2.2.2
 
 
@@ -95,7 +101,7 @@ info:
     * Initial version that delivers v2.1 requirements (see separate, detailed changelog for changes from last v2.1.x
     version).
 
-  version: v2.2.2
+  version: v2.2.3
 tags:
   - name: Employment Insurance
     description: Employment Insurance Operations
@@ -5481,6 +5487,7 @@ components:
       description: The consentId for which this call is being made
       schema:
         type: string
+        format: uuid
     OzoneConnect.ozoneInteractionId:
       name: o3-ozone-interaction-id
       in: header

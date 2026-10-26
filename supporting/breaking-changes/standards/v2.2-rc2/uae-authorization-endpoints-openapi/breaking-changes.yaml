@@ -79,3 +79,27 @@
     rejected at the schema rather than silently accepted and misread downstream.
     Emitting `Z` or `+00:00` instead is a one-line change and is what the
     standard already asked for.
+
+- rules:
+    - response-property-type-changed
+  endpoints:
+    - method: POST
+      path: /token
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `format: uuid` is added to `AEPushedAuthorizationRequests.AEConsentId`
+    and `AEPushedAuthorizationRequests.AEBaseConsentId`: the `ConsentId` and
+    `BaseConsentId` of the bank data sharing and bank service initiation
+    consents returned in `authorization_details` on `POST /token`. The same
+    identifiers on the `POST /par` request (`AEConsentId`, `AEBaseConsentId`)
+    were already `format: uuid`, so a ConsentId is now described identically
+    on the way in and on the way out.
+
+    A ConsentId is only ever created by the TPP in the Pushed Authorization
+    Request, where `ConsentId` and `BaseConsentId` on `POST /par` are
+    already declared `format: uuid`. Every ConsentId these operations carry
+    originated there, so the change describes the same identifier the same
+    way across the authorisation, consent and resource APIs. `type`,
+    `minLength` and `maxLength` are unchanged.
+
+    Impact: none. The ConsentId returned is the one the TPP sent to `/par`.

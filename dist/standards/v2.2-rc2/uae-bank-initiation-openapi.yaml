@@ -2784,11 +2784,13 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: Unique identification assigned by the TPP to identify the consent resource.
     AEPushedAuthorizationRequests.AEBaseConsentId:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: >-
         The original ConsentId assigned by the TPP.
 
@@ -4821,6 +4823,7 @@ components:
       required: true
       schema:
         type: string
+        format: uuid
       example: aac-69255d98-ab0e-4758-92a7-cacbf3073efa
     baseConsentId:
       in: query
@@ -4830,6 +4833,7 @@ components:
         supplied if `combinedConsentGroupId` parameter is supplied.
       schema:
         type: string
+        format: uuid
       allowEmptyValue: false
       example: abc-19877d98-ab0e-4758-92a7-vvffr1234abv
     x-consent-id:

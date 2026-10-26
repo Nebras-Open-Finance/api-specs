@@ -6087,6 +6087,7 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: >-
         The original ConsentId assigned by the TPP.
 
@@ -6102,6 +6103,7 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: Unique identification assigned by the TPP to identify the Consent.
     AEConsentStatus.AEConsentStatusCodes:
       type: string
@@ -6743,6 +6745,7 @@ components:
       required: true
       schema:
         type: string
+        format: uuid
     AccountId:
       name: AccountId
       in: path
@@ -6779,6 +6782,7 @@ components:
         ```
       schema:
         type: string
+        format: uuid
       allowEmptyValue: false
       example: abc-19877d98-ab0e-4758-92a7-vvffr1234abv
     LastSubmitted:

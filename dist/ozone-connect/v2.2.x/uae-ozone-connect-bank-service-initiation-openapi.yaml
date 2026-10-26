@@ -30,6 +30,15 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.2.4
+
+    * Added `format: uuid` to every consent identifier: the `o3-consent-id` header on every operation, the `consentId`
+      path parameter on `post /payment-consents/{consentId}/file` and `get /payment-consents/{consentId}/refund`,
+      `AEConsentId` (`Data.ConsentId` on `post /payments` and `consentId` on `post /payment-consents`), `data.consentId`
+      on `AEPaymentIdResponse` and `consentId` on `RefundGetResponseBody`. A ConsentId is only ever created by the TPP
+      in a Pushed Authorization Request (`post /par`), where the Standards already define it as `format: uuid`, so this
+      states the form of the value an LFI already receives.
+
     ### v2.2.3
 
     * Changed the description of `PreviouslyClosedBooked` on `UAEAccountInformationAPI.AEBalanceTypeCode`, replacing the "TBC"
@@ -135,7 +144,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.2.3
+  version: v2.2.4
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -377,6 +386,7 @@ paths:
           in: path
           schema:
             type: string
+            format: uuid
           required: true
           description: |
             Identifies the consent by an id
@@ -415,6 +425,7 @@ paths:
           in: path
           schema:
             type: string
+            format: uuid
           required: true
           description: |
             Identifies the consent by an id
@@ -1755,6 +1766,7 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: Unique identification assigned by the TPP to identify the consent resource.
     AEFilePaymentRequest:
       description: |
@@ -2025,6 +2037,7 @@ components:
             consentId:
               description: Unique identification assigned by the TPP to identify the consent resource.
               type: string
+              format: uuid
             paymentTransactionId:
               description: >
                 This is an end-to-end identifier that identifies the payment on the underlying payment rail as it is
@@ -2328,6 +2341,7 @@ components:
           type: string
           minLength: 1
           maxLength: 128
+          format: uuid
         refundAccount:
           $ref: '#/components/schemas/AEDebtorAccount'
     AEDebtorAccount:
@@ -5152,6 +5166,7 @@ components:
       in: header
       schema:
         type: string
+        format: uuid
       required: true
       description: The consentId for which this call is being made
     callerInteractionId:

@@ -144,3 +144,37 @@
     already carries a string. A consumer that strictly validated against the
     array-only contract could not have decoded real API Hub traffic, so no
     such consumer exists in working form.
+
+- rules:
+    - request-parameter-type-changed
+    - response-property-type-changed
+  endpoints:
+    - method: GET
+      path: /account-access-consents
+    - method: GET
+      path: /account-access-consents/{ConsentId}
+    - method: PATCH
+      path: /account-access-consents/{ConsentId}
+    - method: GET
+      path: /account-access-consents/{ConsentId}/attestations
+    - method: POST
+      path: /account-access-consents/{ConsentId}/attestations
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `format: uuid` is added to every consent identifier on this API: the
+    `ConsentId` path parameter, the `baseConsentId` query parameter, and
+    `AEPushedAuthorizationRequests.AEConsentId` and
+    `AEPushedAuthorizationRequests.AEBaseConsentId` (`ConsentId` and
+    `BaseConsentId` on the consent returned by `GET /account-access-consents`
+    and `GET /account-access-consents/{ConsentId}`).
+
+    A ConsentId is only ever created by the TPP in the Pushed Authorization
+    Request, where `ConsentId` and `BaseConsentId` on `POST /par` are
+    already declared `format: uuid`. Every ConsentId these operations carry
+    originated there, so the change describes the same identifier the same
+    way across the authorisation, consent and resource APIs. `type`,
+    `minLength` and `maxLength` are unchanged.
+
+    Impact: none for a TPP that follows the `/par` contract. The ConsentId it
+    created there is already a UUID, and it is the only value these
+    operations can refer to.

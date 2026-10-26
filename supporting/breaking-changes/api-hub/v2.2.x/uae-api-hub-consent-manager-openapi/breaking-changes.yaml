@@ -160,3 +160,46 @@
     value was already refused, one layer down.
 
     Impact: none.
+
+- rules:
+    - request-parameter-type-changed
+    - request-property-type-changed
+    - response-property-type-changed
+  endpoints:
+    - method: GET
+      path: /consents
+    - method: POST
+      path: /consents
+    - method: GET
+      path: /consents/{consentId}
+    - method: PATCH
+      path: /consents/{consentId}
+    - method: GET
+      path: /consents/{consentId}/audit
+    - method: POST
+      path: /consents/{consentId}/action/revoke
+    - method: GET
+      path: /consent-groups/{consentGroupId}/consents
+    - method: GET
+      path: /psu/{userId}/consents
+    - method: GET
+      path: /accounts/{accountId}/consents
+    - method: GET
+      path: /payment-log
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `format: uuid` is added to every consent identifier on this API:
+    `AEConsentId`, `AEBaseConsentId`, `BaseConsentId` on
+    `AuthorizationDetailsInsuranceConsent`, the `consentId` path parameter,
+    and the `consentId` query parameter and response property on
+    `GET /payment-log`. `consentGroupId` is not a ConsentId and is unchanged.
+
+    A ConsentId is only ever created by the TPP in the Pushed Authorization
+    Request, where `ConsentId` and `BaseConsentId` on `POST /par` are
+    already declared `format: uuid`. Every ConsentId these operations carry
+    originated there, so the change describes the same identifier the same
+    way across the authorisation, consent and resource APIs. `type`,
+    `minLength` and `maxLength` are unchanged.
+
+    Impact: none for an LFI. Every ConsentId it passes to the Consent Manager
+    is one the API Hub gave it, which the TPP created at `/par` as a UUID.

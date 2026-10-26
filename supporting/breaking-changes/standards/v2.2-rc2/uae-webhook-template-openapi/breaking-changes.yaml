@@ -115,3 +115,28 @@
     already carries a string. A consumer that strictly validated against the
     array-only contract could not have decoded real API Hub traffic, so no
     such consumer exists in working form.
+
+- rules:
+    - request-property-type-changed
+  endpoints:
+    - method: POST
+      path: /
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `format: uuid` is added to every consent identifier in the Event
+    Notification: `AEPushedAuthorizationRequests.AEConsentId`,
+    `AEPushedAuthorizationRequests.AEBaseConsentId`,
+    `UAEPaymentAPI.AEConsentId`, and `Meta.ConsentId` on
+    `AEWebhookConsentedEventProperties` and
+    `AEWebhookPaymentInitiationEventProperties`.
+
+    A ConsentId is only ever created by the TPP in the Pushed Authorization
+    Request, where `ConsentId` and `BaseConsentId` on `POST /par` are
+    already declared `format: uuid`. Every ConsentId these operations carry
+    originated there, so the change describes the same identifier the same
+    way across the authorisation, consent and resource APIs. `type`,
+    `minLength` and `maxLength` are unchanged.
+
+    Impact: none. The API Hub sends this request and the TPP receives it. The
+    ConsentId in a notification is the one the TPP created at `/par`, so the
+    TPP's webhook already receives a UUID and may now rely on it.

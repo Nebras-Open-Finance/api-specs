@@ -3170,6 +3170,7 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: >-
         The original ConsentId assigned by the TPP.
 
@@ -3185,6 +3186,7 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: Unique identification assigned by the TPP to identify the Consent.
     AEPushedAuthorizationRequests.AEPushedAuthorizationResponseBody:
       type: object

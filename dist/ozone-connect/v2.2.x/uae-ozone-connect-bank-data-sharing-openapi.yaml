@@ -58,6 +58,12 @@ info:
     **implementing new functionality.**
 
 
+    ### v2.2.7
+
+    * Added `format: uuid` to the `o3-consent-id` header on every operation. A ConsentId is only ever created by the TPP
+      in a Pushed Authorization Request (`post /par`), where the Standards already define it as `format: uuid`, so this
+      states the form of the value an LFI already receives.
+
     ### v2.2.6
 
     * Changed `salary` on `CustomerPersonClaims` (`get /customer` and `get /accounts/{accountId}/customer`) and
@@ -161,7 +167,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-  version: v2.2.6
+  version: v2.2.7
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -4929,6 +4935,7 @@ components:
       in: header
       schema:
         type: string
+        format: uuid
       required: true
       description: The consentId for which this call is being made
     callerInteractionId:

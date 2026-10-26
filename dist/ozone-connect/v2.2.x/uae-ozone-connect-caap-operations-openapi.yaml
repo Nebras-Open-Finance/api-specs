@@ -32,6 +32,15 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.3
+
+    * Added `format: uuid` to every consent identifier: the `o3-consent-id` header on every operation,
+      `OzoneConnectConsentEventActionAPIs.AEConsentId`, `OzoneConnectConsentEventActionAPIs.AEBaseConsentId` and
+      `BaseConsentId` on `OzoneConnectConsentEventActionAPIs.AuthorizationDetailsInsuranceConsent`, which together cover
+      `ConsentId` and `BaseConsentId` in the `post /consent/actions/augment` and `post /consent/actions/validate`
+      request bodies. A ConsentId is only ever created by the TPP in a Pushed Authorization Request (`post /par`), where
+      the Standards already define it as `format: uuid`, so this states the form of the value an LFI already receives.
+
     ### v2.2.2
 
     * Changed the description of `PreviouslyClosedBooked` on `CbuaeBalanceType`, replacing the "TBC"
@@ -92,7 +101,7 @@ info:
 
 
     * Added initial version for compatibility with v2.1-rc2 of standards.
-  version: v2.2.2
+  version: v2.2.3
 tags:
   - name: User Verification
     description: Operations that allow a User to be verified in the API Hub
@@ -1265,6 +1274,7 @@ components:
       description: The consentId for which this call is being made
       schema:
         type: string
+        format: uuid
     OzoneConnect.psuIdentifier:
       name: o3-psu-identifier
       in: header
@@ -2200,6 +2210,7 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: The original ConsentId assigned by the TPP
     OzoneConnectConsentEventActionAPIs.AEChargeBearerType1Code:
       type: string
@@ -2238,6 +2249,7 @@ components:
       type: string
       minLength: 1
       maxLength: 128
+      format: uuid
       description: Unique identification assigned by the TPP to identify the consent resource.
     OzoneConnectConsentEventActionAPIs.AEConsentPermissions:
       type: array
@@ -3932,6 +3944,7 @@ components:
       properties:
         BaseConsentId:
           type: string
+          format: uuid
           description: The original ConsentId assigned by the TPP
         AuthorizationExpirationDateTime:
           $ref: '#/components/schemas/OzoneConnectConsentEventActionAPIs.AEAuthorizationExpirationDateTime'

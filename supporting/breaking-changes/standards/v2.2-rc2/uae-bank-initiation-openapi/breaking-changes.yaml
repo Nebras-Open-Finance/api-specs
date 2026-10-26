@@ -139,3 +139,53 @@
     already carries a string. A consumer that strictly validated against the
     array-only contract could not have decoded real API Hub traffic, so no
     such consumer exists in working form.
+
+- rules:
+    - request-parameter-type-changed
+    - request-property-type-changed
+    - response-property-type-changed
+  endpoints:
+    - method: GET
+      path: /payment-consents
+    - method: GET
+      path: /payment-consents/{ConsentId}
+    - method: PATCH
+      path: /payment-consents/{ConsentId}
+    - method: GET
+      path: /payment-consents/{ConsentId}/attestations
+    - method: POST
+      path: /payment-consents/{ConsentId}/attestations
+    - method: GET
+      path: /payment-consents/{ConsentId}/refund
+    - method: POST
+      path: /payment-consents/{ConsentId}/file
+    - method: POST
+      path: /payments
+    - method: GET
+      path: /payments/{PaymentId}
+    - method: POST
+      path: /file-payments
+    - method: GET
+      path: /file-payments/{PaymentId}
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `format: uuid` is added to every consent identifier on this API that did
+    not already carry it: the `ConsentId` path parameter, the
+    `baseConsentId` query parameter, and
+    `AEPushedAuthorizationRequests.AEConsentId` and
+    `AEPushedAuthorizationRequests.AEBaseConsentId` (the consent returned by
+    `GET /payment-consents`, `GET /payment-consents/{ConsentId}` and
+    `GET /payment-consents/{ConsentId}/refund`, and `Data.ConsentId` on the
+    `/payments` and `/file-payments` requests and responses). The
+    `x-consent-id` header on `POST /payments` was already `format: uuid`.
+
+    A ConsentId is only ever created by the TPP in the Pushed Authorization
+    Request, where `ConsentId` and `BaseConsentId` on `POST /par` are
+    already declared `format: uuid`. Every ConsentId these operations carry
+    originated there, so the change describes the same identifier the same
+    way across the authorisation, consent and resource APIs. `type`,
+    `minLength` and `maxLength` are unchanged.
+
+    Impact: none for a TPP that follows the `/par` contract. The ConsentId it
+    created there is already a UUID, and it is the only value these
+    operations can refer to.
