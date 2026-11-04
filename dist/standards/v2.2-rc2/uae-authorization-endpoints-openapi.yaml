@@ -69,6 +69,8 @@ paths:
               schema:
                 type: integer
                 format: int64
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Pushed Authorization Requests
       requestBody:
@@ -111,6 +113,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OAuthBadRequestErrorResponse'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Token Endpoint
       requestBody:
@@ -3693,5 +3697,11 @@ components:
       description: >-
         A unique identifier, which may be a UUID. `format: uuid` is provided as a hint to OpenAPI parsers, but LFIs can
         implement a unique identification mechanism of their choosing.
+  responses:
+    504Error:
+      description: >-
+        Gateway Timeout. The request could not be completed within the API Hub's processing window (approximately 30
+        seconds), for example when an upstream dependency is slow to respond. The response body for this status is not
+        standardised and may change; treat any 504 as a transient timeout.
 servers:
   - url: /open-finance/auth/v2.2
