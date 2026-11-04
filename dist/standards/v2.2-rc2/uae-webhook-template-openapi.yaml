@@ -171,6 +171,7 @@ components:
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadPartyIdentity
         - ReadProductFinanceRates
       description: The permission codes available to the TPP for Bank Data Sharing and agreed with the User.
     AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingFromDate:
@@ -383,6 +384,7 @@ components:
         - ReadAccountsDetail
         - ReadBalances
         - ReadRefundAccount
+        - ReadPartyIdentity
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFilePaymentConsent:
       type: object
       required:

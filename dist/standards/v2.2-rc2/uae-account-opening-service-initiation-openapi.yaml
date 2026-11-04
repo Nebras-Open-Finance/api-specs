@@ -102,6 +102,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Accounts
       requestBody:
@@ -258,6 +260,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Accounts
       security:
@@ -307,6 +311,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Accounts
       requestBody:
@@ -2059,5 +2065,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/AEError500ResponseBodySigned'
+    504Error:
+      description: >-
+        Gateway Timeout. The request could not be completed within the API Hub's processing window (approximately 30
+        seconds), for example when an upstream dependency is slow to respond. The response body for this status is not
+        standardised and may change; treat any 504 as a transient timeout.
 servers:
-  - url: /open-finance/account-opening/v2.1
+  - url: /open-finance/account-opening/v2.2

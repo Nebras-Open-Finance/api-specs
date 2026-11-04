@@ -40,6 +40,28 @@ info:
     **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
     for deprecated properties.**
 
+    ### v2.2.3
+
+    * Added a `504` response (`GatewayTimeout`) to every operation. An LFI MAY return `504` when it cannot complete
+      processing within its internal time limit; the API Hub treats it as a timeout. Only a description is given: the
+      response body for this status is not standardised, so no schema or headers are defined.
+
+    * Added an optional `EmiratesId` property to `DebtorIndicators` in the Risk object (`AEDebtorIndicators` and
+      `AEBankServiceInitiationRichAuthorizationRequests.AEDebtorIndicators`). It holds the Emirates ID number of the
+      User initiating the Payment, so that for payments made under a long-lived consent the LFI can confirm that each
+      payment is being made for the same User who authorized the consent.
+
+    * Added the `ReadPartyIdentity` permission code to `AEAccountAccessConsentPermissionCodes`,
+      `AEServiceInitiationConsentPermissionCodes` and `AEConsentPermissions`. It is an additive permission, available on
+      both Bank Data Sharing and Bank Service Initiation consents, that gives access to a User's identity claims only:
+      full, given, middle and family name, Emirates ID and Emirates ID expiry date for a Person, and business name, trade
+      licence number and trade licence expiry date for a Business.
+
+    * Changed the `example` on the `type` property of `DataSharingAuthorizationDetails`,
+      `InsuranceAuthorizationDetails` and `ServiceInitiationAuthorizationDetails` from `:v2.1` to `:v2.2` (for example
+      `urn:openfinanceuae:account-access-consent:v2.2`), matching the consent types the v2.2 Standards accept on
+      `post /par`. Only the example changes: each `pattern` already accepts any version, so validation is unchanged.
+
     ### v2.2.2
 
     * Added `format: uuid` to every consent identifier: the `o3-consent-id` header, `AEConsentId`, `AEBaseConsentId` and
@@ -128,7 +150,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
     * Removed support for single future-dated payment consents that are warehoused at the LFI.
-  version: v2.2.2
+  version: v2.2.3
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -198,6 +220,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
         default:
           $ref: '#/components/responses/Error'
   /consent/action/augment:
@@ -248,6 +272,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
         default:
           $ref: '#/components/responses/Error'
   /consent/action/validate:
@@ -315,10 +341,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
         default:
           $ref: '#/components/responses/Error'
 components:
   responses:
+    GatewayTimeout:
+      description: >-
+        Gateway Timeout. The LFI (Ozone Connect) could not complete processing within its internal time limit. The API
+        Hub treats this as a timeout. The response body for this status is not standardised and may change.
     Error:
       description: Default error response
       content:
@@ -979,6 +1011,7 @@ components:
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadPartyIdentity
         - ReadProductFinanceRates
       description: |-
         Specifies the permitted account access policy data types.
@@ -1272,6 +1305,7 @@ components:
           - ReadAccountsDetail
           - ReadBalances
           - ReadRefundAccount
+          - ReadPartyIdentity
       minItems: 1
     AEConsentExpirationDateTime:
       allOf:
@@ -1647,7 +1681,7 @@ components:
           description: The Rich Authorization Request (RAR) type
           type: string
           pattern: ^urn:openfinanceuae:account-access-consent:v[0-9]+\.[0-9]+$
-          example: urn:openfinanceuae:account-access-consent:v2.1
+          example: urn:openfinanceuae:account-access-consent:v2.2
         consent:
           $ref: '#/components/schemas/AuthorizationDetailsDataSharingConsent'
         subscription:
@@ -1659,7 +1693,7 @@ components:
           description: The Rich Authorization Request (RAR) type
           type: string
           pattern: ^urn:openfinanceuae:insurance-consent:v[0-9]+\.[0-9]+$
-          example: urn:openfinanceuae:insurance-consent:v2.1
+          example: urn:openfinanceuae:insurance-consent:v2.2
         consent:
           $ref: '#/components/schemas/AuthorizationDetailsInsuranceConsent'
         subscription:
@@ -1671,7 +1705,7 @@ components:
           description: The Rich Authorization Request (RAR) type
           type: string
           pattern: ^urn:openfinanceuae:service-initiation-consent:v[0-9]+\.[0-9]+$
-          example: urn:openfinanceuae:service-initiation-consent:v2.1
+          example: urn:openfinanceuae:service-initiation-consent:v2.2
         consent:
           $ref: '#/components/schemas/AEServiceInitiationAuthorizationDetailProperties'
         subscription:
@@ -2235,6 +2269,7 @@ components:
         - ReadAccountsDetail
         - ReadBalances
         - ReadRefundAccount
+        - ReadPartyIdentity
     AEJWEPaymentPII:
       type: string
       description: |
@@ -2525,6 +2560,12 @@ components:
               type: string
               description: Arabic value of the string
           additionalProperties: false
+        EmiratesId:
+          type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+          description: >-
+            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
+            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
         GeoLocation:
           type: object
           description: GPS to identify and track the whereabouts of the connected electronic device.
@@ -3742,6 +3783,12 @@ components:
               type: string
           description: The Name of the User initiating the Payment
           additionalProperties: false
+        EmiratesId:
+          type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+          description: >-
+            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
+            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
         GeoLocation:
           type: object
           properties:

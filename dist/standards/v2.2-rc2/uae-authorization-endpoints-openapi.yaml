@@ -355,7 +355,7 @@ components:
         type:
           type: string
           enum:
-            - urn:openfinanceuae:account-access-consent:v2.1
+            - urn:openfinanceuae:account-access-consent:v2.2
         consent:
           $ref: '#/components/schemas/AEConsentStatus.AEBankDataSharingConsentPropertiesV21'
       description: Bank Data Sharing Consent
@@ -369,7 +369,7 @@ components:
         type:
           type: string
           enum:
-            - urn:openfinanceuae:service-initiation-consent:v2.1
+            - urn:openfinanceuae:service-initiation-consent:v2.2
         consent:
           $ref: '#/components/schemas/AEBankServiceInitiationConsentStatusV21.AEBankServiceInitiationConsentProperties'
       description: Bank Service Initiation Consent
@@ -383,7 +383,7 @@ components:
         type:
           type: string
           enum:
-            - urn:openfinanceuae:insurance-consent:v2.1
+            - urn:openfinanceuae:insurance-consent:v2.2
         consent:
           $ref: '#/components/schemas/AEInsurance.AEReadInsuranceConsent1'
       description: Insurance Data Sharing Consent
@@ -396,9 +396,9 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          urn:openfinanceuae:account-access-consent:v2.1: '#/components/schemas/AEAuthorizationEndpointsV21.AEBankDataSharingLodgedAuthorizationDetailsProperties'
-          urn:openfinanceuae:service-initiation-consent:v2.1: '#/components/schemas/AEAuthorizationEndpointsV21.AEBankServiceInitiationLodgedAuthorizationDetailsProperties'
-          urn:openfinanceuae:insurance-consent:v2.1: '#/components/schemas/AEAuthorizationEndpointsV21.AEInsuranceDataSharingLodgedAuthorizationDetailsProperties'
+          urn:openfinanceuae:account-access-consent:v2.2: '#/components/schemas/AEAuthorizationEndpointsV21.AEBankDataSharingLodgedAuthorizationDetailsProperties'
+          urn:openfinanceuae:service-initiation-consent:v2.2: '#/components/schemas/AEAuthorizationEndpointsV21.AEBankServiceInitiationLodgedAuthorizationDetailsProperties'
+          urn:openfinanceuae:insurance-consent:v2.2: '#/components/schemas/AEAuthorizationEndpointsV21.AEInsuranceDataSharingLodgedAuthorizationDetailsProperties'
     AEBankDataSharing.AEExternalAccountSubTypeCode:
       type: string
       enum:
@@ -449,6 +449,7 @@ components:
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadPartyIdentity
         - ReadProductFinanceRates
       description: The permission codes available to the TPP for Bank Data Sharing and agreed with the User.
     AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingFromDate:
@@ -508,7 +509,7 @@ components:
         type:
           type: string
           enum:
-            - urn:openfinanceuae:account-access-consent:v2.1
+            - urn:openfinanceuae:account-access-consent:v2.2
           description: >-
             The Rich Authorization Request type, as defined by [RFC
             9396](https://datatracker.ietf.org/doc/html/rfc9396#section-2-2.2).
@@ -853,6 +854,7 @@ components:
         - ReadAccountsDetail
         - ReadBalances
         - ReadRefundAccount
+        - ReadPartyIdentity
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationDebtorAccountProperties:
       type: object
       required:
@@ -1391,6 +1393,12 @@ components:
               type: string
           description: The Name of the User initiating the Payment
           additionalProperties: false
+        EmiratesId:
+          type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+          description: >-
+            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
+            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
         GeoLocation:
           type: object
           properties:
@@ -2459,7 +2467,7 @@ components:
         type:
           type: string
           enum:
-            - urn:openfinanceuae:service-initiation-consent:v2.1
+            - urn:openfinanceuae:service-initiation-consent:v2.2
           description: >-
             The Rich Authorization Request type, as defined by [RFC
             9396](https://datatracker.ietf.org/doc/html/rfc9396#section-2-2.2).
@@ -3079,7 +3087,7 @@ components:
         type:
           type: string
           enum:
-            - urn:openfinanceuae:insurance-consent:v2.1
+            - urn:openfinanceuae:insurance-consent:v2.2
           description: >-
             The Rich Authorization Request type, as defined by [RFC
             9396](https://datatracker.ietf.org/doc/html/rfc9396#section-2-2.2).
@@ -3686,4 +3694,4 @@ components:
         A unique identifier, which may be a UUID. `format: uuid` is provided as a hint to OpenAPI parsers, but LFIs can
         implement a unique identification mechanism of their choosing.
 servers:
-  - url: /open-finance/auth/v2.1
+  - url: /open-finance/auth/v2.2

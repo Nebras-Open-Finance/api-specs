@@ -48,6 +48,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -87,6 +89,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -130,6 +134,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -189,6 +195,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Consent
       security:
@@ -240,6 +248,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Consent
       requestBody:
@@ -286,6 +296,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -332,6 +344,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -380,6 +394,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -422,6 +438,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -462,6 +480,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -509,6 +529,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -551,6 +573,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -591,6 +615,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -630,6 +656,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -735,6 +763,11 @@ components:
           examples:
             Internal Server Error:
               $ref: '#/components/examples/Error500InternalServerErrorSigned'
+    504Error:
+      description: >-
+        Gateway Timeout. The request could not be completed within the API Hub's processing window (approximately 30
+        seconds), for example when an upstream dependency is slow to respond. The response body for this status is not
+        standardised and may change; treat any 504 as a transient timeout.
     200PaymentConsentRetrieve:
       description: Payment Consent Retrieve
       headers:
@@ -2130,6 +2163,12 @@ components:
               type: string
               description: Arabic value of the string
           additionalProperties: false
+        EmiratesId:
+          type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+          description: >-
+            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
+            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
         GeoLocation:
           type: object
           description: GPS to identify and track the whereabouts of the connected electronic device.
@@ -2818,6 +2857,7 @@ components:
         - ReadAccountsDetail
         - ReadBalances
         - ReadRefundAccount
+        - ReadPartyIdentity
 
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationSingleInstantPayment:
       type: object
@@ -4596,6 +4636,7 @@ components:
         - ReadAccountsDetail
         - ReadBalances
         - ReadRefundAccount
+        - ReadPartyIdentity
         - AnalyticsData
         - AuditRecords
       description: |-

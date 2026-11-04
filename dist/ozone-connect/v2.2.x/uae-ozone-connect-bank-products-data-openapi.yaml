@@ -49,6 +49,12 @@ info:
     **Please adhere to the deprecated flags in your implementation. Do not implement deprecated properties when**
     **implementing new functionality.**
 
+    ### v2.2.3
+
+    * Added a `504` response (`GatewayTimeoutResponse`) to every operation. An LFI MAY return `504` when it cannot
+      complete processing within its internal time limit; the API Hub treats it as a timeout. Only a description is
+      given: the response body for this status is not standardised, so no schema or headers are defined.
+
     ### v2.2.2
 
     * Changed `post /leads` to constrain the personal-data fields it accepts. `Data.EmiratesId` on both the request
@@ -90,7 +96,7 @@ info:
       so that the same rate structure is used by both `DepositRates` and `ExpectedProfitRates`. No change to the
       properties returned.
 
-  version: v2.2.2
+  version: v2.2.3
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -177,6 +183,8 @@ paths:
           $ref: '#/components/responses/ForbiddenResponse'
         '500':
           $ref: '#/components/responses/InternalServerErrorResponse'
+        '504':
+          $ref: '#/components/responses/GatewayTimeoutResponse'
         default:
           $ref: '#/components/responses/errorResponse'
   /leads:
@@ -215,6 +223,8 @@ paths:
           $ref: '#/components/responses/ForbiddenResponse'
         '500':
           $ref: '#/components/responses/InternalServerErrorResponse'
+        '504':
+          $ref: '#/components/responses/GatewayTimeoutResponse'
         default:
           $ref: '#/components/responses/errorResponse'
 components:
@@ -2885,6 +2895,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error500'
+    GatewayTimeoutResponse:
+      description: >-
+        Gateway Timeout. The LFI (Ozone Connect) could not complete processing within its internal time limit. The API
+        Hub treats this as a timeout. The response body for this status is not standardised and may change.
     errorResponse:
       description: Default error response
       content:

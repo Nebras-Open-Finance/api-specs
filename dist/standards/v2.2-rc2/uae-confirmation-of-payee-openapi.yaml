@@ -62,6 +62,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Confirmation Operations
       requestBody:
@@ -135,6 +137,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Discovery Operations
       requestBody:
@@ -888,5 +892,10 @@ components:
         application/jwt:
           schema:
             $ref: '#/components/schemas/AEError500ResponseBodySigned'
+    504Error:
+      description: >-
+        Gateway Timeout. The request could not be completed within the API Hub's processing window (approximately 30
+        seconds), for example when an upstream dependency is slow to respond. The response body for this status is not
+        standardised and may change; treat any 504 as a transient timeout.
 servers:
-  - url: /open-finance/confirmation-of-payee/v2.1
+  - url: /open-finance/confirmation-of-payee/v2.2

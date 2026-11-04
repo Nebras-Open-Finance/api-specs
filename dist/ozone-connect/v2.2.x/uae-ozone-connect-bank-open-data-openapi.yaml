@@ -27,6 +27,12 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.2.2
+
+    * Added a `504` response (`error504Response`) to every operation. An LFI MAY return `504` when it cannot complete
+      processing within its internal time limit; the API Hub treats it as a timeout. Only a description is given: the
+      response body for this status is not standardised, so no schema or headers are defined.
+
     ### v2.2.1
 
     * Added new version compatible with v2.2 of standards
@@ -37,7 +43,7 @@ info:
       a `pattern` requiring an offset and forbidding `-00:00`; all other offsets remain conformant. Each field
       description now states only what is specific to that field. Per OFP-014.
 
-  version: v2.2.1
+  version: v2.2.2
 tags:
   - name: ATM
     description: Operations to support providing ATM data.
@@ -79,6 +85,8 @@ paths:
           $ref: '#/components/responses/error403Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -681,6 +689,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error500'
+    error504Response:
+      description: >-
+        Gateway Timeout. The LFI (Ozone Connect) could not complete processing within its internal time limit. The API
+        Hub treats this as a timeout. The response body for this status is not standardised and may change.
     errorResponse:
       description: Default error response
       content:

@@ -32,6 +32,25 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.4
+
+    * Added a `504` response (`error504Response`) to every operation. An LFI MAY return `504` when it cannot complete
+      processing within its internal time limit; the API Hub treats it as a timeout. Only a description is given: the
+      response body for this status is not standardised, so no schema or headers are defined.
+
+    * Added an optional `EmiratesId` property to `DebtorIndicators` in the Risk object
+      (`OzoneConnectConsentEventActionAPIs.AEDebtorIndicators`). It holds the Emirates ID number of the User initiating
+      the Payment, so that for payments made under a long-lived consent the LFI can confirm that each payment is being
+      made for the same User who authorized the consent.
+
+    * Added the `ReadPartyIdentity` permission code to
+      `OzoneConnectConsentEventActionAPIs.AEAccountAccessConsentPermissionCodes`,
+      `OzoneConnectConsentEventActionAPIs.AEServiceInitiationConsentPermissionCodes` and
+      `OzoneConnectConsentEventActionAPIs.AEConsentPermissions`. It is an additive permission, available on both Bank
+      Data Sharing and Bank Service Initiation consents, that gives access to a User's identity claims only: full,
+      given, middle and family name, Emirates ID and Emirates ID expiry date for a Person, and business name, trade
+      licence number and trade licence expiry date for a Business.
+
     ### v2.2.3
 
     * Added `format: uuid` to every consent identifier: the `o3-consent-id` header on every operation,
@@ -101,7 +120,7 @@ info:
 
 
     * Added initial version for compatibility with v2.1-rc2 of standards.
-  version: v2.2.3
+  version: v2.2.4
 tags:
   - name: User Verification
     description: Operations that allow a User to be verified in the API Hub
@@ -179,6 +198,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -243,6 +264,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -335,6 +358,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -436,6 +461,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -542,6 +569,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -598,6 +627,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -652,6 +683,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -717,6 +750,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -769,6 +804,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -836,6 +873,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /accounts/{accountId}:
@@ -880,6 +919,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /employment-insurance-policies:
@@ -923,6 +964,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -968,6 +1011,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1013,6 +1058,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1058,6 +1105,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1103,6 +1152,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1148,6 +1199,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1193,6 +1246,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1926,6 +1981,7 @@ components:
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadPartyIdentity
         - ReadProductFinanceRates
       description: |-
         Specifies the permitted account access policy data types.
@@ -2260,6 +2316,7 @@ components:
           - ReadAccountsDetail
           - ReadBalances
           - ReadRefundAccount
+          - ReadPartyIdentity
       minItems: 1
       description: |-
         Specifies the permitted Account Access data types.
@@ -2574,6 +2631,12 @@ components:
             ar:
               type: string
           description: The Name of the User initiating the Payment
+        EmiratesId:
+          type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+          description: >-
+            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
+            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
         GeoLocation:
           type: object
           properties:
@@ -3360,6 +3423,7 @@ components:
         - ReadAccountsDetail
         - ReadBalances
         - ReadRefundAccount
+        - ReadPartyIdentity
     OzoneConnectConsentEventActionAPIs.AEServiceInitiationConsentSchedule:
       type: object
       properties:
@@ -5359,6 +5423,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/OzoneConnect.Error500'
+    error504Response:
+      description: >-
+        Gateway Timeout. The LFI (Ozone Connect) could not complete processing within its internal time limit. The API
+        Hub treats this as a timeout. The response body for this status is not standardised and may change.
     errorResponse:
       description: Default error response
       content:

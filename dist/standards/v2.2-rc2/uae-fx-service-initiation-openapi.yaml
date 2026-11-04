@@ -116,6 +116,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - FX Quotes
       requestBody:
@@ -267,6 +269,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - FX Quotes
       security:
@@ -326,6 +330,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - FX Quotes
       requestBody:
@@ -418,6 +424,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - FX Quotes
       requestBody:
@@ -2666,7 +2674,7 @@ components:
               Amount: '14.68'
             PaymentMethod: DirectToTPP
         Links:
-          Self: https://lfi.openfinanceapihub.ae/open-finance/fx/v2.1/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
+          Self: https://lfi.openfinanceapihub.ae/open-finance/fx/v2.2/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
           LiabilityPolicy: https://www.lfi.ae/links/liability-policy
           RefundCancellationPolicy: https://www.lfi.ae/links/refund-cancellation-policy
         Meta: {}
@@ -2700,7 +2708,7 @@ components:
               PaymentMethod: DirectToTPP
           Links:
             Self: >-
-              https://lfi.openfinanceapihub.ae/open-finance/fx/v2.1/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
+              https://lfi.openfinanceapihub.ae/open-finance/fx/v2.2/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
             LiabilityPolicy: https://www.lfi.ae/links/liability-policy
             RefundCancellationPolicy: https://www.lfi.ae/links/refund-cancellation-policy
           Meta: {}
@@ -2744,7 +2752,7 @@ components:
           CreationDateTime: '2025-08-24T14:05:22.001+04:00'
           StatusUpdateDateTime: '2025-08-24T14:05:22.001+04:00'
         Links:
-          Self: https://lfi.openfinanceapihub.ae/open-finance/fx/v2.1/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
+          Self: https://lfi.openfinanceapihub.ae/open-finance/fx/v2.2/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
         Meta: {}
     ReadFXQuoteSignedResponse:
       summary: Read FX Quote Example - Signed Response
@@ -2791,7 +2799,7 @@ components:
             StatusUpdateDateTime: '2025-08-24T14:05:22.001+04:00'
           Links:
             Self: >-
-              https://lfi.openfinanceapihub.ae/open-finance/fx/v2.1/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
+              https://lfi.openfinanceapihub.ae/open-finance/fx/v2.2/fx-quotes/1d747c7b-7285-43e2-bb26-f7d6f195177e
           Meta: {}
     UpdateFxQuoteSignedRequest:
       summary: Update FX Quote - Signed Request
@@ -2940,5 +2948,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/AEError500ResponseBodySigned'
+    504Error:
+      description: >-
+        Gateway Timeout. The request could not be completed within the API Hub's processing window (approximately 30
+        seconds), for example when an upstream dependency is slow to respond. The response body for this status is not
+        standardised and may change; treat any 504 as a transient timeout.
 servers:
-  - url: /open-finance/fx/v2.1
+  - url: /open-finance/fx/v2.2

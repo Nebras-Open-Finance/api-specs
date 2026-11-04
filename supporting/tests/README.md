@@ -43,6 +43,7 @@ Anything narrower than the folder scope is encoded inside the test file. Example
 
 - [standards/no-breaking-changes.test.js](standards/no-breaking-changes.test.js) uses a `START_VERSIONS` map so a file is only checked from the version where its contract became stable.
 - [standards/version-matches-folder.test.js](standards/version-matches-folder.test.js) covers only suffixed folders (`-draftN`, `-rcN`, `-errataN`), whose `info.version` is the folder name. Base folders are out of scope.
+- [standards/consent-urn-matches-folder.test.js](standards/consent-urn-matches-folder.test.js) checks only `uae-authorization-endpoints-openapi.yaml`, and only from `v2.1` — where the consent `type` became an enum — onward.
 - [api-hub/errata-uplift.test.js](api-hub/errata-uplift.test.js) and [ozone-connect/errata-uplift.test.js](ozone-connect/errata-uplift.test.js) skip files whose `info.version` doesn't match the `vX.Y.Z` patch scheme (pre-release versions, date-based versions).
 
 ## Adding a test

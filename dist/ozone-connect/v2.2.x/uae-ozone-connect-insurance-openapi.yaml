@@ -32,6 +32,12 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.4
+
+    * Added a `504` response (`error504Response`) to every operation. An LFI MAY return `504` when it cannot complete
+      processing within its internal time limit; the API Hub treats it as a timeout. Only a description is given: the
+      response body for this status is not standardised, so no schema or headers are defined.
+
     ### v2.2.3
 
     * Added `format: uuid` to the `o3-consent-id` header on every operation. A ConsentId is only ever created by the TPP
@@ -101,7 +107,7 @@ info:
     * Initial version that delivers v2.1 requirements (see separate, detailed changelog for changes from last v2.1.x
     version).
 
-  version: v2.2.3
+  version: v2.2.4
 tags:
   - name: Employment Insurance
     description: Employment Insurance Operations
@@ -154,6 +160,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -203,6 +211,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -581,6 +591,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -626,6 +638,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -689,6 +703,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -741,6 +757,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -819,6 +837,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -870,6 +890,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -919,6 +941,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1295,6 +1319,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1340,6 +1366,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1403,6 +1431,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1455,6 +1485,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1533,6 +1565,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1584,6 +1618,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1633,6 +1669,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1715,6 +1753,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1760,6 +1800,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1823,6 +1865,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1875,6 +1919,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -1953,6 +1999,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -2004,6 +2052,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -2053,6 +2103,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -2927,6 +2979,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -2972,6 +3026,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3035,6 +3091,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3087,6 +3145,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3165,6 +3225,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3216,6 +3278,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3265,6 +3329,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3550,6 +3616,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3595,6 +3663,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3658,6 +3728,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3710,6 +3782,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3788,6 +3862,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3839,6 +3915,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -3888,6 +3966,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -4435,6 +4515,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -4480,6 +4562,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -4543,6 +4627,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -4595,6 +4681,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -4673,6 +4761,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -4724,6 +4814,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -4773,6 +4865,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -5139,6 +5233,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -5184,6 +5280,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -5247,6 +5345,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -5299,6 +5399,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -5377,6 +5479,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -20090,6 +20194,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/OzoneConnect.Error500'
+    error504Response:
+      description: >-
+        Gateway Timeout. The LFI (Ozone Connect) could not complete processing within its internal time limit. The API
+        Hub treats this as a timeout. The response body for this status is not standardised and may change.
     errorResponse:
       description: Default error response
       content:

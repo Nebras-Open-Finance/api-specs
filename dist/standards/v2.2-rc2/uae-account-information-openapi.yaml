@@ -64,6 +64,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -99,6 +101,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -147,6 +151,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - TPPOAuth2Security:
             - openid
@@ -206,6 +212,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Bank Data Sharing Consent
       security:
@@ -257,6 +265,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       tags:
         - Bank Data Sharing Consent
       requestBody:
@@ -305,6 +315,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -347,6 +359,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -387,6 +401,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -429,6 +445,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -471,6 +489,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -513,6 +533,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -557,6 +579,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -601,6 +625,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -655,6 +681,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -673,6 +701,15 @@ paths:
         * ReadPartyUser
         
         * ReadPartyUserIdentity
+
+        * ReadPartyIdentity
+
+        `ReadPartyIdentity` is an additive permission that may be granted on a Bank Data Sharing or a Bank Service
+        Initiation consent. It gives access to the following claims:
+
+        * Person: `FullName`, `GivenName`, `MiddleName`, `Surname`, `EmiratesId` and `EmiratesIdExpiryDate`
+
+        * Business: `BusinessName`, `TradeLicenceNumber` and `TradeLicenceExpiryDate`
 
         Refer to the Permissions and Data Clusters section of the Customer Data page for further information.
       parameters:
@@ -715,6 +752,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -733,6 +772,15 @@ paths:
         * ReadPartyUser
         
         * ReadPartyUserIdentity
+
+        * ReadPartyIdentity
+
+        `ReadPartyIdentity` is an additive permission that may be granted on a Bank Data Sharing or a Bank Service
+        Initiation consent. It gives access to the following claims:
+
+        * Person: `FullName`, `GivenName`, `MiddleName`, `Surname`, `EmiratesId` and `EmiratesIdExpiryDate`
+
+        * Business: `BusinessName`, `TradeLicenceNumber` and `TradeLicenceExpiryDate`
 
         Refer to the Permissions and Data Clusters section of the Customer Data page for further information.
       parameters:
@@ -774,6 +822,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -850,6 +900,8 @@ paths:
           $ref: '#/components/responses/429Error'
         '500':
           $ref: '#/components/responses/500Error'
+        '504':
+          $ref: '#/components/responses/504Error'
       security:
         - UserOAuth2Security:
             - openid
@@ -942,6 +994,11 @@ components:
         application/jwt:
           schema:
             $ref: '#/components/schemas/AEError500ResponseSigned'
+    504Error:
+      description: >-
+        Gateway Timeout. The request could not be completed within the API Hub's processing window (approximately 30
+        seconds), for example when an upstream dependency is slow to respond. The response body for this status is not
+        standardised and may change; treat any 504 as a transient timeout.
     200AccountsAccountIdDirectDebitsRead:
       description: Direct Debits Read
       headers:
@@ -4473,6 +4530,10 @@ components:
         TradeLicenceNumber:
           type: string
           description: Trade License Number of the business.
+        TradeLicenceExpiryDate:
+          type: string
+          format: date
+          description: Expiry date of the Trade Licence of the business.
         TaxIdentificationNumber:
           type: string
           description: The tax identification number or VAT number for the company.
@@ -6154,6 +6215,7 @@ components:
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadPartyIdentity
         - ReadProductFinanceRates
       description: The permission codes available to the TPP for Bank Data Sharing and agreed with the User.
     AEBankDataSharing.AEExternalAccountSubTypeCode:
@@ -6452,6 +6514,7 @@ components:
         - ReadPartyUser
         - ReadPartyUserIdentity
         - ReadParty
+        - ReadPartyIdentity
         - ReadProductFinanceRates
         - AnalyticsData
         - AuditRecords

@@ -80,6 +80,8 @@ paths:
           $ref: "#/components/responses/429Error"
         "500":
           $ref: "#/components/responses/500Error"
+        "504":
+          $ref: "#/components/responses/504Error"
       security:
         - TPPOAuth2Security:
             - products
@@ -120,6 +122,8 @@ paths:
           $ref: "#/components/responses/429Error"
         "500":
           $ref: "#/components/responses/500Error"
+        "504":
+          $ref: "#/components/responses/504Error"
       security:
         - TPPOAuth2Security:
             - products
@@ -2927,6 +2931,11 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/AEError500Response"
+    504Error:
+      description: >-
+        Gateway Timeout. The request could not be completed within the API Hub's processing window (approximately 30
+        seconds), for example when an upstream dependency is slow to respond. The response body for this status is not
+        standardised and may change; treat any 504 as a transient timeout.
   parameters:
     Authorization:
       name: authorization

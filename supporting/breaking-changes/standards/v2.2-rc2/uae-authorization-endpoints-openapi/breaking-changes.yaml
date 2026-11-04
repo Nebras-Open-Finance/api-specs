@@ -103,3 +103,35 @@
     `minLength` and `maxLength` are unchanged.
 
     Impact: none. The ConsentId returned is the one the TPP sent to `/par`.
+
+- rule: request-property-enum-value-removed
+  endpoints:
+    - method: POST
+      path: /par
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The consent type URNs move from v2.1 to v2.2.
+    `urn:openfinanceuae:account-access-consent:v2.1`,
+    `urn:openfinanceuae:service-initiation-consent:v2.1` and
+    `urn:openfinanceuae:insurance-consent:v2.1` are replaced by their `:v2.2`
+    equivalents in two places: the `type` enum of each Rich Authorization
+    Request on `POST /par`, and the `type` enum and discriminator `mapping` of
+    the `authorization_details` returned on `POST /token`. The server URL moves
+    from `/open-finance/auth/v2.1` to `/open-finance/auth/v2.2`. The
+    `AEAuthorizationEndpointsV21.*` and `*RichAuthorizationRequestsV21.*`
+    Schema Object names are unchanged.
+
+    The v2.2-rc2 copy of this spec was carried over from v2.1-errata3 without
+    uplifting its version identifiers. As a result it described the v2.2
+    consent schemas under the v2.1 type. The v2.2-rc1 copy published to Ozone
+    already used `:v2.2`, and so does the rendered v2.2 documentation. Only
+    `:v2.2` is listed, rather than both versions, so that the type a TPP sends
+    names the consent schema it is validated against.
+
+    oasdiff reports the removed request enum value on `POST /par`. The
+    response-side changes on `POST /token` (enum value and discriminator
+    mapping key replaced) are not ERR-level and are not listed.
+
+    Impact: a TPP that adopts the v2.2 Standards must send the `:v2.2` type in
+    `authorization_details`, and receives `:v2.2` in the token response. The
+    v2.1 documents are unchanged, so a TPP still on v2.1 is not affected.

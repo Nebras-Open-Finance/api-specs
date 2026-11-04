@@ -30,6 +30,16 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.2.5
+
+    * Added a `504` response (`error504Response`) to every operation. An LFI MAY return `504` when it cannot complete
+      processing within its internal time limit; the API Hub treats it as a timeout. Only a description is given: the
+      response body for this status is not standardised, so no schema or headers are defined.
+
+    * Added an optional `EmiratesId` property to `DebtorIndicators` in the Risk object (`AEDebtorIndicators`). It holds
+      the Emirates ID number of the User initiating the Payment, so that for payments made under a long-lived consent
+      the LFI can confirm that each payment is being made for the same User who authorized the consent.
+
     ### v2.2.4
 
     * Added `format: uuid` to every consent identifier: the `o3-consent-id` header on every operation, the `consentId`
@@ -144,7 +154,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.2.4
+  version: v2.2.5
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -226,6 +236,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /payments/{paymentId}:
@@ -262,6 +274,8 @@ paths:
           $ref: '#/components/responses/error403Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /payments/{paymentId}/report-file:
@@ -299,6 +313,8 @@ paths:
           $ref: '#/components/responses/error403Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /payment-consents:
@@ -353,6 +369,8 @@ paths:
           $ref: '#/components/responses/error403Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /payment-consents/{consentId}/file:
@@ -399,6 +417,8 @@ paths:
           $ref: '#/components/responses/error403Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /payment-consents/{consentId}/refund:
@@ -442,6 +462,8 @@ paths:
           $ref: '#/components/responses/error403Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
   /accounts:
@@ -481,6 +503,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -537,6 +561,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -589,6 +615,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -639,6 +667,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -686,6 +716,8 @@ paths:
           $ref: '#/components/responses/error409Response'
         '500':
           $ref: '#/components/responses/error500Response'
+        '504':
+          $ref: '#/components/responses/error504Response'
         default:
           $ref: '#/components/responses/errorResponse'
       tags:
@@ -723,6 +755,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error500'
+    error504Response:
+      description: >-
+        Gateway Timeout. The LFI (Ozone Connect) could not complete processing within its internal time limit. The API
+        Hub treats this as a timeout. The response body for this status is not standardised and may change.
     errorResponse:
       description: Default error response
       content:
@@ -1229,6 +1265,12 @@ components:
               type: string
               description: Arabic value of the string
           additionalProperties: false
+        EmiratesId:
+          type: string
+          pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+          description: >-
+            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
+            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
         GeoLocation:
           type: object
           description: GPS to identify and track the whereabouts of the connected electronic device.
