@@ -160,6 +160,29 @@ function relativeToRepo(filePath) {
   return path.relative(repoRoot, filePath);
 }
 
+// Consent type URNs carry the standard's major.minor — for example
+// `urn:openfinanceuae:account-access-consent:v2.1` — so each minor line replaces
+// them with its own value (`...:v2.2`). That is standard version management, not
+// a contract break, so an oasdiff error removing an older value is ignored when
+// the revision carries the same URN at its own major.minor. Anything else about
+// the URN changing — a different name, a value dropped with no replacement, or a
+// move to an older version — is still reported.
+const VERSIONED_URN = /^(urn:openfinanceuae:[a-z0-9-]+):v(\d+)\.(\d+)$/;
+const ENUM_VALUE_REMOVED_RULE = /\[(request-property|request-parameter)-enum-value-removed\]/;
+
+function isVersionedUrnUplift(errorLine, revisionDirName, revisionText) {
+  if (!ENUM_VALUE_REMOVED_RULE.test(errorLine)) return false;
+  const removed = errorLine.match(/removed the enum value `([^`]+)`/);
+  const urn = removed && removed[1].match(VERSIONED_URN);
+  if (!urn) return false;
+  const revision = parseVersion(revisionDirName);
+  if (!revision) return false;
+  const [, prefix, major, minor] = urn;
+  const isOlder = Number(major) < revision.major
+    || (Number(major) === revision.major && Number(minor) < revision.minor);
+  return isOlder && revisionText.includes(`${prefix}:v${revision.major}.${revision.minor}`);
+}
+
 module.exports = {
   distDir,
   repoRoot,
@@ -173,4 +196,5 @@ module.exports = {
   compareVersions,
   versionLabel,
   relativeToRepo,
+  isVersionedUrnUplift,
 };

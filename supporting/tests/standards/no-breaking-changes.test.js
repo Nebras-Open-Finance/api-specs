@@ -6,6 +6,7 @@ const { spawnSync } = require('node:child_process');
 const YAML = require('yaml');
 const {
   distDir, repoRoot, parseVersion, compareVersions, versionLabel, isPreReleaseLine, listVersionDirs,
+  isVersionedUrnUplift,
 } = require('../helpers');
 
 const acceptedChangesRoot = path.join(repoRoot, 'supporting', 'breaking-changes', 'standards');
@@ -137,7 +138,11 @@ function assertNoBreakingChanges(baseFile, revisionFile, revisionDirName, specFi
   if (result.status === 0) return;
   if (result.status === 1) {
     const accepted = loadAcceptedChanges(revisionDirName, specFileName);
-    const allErrors = result.stdout.split('\n').filter(line => line.startsWith('error'));
+    const revisionText = fs.readFileSync(revisionFile, 'utf8');
+    const allErrors = result.stdout.split('\n')
+      .filter(line => line.startsWith('error'))
+      .filter(line => !isVersionedUrnUplift(line, revisionDirName, revisionText));
+    if (allErrors.length === 0) return;
     const unaccepted = allErrors.filter(line => !isAccepted(line, accepted));
     if (unaccepted.length === 0) return;
     const acceptedCount = allErrors.length - unaccepted.length;

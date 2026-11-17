@@ -32,15 +32,7 @@ info:
     standard version 2.0.
 
 
-    ### v2.1.4
-
-
-    * Removed the CAAP-specific header `o3-is-caap-consent-operation` from the `get /{insurance-type}-insurance-policies`
-      operations, the CAAP-conditional `ProductName`, `BodyType`, and `PlateNumber` properties from the insurance
-      policy schemas, and related CAAP-conditional language. CAAP variants of these endpoints have been moved to the
-      CAAP Operations OpenAPI description. `PolicyEndDate` is retained on the insurance policy schemas but is no longer
-      CAAP-conditional: it is now an ordinary optional property, returnable for all consent types, matching the
-      `get /{insurance-type}-insurance-policies` response in the UAE Insurance API description.
+    ### v2.1.5
 
 
     * Removed the `maximum` of 100 from `AEInsuranceServiceRatingRateOrRatio`, which is referenced by the
@@ -62,6 +54,15 @@ info:
       `InsurancePolicyId` and `QuoteId` path parameters and the `QuoteId`, `InsurancePolicyId` and related identifier
       properties. A uuid v4 remains recommended for consistency but is no longer mandatory, so LFIs may use their own
       identifier scheme within the existing 1-128 character bounds. This matches UAE standards v2.1-errata3.
+
+
+    ### v2.1.4
+
+
+    * Removed the CAAP-specific header `o3-is-caap-consent-operation` from the `get /{insurance-type}-insurance-policies`
+      operations, the CAAP-conditional `ProductName`, `BodyType`, and `PlateNumber` properties from the insurance 
+      policy schemas, and related CAAP-conditional language. CAAP variants of these endpoints have been moved to the 
+      CAAP Operations OpenAPI description.
 
 
     ### v2.1.3
@@ -93,7 +94,7 @@ info:
     * Initial version that delivers v2.1 requirements (see separate, detailed changelog for changes from last v2.1.x
     version).
 
-  version: v2.1.4
+  version: v2.1.5
 tags:
   - name: Employment Insurance
     description: Employment Insurance Operations
@@ -11550,13 +11551,13 @@ components:
                 from the date the claim was filed, for the specific type of insurance coverage requested in this quote.
             ClaimSettlementRatio:
               allOf:
-                - $ref: '#/components/schemas/AEInsurance.AEInsuranceServiceRatingPercentage'
+                - $ref: '#/components/schemas/AEInsurance.AEInsuranceServiceRatingRateOrRatio'
               description: >-
                 Indicates the percentage of claims successfully paid by the insurer (LFI) out of the total number of
                 claims filed for the type of insurance coverage requested in this quote.
             ClaimRejectionRate:
               allOf:
-                - $ref: '#/components/schemas/AEInsurance.AEInsuranceServiceRatingPercentage'
+                - $ref: '#/components/schemas/AEInsurance.AEInsuranceServiceRatingRateOrRatio'
               description: >-
                 Represents the percentage of claims that were rejected or denied by the insurer (LFI) relative to the
                 total number of claims received for the type of insurance coverage requested in this quote.
@@ -11654,16 +11655,10 @@ components:
           description: >-
             Contains indicators related to the insurer’s digital capabilities and customer convenience features for the
             specific type of insurance requested in the quote.
-    AEInsurance.AEInsuranceServiceRatingPercentage:
-      type: number
-      minimum: 0
-      maximum: 100
-      multipleOf: 0.1
-      description: Provides a percentage as decimal, to one decimal place.
     AEInsurance.AEInsuranceServiceRatingRateOrRatio:
       type: number
-      multipleOf: 0.1
-      description: Provides a rate or ratio as decimal, to one decimal place.
+      description: A rate, ratio or percentage, expressed as a decimal. Values may exceed 100.
+      example: 152.35
     AEInsurance.AEInsuranceSpecialConditions:
       type: string
       minLength: 1

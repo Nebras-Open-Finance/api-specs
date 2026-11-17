@@ -1,6 +1,7 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const path = require('node:path');
 const { execSync } = require('node:child_process');
 const util = require('node:util');
 const YAML = require('yaml');
@@ -67,16 +68,43 @@ function isStandardsWorkingSpec(filePath) {
     && /-(draft|rc|errata)\d+$/.test(segments[2] || '');
 }
 
+const revertedVersionsRoot = path.join(repoRoot, 'supporting', 'reverted-versions');
+
+// A reversion withdraws content from a version already on main, restoring what that
+// version described before the withdrawn change landed. The patch-bump rule is the
+// wrong answer for it: bumping would publish the withdrawal as a new version instead
+// of undoing it, leaving the version on main standing as one that shipped content the
+// ecosystem was never meant to implement. supporting/reverted-versions/ records the
+// exemption — one entry per (spec, info.version), signed off and explained, in the
+// same shape as supporting/breaking-changes/. It exempts that one version and nothing
+// else; the next uplift of the same file is checked normally. A malformed or missing
+// entry simply fails to match, so the check fails closed.
+function revertedVersions(filePath) {
+  const [, category, versionDir, file] = relativeToRepo(filePath).split(/[\\/]/);
+  if (!category || !versionDir || !file) return [];
+  const specBase = file.replace(/\.yaml$/, '');
+  const recordPath = path.join(revertedVersionsRoot, category, versionDir, specBase, 'reverted-versions.yaml');
+  if (!fs.existsSync(recordPath)) return [];
+  const doc = YAML.parse(fs.readFileSync(recordPath, 'utf8'));
+  return Array.isArray(doc) ? doc : [];
+}
+
 const latestSpecs = findLatestSpecs().filter(f => !isStandardsWorkingSpec(f));
 
 describe(`No silent modification of a version already on ${BRANCH}`, () => {
   for (const filePath of latestSpecs) {
     const rel = relativeToRepo(filePath);
 
-    it(`${rel} differs from ${BRANCH} only when info.version has been bumped`, async () => {
+    it(`${rel} differs from ${BRANCH} only when info.version has been bumped`, async (t) => {
       const current = YAML.parse(fs.readFileSync(filePath, 'utf8'));
       const currentVersion = current?.info?.version;
       if (typeof currentVersion !== 'string') return;
+
+      if (revertedVersions(filePath).some(entry => entry && entry.version === currentVersion)) {
+        return t.skip(
+          `${currentVersion} has a recorded reversion in supporting/reverted-versions/ — content withdrawn in place, no bump expected`
+        );
+      }
 
       const mainDoc = await fetchFromMain(rel);
       if (!mainDoc) return;
