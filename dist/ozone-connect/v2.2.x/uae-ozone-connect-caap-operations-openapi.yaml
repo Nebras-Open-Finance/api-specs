@@ -32,6 +32,14 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.5
+
+    * Added `InArrears`, `Defaulted` and `WrittenOff` to `status` on `CbuaeAccount` (`get /accounts` and
+      `get /accounts/{accountId}`), with a definition of each in its description. They describe the state of a credit
+      facility, and an LFI MUST return one of them, in place of `Active`, when its definition applies. Only one status
+      applies at a time: `Closed` and `Deceased` take precedence over all three, `WrittenOff` over `Defaulted`, and
+      `Defaulted` over `InArrears`. This matches `status` in the Bank Data Sharing API description. Per OFP-017.
+
     ### v2.2.4
 
     * Added a `504` response (`error504Response`) to every operation. An LFI MAY return `504` when it cannot complete
@@ -120,7 +128,7 @@ info:
 
 
     * Added initial version for compatibility with v2.1-rc2 of standards.
-  version: v2.2.4
+  version: v2.2.5
 tags:
   - name: User Verification
     description: Operations that allow a User to be verified in the API Hub
@@ -4683,6 +4691,29 @@ components:
               are met, and the suspension is lifted.
 
             * Closed: The account is closed
+
+
+            * InArrears: An amount due under the account's terms (a scheduled repayment, a minimum payment, or an
+              amount above an agreed limit) is past due and unpaid, and the account has not been classified as
+              Defaulted or WrittenOff.
+
+
+            * Defaulted: The LFI has classified the account as in default. This MUST apply no later than the point
+              at which an amount has been past due for more than 90 days, and MAY apply earlier where the LFI's
+              credit-risk classification does so.
+
+
+            * WrittenOff: The LFI has written off all or part of the outstanding balance, and the account is not
+              yet closed. Recovery may continue while the account has this status.
+
+
+            InArrears, Defaulted and WrittenOff describe the state of a credit facility. They exist for CreditCard,
+            Finance and Mortgage accounts, and MAY be used for any other account whose state matches a definition.
+            An LFI MUST return one of them, in place of Active, when its definition applies.
+
+
+            Only one status applies at a time. Closed and Deceased take precedence over InArrears, Defaulted and
+            WrittenOff. WrittenOff takes precedence over Defaulted, and Defaulted takes precedence over InArrears.
           type: string
           enum:
             - Active
@@ -4692,6 +4723,9 @@ components:
             - Deceased
             - Suspended
             - Closed
+            - InArrears
+            - Defaulted
+            - WrittenOff
         statusUpdateDateTime:
           allOf:
             - $ref: '#/components/schemas/AEDateTime'

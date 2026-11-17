@@ -1610,6 +1610,7 @@ components:
           required:
             - ConsentId
             - RefundAccount
+            - AccountStatus
           properties:
             ConsentId:
               $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentId'
@@ -1617,8 +1618,49 @@ components:
               $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEBaseConsentId'
             RefundAccount:
               $ref: '#/components/schemas/AEDebtorAccount'
+            AccountStatus:
+              $ref: '#/components/schemas/AEAccountStatusCode'
         Links:
           $ref: '#/components/schemas/AELinksRelatedPayment'
+    AEAccountStatusCode:
+      description: >
+        Specifies the status of the account in code form. Only the statuses that apply to current and savings
+        accounts are used. On the refund response it is the status of the `RefundAccount`.
+
+
+        * Active: The account exist and is in an active state.
+
+
+        * Inactive: The account is deemed not active by the LFI. Please refer to the
+          [CBUAE Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+          for qualification of Inactive status.
+
+        * Dormant: Please refer to the [CBUAE
+        Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+          for the definition of Dormant status.
+
+        * Unclaimed: Please refer to the [CBUAE
+        Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+          for the definition of Unclaimed status.
+
+        * Deceased: The account holder has passed away.
+
+
+        * Suspended: The account has been temporarily deactivated by the LFI for reasons such as
+          suspicious activities or non-compliance with regulations. The account holder might
+          be unable to access funds or perform transactions until the bank's requirements
+          are met, and the suspension is lifted.
+
+        * Closed: The account is closed
+      type: string
+      enum:
+        - Active
+        - Inactive
+        - Dormant
+        - Unclaimed
+        - Deceased
+        - Suspended
+        - Closed
     AEPaymentIdResponse:
       description: |
         Payment Id Response Schema

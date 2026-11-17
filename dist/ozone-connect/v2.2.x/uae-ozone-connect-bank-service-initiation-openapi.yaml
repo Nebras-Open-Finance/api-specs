@@ -30,6 +30,14 @@ info:
     So, for example, `v2.0.1` indicates the first version of the Ozone Connect API description that implements the UAE
     standard version 2.0.
 
+    ### v2.2.6
+
+    * Added required `accountStatus` to the `get /payment-consents/{consentId}/refund` response
+      (`RefundGetResponseBody`). It is the status of the account in `refundAccount`, using only the statuses that apply
+      to current and savings accounts, as `accountStatus` does in the `post /customers/action/cop-query` response in the
+      Bank Data Sharing API description. The API Hub returns it to the TPP as `AccountStatus` in the Standards Bank
+      Initiation API description.
+
     ### v2.2.5
 
     * Added a `504` response (`error504Response`) to every operation. An LFI MAY return `504` when it cannot complete
@@ -154,7 +162,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
 
-  version: v2.2.5
+  version: v2.2.6
 tags:
   - name: Payments
     description: APIs that should be implemented by Financial Institutions to expose Service Initiation capability to 
@@ -2376,6 +2384,7 @@ components:
       type: object
       required:
         - refundAccount
+        - accountStatus
       properties:
         consentId:
           description: |
@@ -2386,6 +2395,46 @@ components:
           format: uuid
         refundAccount:
           $ref: '#/components/schemas/AEDebtorAccount'
+        accountStatus:
+          description: >
+            The status of the account in `refundAccount`. Only the statuses that apply to current and savings accounts
+            are used, with the same meanings as `status` on the account resource in the Bank Data Sharing API
+            description.
+
+
+            * Active: The account exist and is in an active state.
+
+
+            * Inactive: The account is deemed not active by the LFI. Please refer to the
+              [CBUAE Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for qualification of Inactive status.
+
+            * Dormant: Please refer to the [CBUAE
+            Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for the definition of Dormant status.
+
+            * Unclaimed: Please refer to the [CBUAE
+            Website](https://rulebook.centralbank.ae/en/rulebook/dormant-accounts-regulation)
+              for the definition of Unclaimed status.
+
+            * Deceased: The account holder has passed away.
+
+
+            * Suspended: The account has been temporarily deactivated by the LFI for reasons such as
+              suspicious activities or non-compliance with regulations. The account holder might
+              be unable to access funds or perform transactions until the bank's requirements
+              are met, and the suspension is lifted.
+
+            * Closed: The account is closed
+          type: string
+          enum:
+            - Active
+            - Inactive
+            - Dormant
+            - Unclaimed
+            - Deceased
+            - Suspended
+            - Closed
     AEDebtorAccount:
       description: Unambiguous identification of the account of the debtor to which a debit entry will be made.
       type: object

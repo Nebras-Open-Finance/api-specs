@@ -178,3 +178,63 @@
     Impact: none for a TPP that follows the `/par` contract. The ConsentId it
     created there is already a UUID, and it is the only value these
     operations can refer to.
+
+- rule: response-property-type-changed
+  endpoints:
+    - method: GET
+      path: /accounts/{AccountId}/transactions
+    - method: GET
+      path: /parties
+    - method: GET
+      path: /accounts/{AccountId}/parties
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Five Data Sharing fields change type. Per OFP-021.
+
+    On `AETransaction`, `MerchantId` (`AEMerchantDetails1`) and `TerminalId`
+    change from `integer` to strings of letters and digits, with patterns
+    `^[A-Za-z0-9]{1,15}$` and `^[A-Za-z0-9]{1,16}$`; `BillerId`
+    (`BillDetails`) changes from `number` to a string with pattern
+    `^[A-Za-z0-9]{1,35}$`; and `ExchangeRate` (`AECurrencyExchange`) changes
+    from `number` to a decimal string with at most 10 decimal places. On the
+    party identity (`Claims`), `Salary` changes from `number` to an object of
+    a required `Amount` and `Currency` and an optional `Frequency`.
+
+    Ozone Connect carries all five as strings, and the API Hub converted each
+    to a number when it built the Standards response. A value that was not a
+    number reached the TPP as `null`: a merchant or terminal identifier
+    containing a letter, or a salary written with a currency. A numeric
+    identifier lost its leading zeros, `minLength` and `maxLength` had no
+    effect on an integer, the exchange rate had no precision limit, and a
+    salary had no currency or period. The new formats carry each value as the
+    LFI holds it. Ozone Connect Bank Data Sharing v2.2.9 uses the same type
+    and pattern for each field, so the API Hub maps them without converting
+    them.
+
+    Impact on TPPs: a TPP that reads any of these fields must change its
+    parsing when it moves to v2.2. The OFP-021 vote closed on 9 Nov 2026 with
+    every vote cast in favour.
+
+- rule: response-property-enum-value-added
+  endpoints:
+    - method: GET
+      path: /accounts
+    - method: GET
+      path: /accounts/{AccountId}
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `InArrears`, `Defaulted` and `WrittenOff` are added to
+    `AEAccountStatusCode`, the `Status` of an account. Per OFP-017.
+
+    The existing values describe a current or savings account, and none of
+    them describes the state of a credit facility. An LFI with a mortgage in
+    arrears, or a card balance it has written off, had to report the account
+    as `Active`, `Suspended` or `Closed`, and LFIs chose differently. The new
+    values are defined in the standard, an LFI MUST return one of them in
+    place of `Active` when its definition applies, and only one status
+    applies at a time.
+
+    Impact on TPPs: a TPP that validates `Status` strictly, or treats any
+    value other than `Active` as an error, must accept the new values when it
+    moves to v2.2. The Confirmation of Payee `AccountStatus` is unchanged. The
+    OFP-017 vote closed on 9 Nov 2026 with every vote cast in favour.

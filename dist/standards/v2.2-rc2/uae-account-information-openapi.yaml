@@ -2472,9 +2472,32 @@ components:
         * Suspended: The account has been temporarily deactivated by the LFI for reasons such as
           suspicious activities or non-compliance with regulations. The account holder might
           be unable to access funds or perform transactions until the bank's requirements 
-          are met, and the suspension is lifted. 
+          are met, and the suspension is lifted.
 
         * Closed: The account is closed
+
+
+        * InArrears: An amount due under the account's terms (a scheduled repayment, a minimum payment, or an
+          amount above an agreed limit) is past due and unpaid, and the account has not been classified as
+          Defaulted or WrittenOff.
+
+
+        * Defaulted: The LFI has classified the account as in default. This MUST apply no later than the point
+          at which an amount has been past due for more than 90 days, and MAY apply earlier where the LFI's
+          credit-risk classification does so.
+
+
+        * WrittenOff: The LFI has written off all or part of the outstanding balance, and the account is not yet
+          closed. Recovery may continue while the account has this status.
+
+
+        InArrears, Defaulted and WrittenOff describe the state of a credit facility. They exist for CreditCard,
+        Finance and Mortgage accounts, and MAY be used for any other account whose state matches a definition. An
+        LFI MUST return one of them, in place of Active, when its definition applies.
+
+
+        Only one status applies at a time. Closed and Deceased take precedence over InArrears, Defaulted and
+        WrittenOff. WrittenOff takes precedence over Defaulted, and Defaulted takes precedence over InArrears.
       type: string
       enum:
         - Active
@@ -2484,6 +2507,9 @@ components:
         - Deceased
         - Suspended
         - Closed
+        - InArrears
+        - Defaulted
+        - WrittenOff
     ActiveOrHistoricCurrencyCode_0:
       description: >-
         Identification of the currency in which the account is held. A code allocated to a currency under an
@@ -3014,10 +3040,11 @@ components:
         retail financial transactions
       properties:
         MerchantId:
-          description: MerchantId
-          type: integer
-          minLength: 8
-          maxLength: 20
+          description: >-
+            Identifier of the merchant (the card acceptor), as held by the LFI. The LFI MUST send the identifier as it
+            holds it, including any leading zeros, and MUST NOT pad it with spaces.
+          type: string
+          pattern: ^[A-Za-z0-9]{1,15}$
         MerchantName:
           description: Name by which the merchant is known.
           type: string
@@ -3133,7 +3160,11 @@ components:
 
             Usage: ExchangeRate expresses the ratio between UnitCurrency and QuotedCurrency (ExchangeRate =
             UnitCurrency/QuotedCurrency).
-          type: number
+
+            The rate is a decimal string with at most 10 decimal places, so that it is carried exactly as the LFI
+            holds it.
+          type: string
+          pattern: ^\d{1,11}(\.\d{1,10})?$
         ContractIdentification:
           description: Unique identification to unambiguously identify the foreign exchange contract.
           type: string
@@ -3824,20 +3855,21 @@ components:
             $ref: '#/components/schemas/AECashAccount5_0'
       additionalProperties: false
     TerminalId:
-      description: ID of the Terminal if the transaction was initiated from a retail POS
-      type: integer
-      minLength: 8
-      maxLength: 20
+      description: >-
+        ID of the Terminal if the transaction was initiated from a retail POS. The LFI MUST send the identifier as it
+        holds it, including any leading zeros, and MUST NOT pad it with spaces.
+      type: string
+      pattern: ^[A-Za-z0-9]{1,16}$
     BillDetails:
       description: Bill Details
       type: object
       properties:
         BillerId:
           description: >-
-            This should be 'BillerCode' as per SP-SADAD specifications. It is a unique biller identifier within SADAD
-            that could be used by the end-user to refer to a specific SADAD biller (e.g. STC biller code is 001, water
-            services biller code is 015, etc.)
-          type: number
+            Identifier of the biller, as assigned by the LFI or by the bill-payment service it uses. The LFI MUST send
+            the identifier as it holds it, including any leading zeros, and MUST NOT pad it with spaces.
+          type: string
+          pattern: ^[A-Za-z0-9]{1,35}$
         BillNumber:
           description: Unique bill identifier within the account.
           type: string
@@ -4472,7 +4504,27 @@ components:
         SourceOfIncome:
           type: string
         Salary:
-          type: number
+          description: >-
+            The salary of the Party. When Salary is present, Amount and Currency MUST be present. Frequency is
+            OPTIONAL; where the LFI holds the period the salary is paid for, it SHOULD send it.
+          type: object
+          additionalProperties: false
+          required:
+            - Amount
+            - Currency
+          properties:
+            Amount:
+              $ref: '#/components/schemas/AEActiveCurrencyAndAmount_SimpleType'
+            Currency:
+              $ref: '#/components/schemas/ActiveOrHistoricCurrencyCode_1'
+            Frequency:
+              description: The period the salary Amount is paid for.
+              type: string
+              enum:
+                - Weekly
+                - Fortnightly
+                - Monthly
+                - Annual
         Nationality:
           type: string
         ResidentialAddress:

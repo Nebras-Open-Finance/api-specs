@@ -58,6 +58,34 @@ info:
     **implementing new functionality.**
 
 
+    ### v2.2.9
+
+    * Added `InArrears`, `Defaulted` and `WrittenOff` to `status` on `CbuaeAccount` (`get /accounts` and
+      `get /accounts/{accountId}`), with a definition of each in its description. They describe the state of a credit
+      facility, and an LFI MUST return one of them, in place of `Active`, when its definition applies. Only one status
+      applies at a time: `Closed` and `Deceased` take precedence over all three, `WrittenOff` over `Defaulted`, and
+      `Defaulted` over `InArrears`. The API Hub returns them to the TPP as `Status` in the Standards Account
+      Information API description. Per OFP-017.
+
+    * Changed the description of `accountStatus` in the `post /customers/action/cop-query` response to state that it
+      uses only the statuses that apply to current and savings accounts. Its values are unchanged. Per OFP-017.
+
+    * Changed `merchantId` on `MerchantDetails`, `TerminalId` (`terminalId` on `CbuaeTransaction`) and `BillerID` on
+      `BillDetails` to strings of letters and digits, with `pattern` `^[A-Za-z0-9]{1,15}$`, `^[A-Za-z0-9]{1,16}$` and
+      `^[A-Za-z0-9]{1,35}$` respectively. This replaces the digits-only patterns added in v2.2.6 and removes the 8 to 20
+      character length on `TerminalId`. The LFI MUST send each identifier as it holds it, including any leading zeros,
+      and MUST NOT pad it with spaces. The `BillerID` description no longer refers to SADAD. Per OFP-021.
+
+    * Changed `exchangeRate` on `CurrencyExchange` from `number` to a decimal `string` with at most 10 decimal places
+      (`pattern: ^\d{1,11}(\.\d{1,10})?$`), replacing the `number` type set in v2.2.6. Per OFP-021.
+
+    * Changed `salary` on `CustomerPersonClaims` (`get /customer` and `get /accounts/{accountId}/customer`) from
+      `number` to an object of a required `amount` and `currency` and an optional `frequency` (`Weekly`,
+      `Fortnightly`, `Monthly` or `Annual`), replacing the `number` type set in v2.2.6. Per OFP-021.
+
+    * The five fields changed per OFP-021 now have the same type and pattern as the corresponding properties in the
+      Standards Account Information API description, so the API Hub maps them without changing their type.
+
     ### v2.2.8
 
     * Added a `504` response (`GatewayTimeoutError`) to every operation. An LFI MAY return `504` when it cannot complete
@@ -178,7 +206,7 @@ info:
       balance to be provided identifying the specific Shari'ah compliant charges, payments and rewards made
       which can affect the balance.
 
-  version: v2.2.8
+  version: v2.2.9
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -1068,6 +1096,29 @@ components:
               are met, and the suspension is lifted.
 
             * Closed: The account is closed
+
+
+            * InArrears: An amount due under the account's terms (a scheduled repayment, a minimum payment, or an
+              amount above an agreed limit) is past due and unpaid, and the account has not been classified as
+              Defaulted or WrittenOff.
+
+
+            * Defaulted: The LFI has classified the account as in default. This MUST apply no later than the point
+              at which an amount has been past due for more than 90 days, and MAY apply earlier where the LFI's
+              credit-risk classification does so.
+
+
+            * WrittenOff: The LFI has written off all or part of the outstanding balance, and the account is not
+              yet closed. Recovery may continue while the account has this status.
+
+
+            InArrears, Defaulted and WrittenOff describe the state of a credit facility. They exist for CreditCard,
+            Finance and Mortgage accounts, and MAY be used for any other account whose state matches a definition.
+            An LFI MUST return one of them, in place of Active, when its definition applies.
+
+
+            Only one status applies at a time. Closed and Deceased take precedence over InArrears, Defaulted and
+            WrittenOff. WrittenOff takes precedence over Defaulted, and Defaulted takes precedence over InArrears.
           type: string
           enum:
             - Active
@@ -1077,6 +1128,9 @@ components:
             - Deceased
             - Suspended
             - Closed
+            - InArrears
+            - Defaulted
+            - WrittenOff
         statusUpdateDateTime:
           allOf:
             - $ref: '#/components/schemas/AEDateTime'
@@ -1463,8 +1517,9 @@ components:
             - $ref: '#/components/schemas/CbuaeCopBusinessName'
         accountStatus:
           description: >
-            The status of the account, using the same code set as `status` on the account resource returned by
-            `get /accounts/{accountId}`. A joint account MUST return the same value on every entry.
+            The status of the account. Only the statuses that apply to current and savings accounts are used, with
+            the same meanings as `status` on the account resource returned by `get /accounts/{accountId}`. A joint
+            account MUST return the same value on every entry.
 
 
             * Active: The account exist and is in an active state.
@@ -1672,8 +1727,26 @@ components:
           type: string
           description: The customer source of income
         salary:
-          type: number
-          description: The customer salary
+          type: object
+          description: >-
+            The customer salary. When `salary` is present, `amount` and `currency` MUST be present. `frequency` is
+            OPTIONAL; where the LFI holds the period the salary is paid for, it SHOULD send it.
+          required:
+            - amount
+            - currency
+          properties:
+            amount:
+              $ref: '#/components/schemas/AEActiveCurrencyAndAmount_SimpleType'
+            currency:
+              $ref: '#/components/schemas/ActiveOrHistoricCurrencyCode_1'
+            frequency:
+              description: The period the salary amount is paid for.
+              type: string
+              enum:
+                - Weekly
+                - Fortnightly
+                - Monthly
+                - Annual
         nationality:
           type: string
           description: >-
@@ -2731,9 +2804,11 @@ components:
       type: object
       properties:
         merchantId:
-          description: Merchant Id
+          description: >-
+            Identifier of the merchant (the card acceptor), as held by the LFI. The LFI MUST send the identifier as it
+            holds it, including any leading zeros, and MUST NOT pad it with spaces.
           type: string
-          pattern: ^[0-9]+$
+          pattern: ^[A-Za-z0-9]{1,15}$
         merchantName:
           description: Name by which the merchant is known.
           type: string
@@ -2773,13 +2848,17 @@ components:
         unitCurrency:
           $ref: '#/components/schemas/TCurrency'
         exchangeRate:
-          type: number
+          type: string
+          pattern: ^\d{1,11}(\.\d{1,10})?$
           description: >-
             Factor used to convert an amount from one currency into another. This reflects the price at which one
             currency was bought with another currency.
 
             Usage: ExchangeRate expresses the ratio between UnitCurrency and QuotedCurrency (ExchangeRate =
             UnitCurrency/QuotedCurrency).
+
+            The rate is a decimal string with at most 10 decimal places, so that it is carried exactly as the LFI
+            holds it.
         contractIdentification:
           type: string
           description: Unique identification to unambiguously identify the foreign exchange contract.
@@ -3467,23 +3546,21 @@ components:
           example: UTC+03:00
           pattern: ^UTC[+-]([01]\d|2[0-4])(:?[0-5]\d)?$
     TerminalId:
-      description: ID of the Terminal if the transaction was initiated from a retail POS
+      description: >-
+        ID of the Terminal if the transaction was initiated from a retail POS. The LFI MUST send the identifier as it
+        holds it, including any leading zeros, and MUST NOT pad it with spaces.
       type: string
-      pattern: ^[0-9]+$
-      minLength: 8
-      maxLength: 20
+      pattern: ^[A-Za-z0-9]{1,16}$
     BillDetails:
       description: Bill Details
       type: object
       properties:
         BillerID:
-          description: |
-            This should be 'BillerCode' as per SP-SADAD specifications. It is a
-            unique biller identifier within SADAD that could be used by the
-            end-user to refer to a specific SADAD biller (e.g. STC biller code
-            is 001, water services biller code is 015, etc.)
+          description: >-
+            Identifier of the biller, as assigned by the LFI or by the bill-payment service it uses. The LFI MUST send
+            the identifier as it holds it, including any leading zeros, and MUST NOT pad it with spaces.
           type: string
-          pattern: ^[0-9]+$
+          pattern: ^[A-Za-z0-9]{1,35}$
         BillNumber:
           description: Unique bill identifier within the account.
           type: string
