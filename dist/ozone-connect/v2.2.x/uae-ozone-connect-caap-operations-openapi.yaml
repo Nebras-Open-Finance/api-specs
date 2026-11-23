@@ -32,6 +32,18 @@ info:
     standard version 2.0.
 
 
+    ### v2.2.6
+
+    * Added an optional `TradeLicenceNumber` property to `DebtorIndicators` in the Risk object
+      (`OzoneConnectConsentEventActionAPIs.AEDebtorIndicators`). It holds the Trade Licence number of the business on
+      whose behalf the User is initiating the Payment, where the User is an SME or Corporate customer, so that for
+      payments made under a long-lived consent the LFI can confirm that each payment is being made for the same business
+      on whose behalf the consent was authorized. It is the SME and Corporate counterpart of `EmiratesId`. No `pattern`
+      is set, as the format varies by issuing authority.
+
+    * Changed the description of `EmiratesId` in `DebtorIndicators` to say that it applies where the User is a Retail
+      customer. Its type and pattern are unchanged.
+
     ### v2.2.5
 
     * Added `InArrears`, `Defaulted` and `WrittenOff` to `status` on `CbuaeAccount` (`get /accounts` and
@@ -128,7 +140,7 @@ info:
 
 
     * Added initial version for compatibility with v2.1-rc2 of standards.
-  version: v2.2.5
+  version: v2.2.6
 tags:
   - name: User Verification
     description: Operations that allow a User to be verified in the API Hub
@@ -2643,8 +2655,15 @@ components:
           type: string
           pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
           description: >-
-            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
-            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
+            The Emirates ID number of the User initiating the Payment, where the User is a Retail customer. For payments
+            made under a long-lived consent, the LFI can use it to confirm that each payment is being made for the same
+            User who authorized the consent.
+        TradeLicenceNumber:
+          type: string
+          description: >-
+            The Trade Licence number of the business on whose behalf the User is initiating the Payment, where the User
+            is an SME or Corporate customer. For payments made under a long-lived consent, the LFI can use it to confirm
+            that each payment is being made for the same business on whose behalf the consent was authorized.
         GeoLocation:
           type: object
           properties:

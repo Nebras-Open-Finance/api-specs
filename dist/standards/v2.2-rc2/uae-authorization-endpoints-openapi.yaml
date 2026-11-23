@@ -1401,8 +1401,15 @@ components:
           type: string
           pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
           description: >-
-            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
-            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
+            The Emirates ID number of the User initiating the Payment, where the User is a Retail customer. For payments
+            made under a long-lived consent, the LFI can use it to confirm that each payment is being made for the same
+            User who authorized the consent.
+        TradeLicenceNumber:
+          type: string
+          description: >-
+            The Trade Licence number of the business on whose behalf the User is initiating the Payment, where the User
+            is an SME or Corporate customer. For payments made under a long-lived consent, the LFI can use it to confirm
+            that each payment is being made for the same business on whose behalf the consent was authorized.
         GeoLocation:
           type: object
           properties:

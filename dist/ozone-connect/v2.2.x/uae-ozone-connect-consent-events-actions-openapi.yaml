@@ -40,6 +40,18 @@ info:
     **Please use the OpenAPI description document attached to the page if you reading this in Confluence** **to check
     for deprecated properties.**
 
+    ### v2.2.4
+
+    * Added an optional `TradeLicenceNumber` property to `DebtorIndicators` in the Risk object (`AEDebtorIndicators` and
+      `AEBankServiceInitiationRichAuthorizationRequests.AEDebtorIndicators`). It holds the Trade Licence number of the
+      business on whose behalf the User is initiating the Payment, where the User is an SME or Corporate customer, so
+      that for payments made under a long-lived consent the LFI can confirm that each payment is being made for the same
+      business on whose behalf the consent was authorized. It is the SME and Corporate counterpart of `EmiratesId`. No
+      `pattern` is set, as the format varies by issuing authority.
+
+    * Changed the description of `EmiratesId` in `DebtorIndicators` to say that it applies where the User is a Retail
+      customer. Its type and pattern are unchanged.
+
     ### v2.2.3
 
     * Added a `504` response (`GatewayTimeout`) to every operation. An LFI MAY return `504` when it cannot complete
@@ -150,7 +162,7 @@ info:
     * Changed CreditorReference, DebtorReference, and Reference objects to reduce maximum length to 35 characters.
 
     * Removed support for single future-dated payment consents that are warehoused at the LFI.
-  version: v2.2.3
+  version: v2.2.4
 servers:
   - url: https://<your-ozone-connect-server>
 tags:
@@ -2564,8 +2576,15 @@ components:
           type: string
           pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
           description: >-
-            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
-            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
+            The Emirates ID number of the User initiating the Payment, where the User is a Retail customer. For payments
+            made under a long-lived consent, the LFI can use it to confirm that each payment is being made for the same
+            User who authorized the consent.
+        TradeLicenceNumber:
+          type: string
+          description: >-
+            The Trade Licence number of the business on whose behalf the User is initiating the Payment, where the User
+            is an SME or Corporate customer. For payments made under a long-lived consent, the LFI can use it to confirm
+            that each payment is being made for the same business on whose behalf the consent was authorized.
         GeoLocation:
           type: object
           description: GPS to identify and track the whereabouts of the connected electronic device.
@@ -3787,8 +3806,15 @@ components:
           type: string
           pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
           description: >-
-            The Emirates ID number of the User initiating the Payment. For payments made under a long-lived consent, the
-            LFI can use it to confirm that each payment is being made for the same User who authorized the consent.
+            The Emirates ID number of the User initiating the Payment, where the User is a Retail customer. For payments
+            made under a long-lived consent, the LFI can use it to confirm that each payment is being made for the same
+            User who authorized the consent.
+        TradeLicenceNumber:
+          type: string
+          description: >-
+            The Trade Licence number of the business on whose behalf the User is initiating the Payment, where the User
+            is an SME or Corporate customer. For payments made under a long-lived consent, the LFI can use it to confirm
+            that each payment is being made for the same business on whose behalf the consent was authorized.
         GeoLocation:
           type: object
           properties:
