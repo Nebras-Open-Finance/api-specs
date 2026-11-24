@@ -79,3 +79,99 @@
     rejected at the schema rather than silently accepted and misread downstream.
     Emitting `Z` or `+00:00` instead is a one-line change and is what the
     standard already asked for.
+
+- rules:
+    - api-path-removed-without-deprecation
+    - api-removed-without-deprecation
+  endpoints:
+    - method: POST
+      path: /payment-consents
+    - method: POST
+      path: /payment-consents/{consentId}/file
+    - method: GET
+      path: /payments/{paymentId}/report-file
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `POST /payment-consents` and `POST /payment-consents/{consentId}/file`
+    are removed, per OFP-001 (approved, decision record DR-2026-001). Both
+    existed only for the file model: the API Hub created the File Payment
+    consent at the LFI and then passed the uploaded payment file through, so
+    that the LFI could validate the file before the User authorized the
+    consent. Bulk/Batch Payments now carry the payments as a JSON array on
+    `POST /bulk-payments` (recorded below), so there is no file to pass
+    through.
+
+    `GET /payments/{paymentId}/report-file` is removed with them. It served
+    the Standards Bulk/Batch Payment report, which returned the execution
+    report as a file and is itself removed: the status of each payment in a
+    Bulk/Batch Payment is now read from the Bulk/Batch Payment, as a single
+    payment's is.
+
+    The operations are removed rather than deprecated because no LFI has
+    implemented File Payments.
+
+    Impact: none in production.
+
+- rules:
+    - request-property-one-of-removed
+    - request-body-one-of-removed
+    - request-property-all-of-added
+    - request-property-type-changed
+    - request-property-removed
+    - new-required-request-property
+  endpoints:
+    - method: POST
+      path: /payments
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Bulk/Batch Payments move off `POST /payments` onto their own operations,
+    per OFP-001 (approved, decision record DR-2026-001), so that the Ozone
+    Connect Bulk and Batch operations mirror the Standards ones in the same
+    way the payment operations do: Standards `POST /bulk-payments` maps to
+    Ozone Connect `POST /bulk-payments` (`makeBulkPayment`), and Standards
+    `GET /bulk-payments/{BulkPaymentId}` to Ozone Connect
+    `GET /bulk-payments/{bulkPaymentId}` (`getBulkPayment`), and Standards
+    `GET /bulk-payments/{BulkPaymentId}/payments/{PaymentId}` to Ozone
+    Connect `GET /bulk-payments/{bulkPaymentId}/payments/{paymentId}`
+    (`getBulkPaymentPayment`). All three are additions.
+
+    `PaymentPostRequest.request` on `POST /payments` was a `oneOf` of
+    `AEPaymentRequest` and `AEFilePaymentRequest` (the `cbuae-file-payment`
+    body). It is now `AEPaymentRequest` only, and the
+    `AEPaymentAndFilePaymentRequest` wrapper is removed. `cbuae-file-payment`
+    is no longer a payment type on `POST /payments`. oasdiff reports the
+    removed `oneOf` branch, and the properties only that branch carried.
+
+    `AEFilePaymentRequest` itself is now the `request` of
+    `BulkPaymentPostRequest` on `POST /bulk-payments`. It carries the
+    payments as a JSON array instead of referring to an uploaded file: a
+    required `Instructions` array, one `AEFilePaymentInstruction` per
+    payment and at most 500 payments (`maxItems: 500`, also on the
+    response's `instructions`), and no `OpenFinanceBilling`.
+    `PaymentPurposeCode` (required)
+    and `DebtorReference` sit on each instruction, with `CreditorReference`
+    and the per-payment `PersonalIdentifiableInformation`, whose decoded
+    form (`AEBankServiceInitiation.AEFilePaymentPIIProperties`) holds a
+    required `DebtorAccount`, as the payments may be made from different
+    accounts, and the Creditor, without `ConfirmationOfPayeeResponse`. The
+    Bulk and Batch Risk block (`AEBulkBatchPaymentRisk`) is carried once, in
+    `Data.PersonalIdentifiableInformation`
+    (`AEBankServiceInitiation.AEFilePaymentRiskPIIProperties`).
+
+    The response to a Bulk/Batch Payment changes with it. On `POST /payments`
+    it was the single-payment `AEPaymentIdResponse`, with one `data.id`. On
+    `POST /bulk-payments` and `GET /bulk-payments/{bulkPaymentId}` it is
+    `AEFilePaymentIdResponse`, the camelCase mirror of the Standards
+    response: `data.id` for the Bulk/Batch Payment and one
+    `AEFilePaymentInstructionResponse` per payment, each with its own
+    `paymentId`, `status`, `statusUpdateDateTime`, `paymentRail` and
+    `rejectReasonCode`. Each payment is validated, screened and settled on
+    its own, so one failed payment is `Rejected` without failing the rest.
+    A single payment within a Bulk/Batch Payment can still be read with
+    `GET /payments/{paymentId}`, in the single-payment shape.
+
+    Acceptance rationale: no LFI has implemented File Payments, so no LFI
+    receives the `cbuae-file-payment` body on `POST /payments`, or returns a
+    response to it, today.
+
+    Impact: none in production.

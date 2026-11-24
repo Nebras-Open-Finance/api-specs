@@ -79,3 +79,79 @@
     rejected at the schema rather than silently accepted and misread downstream.
     Emitting `Z` or `+00:00` instead is a one-line change and is what the
     standard already asked for.
+
+- rules:
+    - new-required-request-property
+    - request-property-removed
+  endpoints:
+    - method: POST
+      path: /consent/event/{operation}
+    - method: POST
+      path: /consent/action/augment
+    - method: POST
+      path: /consent/action/validate
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Bulk/Batch Payment control parameters on the consent
+    (`AEServiceInitiationBulkBatchPaymentConsent`, at
+    `ControlParameters.ConsentSchedule.FilePayment`) are revised for the
+    JSON-array model, per OFP-001 (approved, decision record DR-2026-001).
+    `FileType`, `FileHash` and `FileReference` are removed, as there is no
+    file to type, hash or reference, and `RequestedExecutionDate` is removed.
+    A required `Description` is added: the reason the LFI shows the User at
+    authorization. `NumberOfTransactions` is kept. `ControlSum` is renamed
+    `TotalValueOfPayments` and becomes an `AEAmountAndCurrency` object
+    (`Amount` and `Currency`), the type `SinglePayment.Amount` uses.
+
+    Acceptance rationale: no LFI has implemented File Payments, so no LFI
+    receives a File Payment consent on these operations today.
+
+    Impact: none in production.
+
+- rules:
+    - request-property-removed
+    - request-property-type-changed
+    - request-property-one-of-added
+    - request-body-one-of-added
+    - new-required-request-property
+    - request-property-became-required
+    - request-property-max-set
+  endpoints:
+    - method: POST
+      path: /consent/event/{operation}
+    - method: POST
+      path: /consent/action/augment
+    - method: POST
+      path: /consent/action/validate
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Bank Service Initiation consent
+    (`AEServiceInitiationAuthorizationDetailProperties` and
+    `AEPaymentConsentResponse.Data`) becomes a `oneOf` of two shapes, identified
+    by structure alone, with no new field to discriminate them. The Bulk/Batch
+    Payment shape is the one being worked on; the Domestic or International
+    Payment shape keeps the consent as it was for now.
+
+    - Bulk/Batch Payment: `ControlParameters.ConsentSchedule` carries only
+      a required `BulkBatchPayment` (formerly `FilePayment`), and
+      `ControlParameters` carry no `IsDelegatedAuthentication`.
+      `Permissions`, `CurrencyRequest`, `PaymentPurposeCode`,
+      `DebtorReference` and `CreditorReference` are not carried, as each
+      payment carries its own, and the consent as returned carries no
+      `OpenFinanceBilling`. `NumberOfTransactions` has a `maximum` of
+      500, as a Bulk and Batch Payment carries at most 500 payments.
+      The PII decodes to `AEBulkBatchPaymentPII`, which carries only the
+      Bulk and Batch Risk block, `AEBulkBatchPaymentRisk`.
+    - Domestic or International Payment: the consent as before, with
+      `FilePayment` removed from its `ConsentSchedule`.
+
+    oasdiff reads the move of the consent's properties into the `oneOf` branches
+    as their removal from the consent, and the `oneOf` itself as an addition.
+    For single payments the effective contract is unchanged: every consent that
+    validated before, other than one carrying `FilePayment`, validates against
+    the Domestic or International Payment shape.
+
+    Acceptance rationale: the only consents that no longer validate are ones
+    carrying `FilePayment`, and no LFI has implemented File Payments.
+
+    Impact: none in production.

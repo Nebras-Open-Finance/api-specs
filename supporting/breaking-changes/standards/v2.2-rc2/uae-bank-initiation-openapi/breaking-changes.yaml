@@ -189,3 +189,184 @@
     Impact: none for a TPP that follows the `/par` contract. The ConsentId it
     created there is already a UUID, and it is the only value these
     operations can refer to.
+
+- rules:
+    - api-path-removed-without-deprecation
+    - api-removed-without-deprecation
+  endpoints:
+    - method: POST
+      path: /payment-consents/{ConsentId}/file
+    - method: POST
+      path: /file-payments
+    - method: GET
+      path: /file-payments
+    - method: GET
+      path: /file-payments/{PaymentId}
+    - method: GET
+      path: /file-payments/{PaymentId}/report
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Per OFP-001 (approved, decision record DR-2026-001), Bulk/Batch Payments
+    carry the payments as a JSON array instead of an uploaded file.
+
+    `POST /payment-consents/{ConsentId}/file` is removed: there is no longer
+    a file to upload. The `200NoContent` response, used only by this
+    operation, is removed with it.
+
+    The `/file-payments` endpoints move to `/bulk-payments`, as the resource
+    is no longer a file, and mirror the single-payment endpoints:
+    `POST /bulk-payments`, `GET /bulk-payments` (lookup by
+    `x-idempotency-key`) and `GET /bulk-payments/{BulkPaymentId}`. Their
+    operation IDs move with them (`CreateBulkPayment`,
+    `QueryBulkPaymentResource` and `RetrieveBulkPayment`). The path
+    parameter is `BulkPaymentId`, as each payment within a Bulk/Batch
+    Payment now has its own `PaymentId`. A single payment within a
+    Bulk/Batch Payment can be read with
+    `GET /bulk-payments/{BulkPaymentId}/payments/{PaymentId}`, which is an
+    addition. `GET /file-payments/{PaymentId}/report`, which returned the execution
+    report as a file, is removed with no replacement: the status of each
+    payment is read from `GET /bulk-payments/{BulkPaymentId}`, as a single
+    payment's is read from `GET /payments/{PaymentId}`. oasdiff reports each
+    old path as removed; the new paths are additions.
+
+    The response (`AEFilePaymentIdResponse`) carries only
+    `Data.BulkPaymentId`, in place of `Data.PaymentId`, `Data.ConsentId`,
+    `Data.CreationDateTime` and a required `Data.Instructions` array, with
+    one `AEFilePaymentInstructionResponse` per payment, in request order.
+    Each element carries the payment's own `PaymentId`, `Status`
+    (`AEPaymentStatus`), `StatusUpdateDateTime`, `PaymentRail`,
+    `PaymentTransactionId` and `RejectReasonCode`, the fields the LFI
+    updates on a single payment, with its `Amount`, `PaymentPurposeCode`,
+    `DebtorReference` and `CreditorReference`. The Bulk/Batch Payment as a
+    whole carries no `Status`, `StatusUpdateDateTime`, `PaymentRail`,
+    `RejectReasonCode`, `Charges`, `Instruction` (the consent control
+    parameters), `PaymentPurposeCode` or `OpenFinanceBilling`. The
+    `AEFilePaymentStatus`, `AEServiceInitiationOpenFinanceFilePaymentBilling`
+    and `AEPushedAuthorizationRequests.AEBankServiceInitiationBulkBatchPaymentConsent`
+    schemas, used only by those fields, are removed.
+
+    The `POST /bulk-payments` request (`AEFilePaymentRequest`) carries
+    `ConsentId`, a required `Instructions` array with one
+    `AEFilePaymentInstruction` per payment and at most 500 payments
+    (`maxItems: 500`, also on the response's `Instructions`), and
+    `Data.PersonalIdentifiableInformation`, which carries the Bulk and Batch
+    Risk block (`AEBulkBatchPaymentRisk`) once for the whole Bulk/Batch
+    Payment (`AEBankServiceInitiation.AEFilePaymentRiskPIIProperties`). It
+    carries no `OpenFinanceBilling`. Each instruction carries its own
+    `Amount`, `PaymentPurposeCode`, `DebtorReference`, `CreditorReference`
+    and `PersonalIdentifiableInformation`, whose decoded form
+    (`AEBankServiceInitiation.AEFilePaymentPIIProperties`) holds a required
+    `DebtorAccount`, as the payments may be made from different accounts,
+    and the Creditor, without `ConfirmationOfPayeeResponse`. The file-era
+    `Data.Instruction` and the top-level `PaymentPurposeCode` and
+    `DebtorReference` are gone.
+
+    The endpoints are removed rather than deprecated because they have never
+    been used. No LFI in the ecosystem has implemented File Payments, so
+    there is no live integration and no TPP can have called them
+    successfully.
+
+    Impact: none in production. A TPP building Bulk/Batch Payments against
+    v2.2 builds against `/bulk-payments` from the start.
+
+- rules:
+    - response-required-property-removed
+    - response-optional-property-removed
+  endpoints:
+    - method: GET
+      path: /payment-consents
+    - method: GET
+      path: /payment-consents/{ConsentId}
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The `FilePayment` control parameters on the consent
+    (`AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationBulkBatchPaymentConsent`)
+    lose `FileType`, `FileHash` and `FileReference`, as there is no file to
+    type, hash or reference, and lose `RequestedExecutionDate`. They gain a
+    required `Description`, the reason shown to the User at authorization.
+    `NumberOfTransactions` is kept. `ControlSum` is renamed
+    `TotalValueOfPayments` and becomes an
+    `AEStandardModels.AEAmountAndCurrency` object (`Amount` and `Currency`),
+    the type `SinglePayment.Amount` uses. The object is returned by
+    `GET /payment-consents` and `GET /payment-consents/{ConsentId}`.
+
+    Acceptance rationale: no LFI has implemented File Payments, so there is
+    no live consent, payment or integration to migrate. OFP-001 was approved
+    on that basis, before any LFI builds the file-parsing and
+    malware-scanning pipelines the file model would have needed.
+
+    Impact: none in production. A TPP building Bulk/Batch Payments against
+    v2.2 builds the array model from the start.
+
+- rules:
+    - response-required-property-removed
+    - response-optional-property-removed
+    - response-property-type-changed
+    - response-property-one-of-added
+    - response-body-one-of-added
+  endpoints:
+    - method: GET
+      path: /payment-consents
+    - method: GET
+      path: /payment-consents/{ConsentId}
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Bank Service Initiation consent returned by `GET /payment-consents` and
+    `GET /payment-consents/{ConsentId}` becomes a `oneOf` of two shapes,
+    identified by structure alone, with no new field to discriminate them. The
+    Bulk/Batch Payment shape is the one being worked on; the Domestic or
+    International Payment shape keeps the consent as it was for now.
+
+    - Bulk/Batch Payment: `ControlParameters.ConsentSchedule` carries only
+      a required `BulkBatchPayment` (formerly `FilePayment`), and
+      `ControlParameters` carry no `IsDelegatedAuthentication`.
+      `Permissions`, `CurrencyRequest`, `PaymentPurposeCode`,
+      `DebtorReference` and `CreditorReference` are not carried, as each
+      payment carries its own, and the consent as returned carries no
+      `OpenFinanceBilling`. `NumberOfTransactions` has a `maximum` of
+      500, as a Bulk and Batch Payment carries at most 500 payments.
+    - Domestic or International Payment: the consent as before, with
+      `FilePayment` removed from its `ConsentSchedule`.
+
+    oasdiff reads the move of the consent's properties into the `oneOf` branches
+    as their removal from the consent, and the `oneOf` itself as an addition.
+    For single payments the effective contract is unchanged: every consent that
+    validated before, other than one carrying `FilePayment`, validates against
+    the Domestic or International Payment shape.
+
+    Acceptance rationale: the only consents that no longer validate are ones
+    carrying `FilePayment`, and no LFI has implemented File Payments.
+
+    Impact: none in production.
+
+- rules:
+    - response-property-became-optional
+  endpoints:
+    - method: POST
+      path: /payments
+    - method: GET
+      path: /payments/{PaymentId}
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    `Data.OpenFinanceBilling` on `AEPaymentIdResponse`, the response of
+    `POST /payments` and `GET /payments/{PaymentId}`, is no longer required,
+    per OFP-001 (approved, decision record DR-2026-001).
+
+    `GET /payments/{PaymentId}` now also returns a single payment within a
+    Bulk/Batch Payment, by the `PaymentId` returned for it on
+    `POST /bulk-payments`, in the single-payment shape. Such a payment
+    carries no `OpenFinanceBilling`, as a Bulk/Batch Payment carries none, so
+    the property cannot be required for it. Its `Instruction.Amount`,
+    `PaymentPurposeCode` and `DebtorReference` are those of the payment, and
+    `ConsentId` is the Bulk/Batch Payment's consent.
+
+    For a payment made on `POST /payments` nothing changes: the response
+    description states that `OpenFinanceBilling` is present for every such
+    payment, as before.
+
+    Acceptance rationale: the property is absent only for a payment within a
+    Bulk/Batch Payment, and no LFI has implemented Bulk/Batch Payments, so no
+    TPP receives such a payment today.
+
+    Impact: none in production. A TPP reading a single payment keeps
+    receiving `OpenFinanceBilling`.

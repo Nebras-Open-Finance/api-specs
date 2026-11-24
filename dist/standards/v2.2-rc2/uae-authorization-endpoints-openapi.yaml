@@ -756,11 +756,6 @@ components:
         - Agreed
         - Indicative
       description: Specifies the type used to complete the currency exchange.
-    AEBankServiceInitiation.AEReference:
-      type: string
-      minLength: 1
-      maxLength: 35
-      description: A reason or reference in relation to a payment.
     AEBankServiceInitiationConsentStatusV21.AEBankServiceInitiationConsentProperties:
       type: object
       required:
@@ -768,67 +763,13 @@ components:
         - Links
       properties:
         Data:
-          type: object
-          properties:
-            ConsentId:
-              $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentId'
-            BaseConsentId:
-              $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEBaseConsentId'
-            IsSingleAuthorization:
-              $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.IsSingleAuthorization'
-            AuthorizationExpirationDateTime:
-              $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AuthorizationExpirationDateTime'
-            Permissions:
-              type: array
-              items:
-                $ref: >-
-                  #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes
-              description: Permission codes granted by the User to the TPP, allowing the TPP to check execute a balance check.
-            ExpirationDateTime:
-              $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentExpirationDateTime'
-            Status:
-              $ref: '#/components/schemas/AEConsentStatus.AEConsentStatusCodes'
-            RevokedBy:
-              $ref: '#/components/schemas/AEConsentStatus.AERevokedByCodes'
-            CreationDateTime:
-              $ref: '#/components/schemas/AECreationDateTime'
-            StatusUpdateDateTime:
-              $ref: '#/components/schemas/AEStatusUpdateDateTime'
-            Charges:
-              type: array
-              items:
-                $ref: '#/components/schemas/AEBankServiceInitiation.AECharges'
-              minItems: 1
-            ExchangeRate:
-              $ref: '#/components/schemas/AEConsentStatus.AEExchangeRateInformation'
-            CurrencyRequest:
-              $ref: '#/components/schemas/AEBankServiceInitiation.AECurrencyRequest'
-            ControlParameters:
-              $ref: >-
-                #/components/schemas/AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationControlParametersProperties
-            DebtorReference:
-              $ref: '#/components/schemas/AEBankServiceInitiation.AEDebtorReference'
-            CreditorReference:
-              $ref: '#/components/schemas/AEBankServiceInitiation.AECreditorReference'
-            PaymentPurposeCode:
-              $ref: '#/components/schemas/AEBankServiceInitiation.AEPaymentPurposeCode'
-            SponsoredTPPInformation:
-              $ref: '#/components/schemas/AEPushedAuthorizationRequests.AESponsoredTPPInformation'
-            OnBehalfOf:
-              $ref: '#/components/schemas/AEOnBehalfOf'
-            PaymentConsumption:
-              $ref: '#/components/schemas/AEConsentStatus.AEPaymentConsumption'
-            OpenFinanceBilling:
-              $ref: '#/components/schemas/AEConsentStatus.AEBankServiceInitiationOpenFinanceBilling'
-          required:
-            - ConsentId
-            - ExpirationDateTime
-            - Status
-            - CreationDateTime
-            - StatusUpdateDateTime
-            - ControlParameters
-            - PaymentPurposeCode
-          additionalProperties: false
+          oneOf:
+            - $ref: '#/components/schemas/AEBankServiceInitiationConsentStatusV21.AEBankServiceInitiationDomesticOrInternationalPaymentConsentData'
+            - $ref: '#/components/schemas/AEBankServiceInitiationConsentStatusV21.AEBankServiceInitiationBulkBatchPaymentConsentData'
+          description: >-
+            The Bank Service Initiation consent. It takes exactly one of two shapes, identified by its structure alone:
+            a Domestic and International Payments consent, or a Bulk and Batch consent, whose
+            `ControlParameters.ConsentSchedule` carries `BulkBatchPayment`.
         Subscription:
           $ref: '#/components/schemas/AEStandardModels.AEEventNotification'
         Links:
@@ -836,6 +777,123 @@ components:
         Meta:
           $ref: '#/components/schemas/AEConsentStatus.AEMetaMultiAuthorization'
       description: Status of the Authorization Request, qualified with additional information held by the API Hub.
+      additionalProperties: false
+    AEBankServiceInitiationConsentStatusV21.AEBankServiceInitiationBulkBatchPaymentConsentData:
+      title: Bulk and Batch
+      type: object
+      required:
+        - ConsentId
+        - ExpirationDateTime
+        - Status
+        - CreationDateTime
+        - StatusUpdateDateTime
+        - ControlParameters
+      properties:
+        ConsentId:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentId'
+        BaseConsentId:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEBaseConsentId'
+        IsSingleAuthorization:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.IsSingleAuthorization'
+        AuthorizationExpirationDateTime:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AuthorizationExpirationDateTime'
+        ExpirationDateTime:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentExpirationDateTime'
+        Status:
+          $ref: '#/components/schemas/AEConsentStatus.AEConsentStatusCodes'
+        RevokedBy:
+          $ref: '#/components/schemas/AEConsentStatus.AERevokedByCodes'
+        CreationDateTime:
+          $ref: '#/components/schemas/AECreationDateTime'
+        StatusUpdateDateTime:
+          $ref: '#/components/schemas/AEStatusUpdateDateTime'
+        Charges:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEBankServiceInitiation.AECharges'
+          minItems: 1
+        ExchangeRate:
+          $ref: '#/components/schemas/AEConsentStatus.AEExchangeRateInformation'
+        ControlParameters:
+          $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationBulkBatchPaymentControlParametersProperties
+        SponsoredTPPInformation:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AESponsoredTPPInformation'
+        OnBehalfOf:
+          $ref: '#/components/schemas/AEOnBehalfOf'
+        PaymentConsumption:
+          $ref: '#/components/schemas/AEConsentStatus.AEPaymentConsumption'
+      description: >-
+        A Bulk and Batch consent. Its `ControlParameters` carry no `IsDelegatedAuthentication`, and its
+        `ConsentSchedule` carries only `BulkBatchPayment`. `Permissions`, `CurrencyRequest`, `PaymentPurposeCode`,
+        `DebtorReference`, `CreditorReference` and `OpenFinanceBilling` do not apply: the payment purpose and references
+        of each payment are carried on that payment, on `POST /bulk-payments`.
+      additionalProperties: false
+    AEBankServiceInitiationConsentStatusV21.AEBankServiceInitiationDomesticOrInternationalPaymentConsentData:
+      title: Domestic and International Payments
+      type: object
+      required:
+        - ConsentId
+        - ExpirationDateTime
+        - Status
+        - CreationDateTime
+        - StatusUpdateDateTime
+        - ControlParameters
+        - PaymentPurposeCode
+      properties:
+        ConsentId:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentId'
+        BaseConsentId:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEBaseConsentId'
+        IsSingleAuthorization:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.IsSingleAuthorization'
+        AuthorizationExpirationDateTime:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AuthorizationExpirationDateTime'
+        Permissions:
+          type: array
+          items:
+            $ref: >-
+              #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes
+          description: Permission codes granted by the User to the TPP, allowing the TPP to check execute a balance check.
+        ExpirationDateTime:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AEConsentExpirationDateTime'
+        Status:
+          $ref: '#/components/schemas/AEConsentStatus.AEConsentStatusCodes'
+        RevokedBy:
+          $ref: '#/components/schemas/AEConsentStatus.AERevokedByCodes'
+        CreationDateTime:
+          $ref: '#/components/schemas/AECreationDateTime'
+        StatusUpdateDateTime:
+          $ref: '#/components/schemas/AEStatusUpdateDateTime'
+        Charges:
+          type: array
+          items:
+            $ref: '#/components/schemas/AEBankServiceInitiation.AECharges'
+          minItems: 1
+        ExchangeRate:
+          $ref: '#/components/schemas/AEConsentStatus.AEExchangeRateInformation'
+        CurrencyRequest:
+          $ref: '#/components/schemas/AEBankServiceInitiation.AECurrencyRequest'
+        ControlParameters:
+          $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationControlParametersProperties
+        DebtorReference:
+          $ref: '#/components/schemas/AEBankServiceInitiation.AEDebtorReference'
+        CreditorReference:
+          $ref: '#/components/schemas/AEBankServiceInitiation.AECreditorReference'
+        PaymentPurposeCode:
+          $ref: '#/components/schemas/AEBankServiceInitiation.AEPaymentPurposeCode'
+        SponsoredTPPInformation:
+          $ref: '#/components/schemas/AEPushedAuthorizationRequests.AESponsoredTPPInformation'
+        OnBehalfOf:
+          $ref: '#/components/schemas/AEOnBehalfOf'
+        PaymentConsumption:
+          $ref: '#/components/schemas/AEConsentStatus.AEPaymentConsumption'
+        OpenFinanceBilling:
+          $ref: '#/components/schemas/AEConsentStatus.AEBankServiceInitiationOpenFinanceBilling'
+      description: >-
+        A Domestic or International Payment consent: a Single Payment, Multi-Payment or Combined Payment. An
+        International Payment consent carries a `CurrencyRequest`.
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEActiveOrHistoricAmount:
       type: string
@@ -890,35 +948,33 @@ components:
         Details of the Debtor Account when provided at the TPP. Omitted if not available at the TPP or the User chooses
         to select the Debtor Account at the LFI.
       additionalProperties: false
-    AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFilePaymentConsent:
+    AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationBulkBatchPaymentConsent:
       type: object
       required:
-        - FileType
-        - FileHash
+        - Description
         - NumberOfTransactions
-        - ControlSum
+        - TotalValueOfPayments
       properties:
-        FileType:
+        Description:
           type: string
           minLength: 1
-          maxLength: 40
-          description: Specifies the payment file type
-        FileHash:
-          type: string
-          minLength: 1
-          maxLength: 44
-          description: A base64 encoding of a SHA256 hash of the file to be uploaded.
-        FileReference:
-          $ref: '#/components/schemas/AEBankServiceInitiation.AEReference'
+          maxLength: 140
+          description: >-
+            The reason for the Bulk/Batch Payment, shown to the User by the LFI when the User authorizes the consent,
+            for example "Payroll June 2026".
         NumberOfTransactions:
           type: integer
-          description: Number of individual transactions contained in the payment information group.
-        ControlSum:
-          type: string
-          pattern: ^\d{1,16}\.\d{2}$
-          description: Total of all individual amounts included in the group, irrespective of currencies.
-        RequestedExecutionDate:
-          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AERequestedExecutionDate'
+          maximum: 500
+          description: >-
+            The number of individual payments in the Bulk/Batch Payment. It MUST equal the number of elements in
+            `Instructions` on `POST /bulk-payments`.
+        TotalValueOfPayments:
+          allOf:
+            - $ref: '#/components/schemas/AEStandardModels.AEAmountAndCurrency'
+          description: >-
+            The total value of the payments in the Bulk/Batch Payment. `Amount` MUST equal the sum of the
+            `Amount.Amount` values in `Instructions` on `POST /bulk-payments`, and the `Amount.Currency` of every
+            instruction MUST equal `Currency`.
       description: Bulk/Batch Control Parameters.
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFixedDefinedSchedule:
@@ -1682,6 +1738,233 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AECreditorAccountTypeCodes'
       description: Unambiguous identification of the account of the creditor to which a credit entry will be posted.
       additionalProperties: false
+    AEBulkBatchPaymentRisk:
+      type: object
+      description: >-
+        Risk indicators for a Bulk and Batch Payment as a whole, sent by the TPP on the Bulk and Batch consent and on
+        the Bulk and Batch Payment request. A Bulk and Batch Payment can debit more than one Debtor Account and pay
+        many Creditors, so the block describes only what holds for the whole submission: the User who submits it, and
+        the batch itself. Nothing in it describes a single Debtor Account or Creditor.
+      properties:
+        UserIndicators:
+          type: object
+          description: >-
+            Indicators about the User who submits the Bulk and Batch Payment at the TPP. There is one User for the whole
+            submission, whichever Debtor Accounts the payments are made from.
+          properties:
+            UserName:
+              type: object
+              description: The Name of the User submitting the Bulk and Batch Payment
+              properties:
+                en:
+                  type: string
+                  description: English value of the string
+                ar:
+                  type: string
+                  description: Arabic value of the string
+              additionalProperties: false
+            EmiratesId:
+              type: string
+              pattern: ^784-?[0-9]{4}-?[0-9]{7}-?[0-9]{1}$
+              description: The Emirates ID number of the User submitting the Bulk and Batch Payment.
+            GeoLocation:
+              type: object
+              description: GPS to identify and track the whereabouts of the connected electronic device.
+              required:
+                - Latitude
+                - Longitude
+              properties:
+                Latitude:
+                  type: string
+                  description: latitude
+                Longitude:
+                  type: string
+                  description: longitude
+              additionalProperties: false
+            Authentication:
+              type: object
+              description: The authentication method used by the User to access their account with the TPP
+              properties:
+                AuthenticationChannel:
+                  description: Channel on which the User was authenticated
+                  type: string
+                  enum:
+                    - App
+                    - Web
+                PossessionFactor:
+                  type: object
+                  description: The User's possession, that only the User possesses
+                  properties:
+                    IsUsed:
+                      type: boolean
+                    Type:
+                      type: string
+                      enum:
+                        - FIDO2SecurityKey
+                        - Passkey
+                        - OTPDevice
+                        - OTPApp
+                        - SMSOTP
+                        - EmailOTP
+                        - PushNotification
+                        - WebauthnToken
+                        - SecureEnclaveKey
+                        - HardwareOTPKey
+                        - TrustedDevice
+                        - Other
+                  additionalProperties: false
+                KnowledgeFactor:
+                  type: object
+                  description: The User's knowledge, that only the User knows
+                  properties:
+                    IsUsed:
+                      type: boolean
+                    Type:
+                      type: string
+                      enum:
+                        - PIN
+                        - Password
+                        - SecurityQuestion
+                        - SMSOTP
+                        - EmailOTP
+                        - OTPPush
+                        - Other
+                  additionalProperties: false
+                InherenceFactor:
+                  type: object
+                  description: The User's inherance, that is unique to the User's physical characteristics
+                  properties:
+                    IsUsed:
+                      type: boolean
+                    Type:
+                      type: string
+                      enum:
+                        - Biometric
+                        - Fingerprint
+                        - FaceRecognition
+                        - IrisScan
+                        - VoiceRecognition
+                        - FIDOBiometric
+                        - DeviceBiometrics
+                        - Other
+                  additionalProperties: false
+                ChallengeOutcome:
+                  type: string
+                  description: >-
+                    The result of multi-factor authentication performed by the TPP, with NotPerformed indicating the
+                    User was not required to authenticate before submitting the Bulk and Batch Payment
+                  enum:
+                    - Pass
+                    - Fail
+                    - NotPerformed
+                AuthenticationFlow:
+                  type: string
+                  enum:
+                    - MFA
+                    - Other
+                AuthenticationValue:
+                  type: string
+                  description: Cryptographic proof of authentication where supported by the device and protocol.
+                ChallengeDateTime:
+                  $ref: '#/components/schemas/AEDateTime'
+              additionalProperties: false
+            DeviceInformation:
+              type: object
+              description: The device from which the User submits the Bulk and Batch Payment
+              properties:
+                DeviceId:
+                  type: string
+                  description: IMEISV number of the connected electronic device
+                DeviceOperatingSystem:
+                  type: string
+                  description: Device operating system
+                DeviceOperatingSystemVersion:
+                  type: string
+                  description: Device operating system version
+                DeviceType:
+                  type: string
+                  description: Type of device used
+                  enum:
+                    - Mobile
+                    - Desktop
+                    - Tablet
+                    - Wearable
+                    - Other
+              additionalProperties: false
+            AccountRiskIndicators:
+              type: object
+              description: Risk indicators related to the User's account with the TPP
+              properties:
+                UserOnboardingDateTime:
+                  allOf:
+                    - $ref: '#/components/schemas/AEDateTime'
+                    - description: The exact date and time when the User account was activated with the TPP.
+                LastAccountChangeDate:
+                  type: string
+                  format: date
+                  description: Date that the User's account was last changed
+                LastPasswordChangeDate:
+                  type: string
+                  format: date
+                  description: Date of the last password change by the User
+                SuspiciousActivity:
+                  type: string
+                  description: Indicates any suspicious activity associated with the account
+                  enum:
+                    - NoSuspiciousActivity
+                    - SuspiciousActivityDetected
+              additionalProperties: false
+          additionalProperties: false
+        BatchIndicators:
+          type: object
+          description: Indicators about the Bulk and Batch Payment as a whole.
+          properties:
+            Channel:
+              type: string
+              description: Where the Bulk and Batch Payment was submitted from.
+              enum:
+                - Web
+                - Mobile
+            BatchSource:
+              type: string
+              description: |-
+                How the TPP assembled the payments in the Bulk and Batch Payment.
+
+                * ManualEntry: The User entered the payments at the TPP.
+
+                * FileUpload: The User uploaded a file, which the TPP converted into the payments.
+
+                * AccountingSystem: The payments came from an accounting, payroll or ERP system connected to the TPP.
+
+                * Other: Any other source.
+              enum:
+                - ManualEntry
+                - FileUpload
+                - AccountingSystem
+                - Other
+            NumberOfNewCreditorAccounts:
+              type: integer
+              minimum: 0
+              description: >-
+                The number of distinct Creditor Accounts in the Bulk and Batch Payment that the User has not paid before
+                through the TPP, from any Debtor Account. A Creditor whose account has changed since the User last paid
+                them counts as a new Creditor Account.
+          additionalProperties: false
+        SupplementaryData:
+          type: object
+          description: Additional information that cannot be captured in the structured fields and/or any other specific block
+      additionalProperties: false
+    AEBankServiceInitiationRichAuthorizationRequests.AEBulkBatchPaymentPII:
+      title: Bulk/Batch Payment PII
+      type: object
+      properties:
+        Risk:
+          $ref: '#/components/schemas/AEBulkBatchPaymentRisk'
+      description: >-
+        Personal Identifiable Information for a Bulk/Batch Payment consent. It carries only the Risk block. The Debtor
+        Account and Creditor of each payment are not held on the consent: they are carried on each payment, in the
+        Bulk/Batch Payment request.
+      additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequests.AEDomesticPaymentPII:
       type: object
       properties:
@@ -2299,18 +2582,6 @@ components:
           $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEActiveOrHistoricCurrencyCode'
       description: The maximum cumulative payment value of all payment initiations per Period Type.
       additionalProperties: false
-    AEBankServiceInitiationRichAuthorizationRequests.AERequestedExecutionDate:
-      type: string
-      format: date
-      description: >-
-        The date when the TPP expects the LFI to execute the payment.
-
-        The date must be in the future and cannot be on the same day or a day in the past.
-
-        The maximum date in the future that can be specified is 1 year from the day of the consent of the User to the
-        TPP.
-
-        All dates in the JSON payloads are represented in ISO 8601 date format.
     AEBankServiceInitiationRichAuthorizationRequests.AERisk:
       type: object
       properties:
@@ -2514,6 +2785,65 @@ components:
       additionalProperties: false
       title: Bank Service Initiation Consent
     AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationConsentProperties:
+      oneOf:
+        - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationDomesticOrInternationalPaymentConsentProperties'
+        - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationBulkBatchPaymentConsentProperties'
+      description: >-
+        Properties of a Bank Service Initiation consent. The consent takes exactly one of two shapes, identified by its
+        structure alone: a Domestic and International Payments consent, or a Bulk and Batch consent, whose
+        `ControlParameters.ConsentSchedule` carries `BulkBatchPayment`.
+    AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationBulkBatchPaymentConsentProperties:
+      title: Bulk and Batch
+      type: object
+      required:
+        - PersonalIdentifiableInformation
+        - ControlParameters
+        - ConsentId
+        - ExpirationDateTime
+      properties:
+        PersonalIdentifiableInformation:
+          anyOf:
+            - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBulkBatchPaymentPII'
+            - $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEJWEPaymentPII'
+          description: >-
+            Personal Identifiable Information, represented in both encoded and decoded form using an `anyOf`. For a
+            Bulk/Batch Payment consent it carries only the Risk block: the Debtor Account and Creditor of each payment
+            are carried on that payment, on `POST /bulk-payments`.
+
+
+            The encrypted form of the object is provided by the `AEJWEPaymentPII` Schema Object, which **MUST** be used
+            when invoking the PAR operation.
+        ControlParameters:
+          allOf:
+            - $ref: >-
+                #/components/schemas/AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationBulkBatchPaymentControlParametersProperties
+          description: Control Parameters set the overall rules for the Payment Schedule.
+        ConsentId:
+          $ref: '#/components/schemas/AEConsentId'
+        BaseConsentId:
+          $ref: '#/components/schemas/AEBaseConsentId'
+        IsSingleAuthorization:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.IsSingleAuthorization'
+        AuthorizationExpirationDateTime:
+          $ref: '#/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AuthorizationExpirationDateTime'
+        ExpirationDateTime:
+          allOf:
+            - $ref: '#/components/schemas/AEDateTime'
+            - description: Specified date and time the consent will expire.
+        SponsoredTPPInformation:
+          $ref: >-
+            #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationSponsoredTPPInformation
+        OnBehalfOf:
+          $ref: '#/components/schemas/AEOnBehalfOf'
+      description: >-
+        A Bulk and Batch consent. Its `ControlParameters` carry no `IsDelegatedAuthentication`, and its
+        `ConsentSchedule` carries only `BulkBatchPayment`. Its PII carries only the Bulk and Batch Risk block.
+        `Permissions`, `CurrencyRequest`, `PaymentPurposeCode`, `DebtorReference` and `CreditorReference` do not apply:
+        the Debtor Account, Creditor, payment purpose and references of each payment are carried on that payment, on
+        `POST /bulk-payments`.
+      additionalProperties: false
+    AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationDomesticOrInternationalPaymentConsentProperties:
+      title: Domestic and International Payments
       type: object
       required:
         - PersonalIdentifiableInformation
@@ -2582,6 +2912,9 @@ components:
             #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationSponsoredTPPInformation
         OnBehalfOf:
           $ref: '#/components/schemas/AEOnBehalfOf'
+      description: >-
+        A Domestic or International Payment consent: a Single Payment, Multi-Payment or Combined Payment. An
+        International Payment consent carries a `CurrencyRequest`.
       additionalProperties: false
     AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationControlParametersProperties:
       type: object
@@ -2600,18 +2933,34 @@ components:
             MultiPayment:
               $ref: >-
                 #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationLongLivedPaymentConsent
-            FilePayment:
-              $ref: >-
-                #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationFilePaymentConsent
           description: |2-
               The various payment types that can be initiated:
 
               * A Single Payment
 
               * A Multi-Payment
-              
+
               * A Combined Payment (one SinglePayment and one MultiPayment)
           additionalProperties: false
+      additionalProperties: false
+    AEBankServiceInitiationRichAuthorizationRequestsV21.AEBankServiceInitiationBulkBatchPaymentControlParametersProperties:
+      type: object
+      required:
+        - ConsentSchedule
+      properties:
+        ConsentSchedule:
+          type: object
+          required:
+            - BulkBatchPayment
+          properties:
+            BulkBatchPayment:
+              $ref: >-
+                #/components/schemas/AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationBulkBatchPaymentConsent
+          description: The payment schedule of a Bulk/Batch Payment consent, which carries only `BulkBatchPayment`.
+          additionalProperties: false
+      description: >-
+        Control Parameters for a Bulk/Batch Payment consent. `IsDelegatedAuthentication` does not apply, and the
+        Consent Schedule carries only `BulkBatchPayment`.
       additionalProperties: false
     AEBaseConsentId:
       type: string

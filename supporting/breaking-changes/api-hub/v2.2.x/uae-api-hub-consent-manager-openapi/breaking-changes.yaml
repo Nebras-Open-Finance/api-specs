@@ -203,3 +203,111 @@
 
     Impact: none for an LFI. Every ConsentId it passes to the Consent Manager
     is one the API Hub gave it, which the TPP created at `/par` as a UUID.
+
+- rules:
+    - new-required-request-property
+    - request-property-removed
+    - response-required-property-removed
+    - response-optional-property-removed
+  endpoints:
+    - method: GET
+      path: /consents
+    - method: POST
+      path: /consents
+    - method: GET
+      path: /consents/{consentId}
+    - method: GET
+      path: /consent-groups/{consentGroupId}/consents
+    - method: GET
+      path: /psu/{userId}/consents
+    - method: GET
+      path: /accounts/{accountId}/consents
+    - method: GET
+      path: /payment-log
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    Bulk/Batch Payments carry the payments as a JSON array instead of an
+    uploaded file, per OFP-001 (approved, decision record DR-2026-001).
+
+    The `FilePayment` control parameters on the consent
+    (`AEServiceInitiationBulkBatchPaymentConsent`) lose `FileType`, `FileHash` and
+    `FileReference`, as there is no file to type, hash or reference, and lose
+    `RequestedExecutionDate`. They gain a required `Description`, the reason
+    shown to the User at authorization. `NumberOfTransactions` is kept.
+    `ControlSum` is renamed `TotalValueOfPayments` and becomes an
+    `AEAmountAndCurrency` object (`Amount` and `Currency`), the type
+    `SinglePayment.Amount` uses. The object is part of every consent body
+    these operations accept or return.
+
+    `AEFilePaymentRequest`, the File Payment request body recorded in the
+    payment log (`GET /payment-log`), gains a required `Instructions` array,
+    one `AEFilePaymentInstruction` per payment. `Data.Instruction` and the
+    top-level `PaymentPurposeCode` and `DebtorReference` are removed;
+    `PaymentPurposeCode` (required) and `DebtorReference` now sit on each
+    instruction, with `CreditorReference` and the per-payment
+    `PersonalIdentifiableInformation`.
+
+    Acceptance rationale: no LFI has implemented File Payments, so the
+    Consent Manager holds no File Payment consent and no File Payment log
+    entry. There is nothing for an LFI to migrate.
+
+    Impact: none in production.
+
+- rules:
+    - request-property-removed
+    - request-property-type-changed
+    - request-property-one-of-added
+    - request-body-one-of-added
+    - new-required-request-property
+    - request-property-became-required
+    - request-property-max-set
+    - response-required-property-removed
+    - response-optional-property-removed
+    - response-property-type-changed
+    - response-property-one-of-added
+    - response-body-one-of-added
+  endpoints:
+    - method: GET
+      path: /consents
+    - method: POST
+      path: /consents
+    - method: GET
+      path: /consents/{consentId}
+    - method: GET
+      path: /consent-groups/{consentGroupId}/consents
+    - method: GET
+      path: /psu/{userId}/consents
+    - method: GET
+      path: /accounts/{accountId}/consents
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Bank Service Initiation consent
+    (`AEServiceInitiationAuthorizationDetailProperties` and
+    `AEPaymentConsentResponse.Data`) becomes a `oneOf` of two shapes, identified
+    by structure alone, with no new field to discriminate them. The Bulk/Batch
+    Payment shape is the one being worked on; the Domestic or International
+    Payment shape keeps the consent as it was for now.
+
+    - Bulk/Batch Payment: `ControlParameters.ConsentSchedule` carries only
+      a required `BulkBatchPayment` (formerly `FilePayment`), and
+      `ControlParameters` carry no `IsDelegatedAuthentication`.
+      `Permissions`, `CurrencyRequest`, `PaymentPurposeCode`,
+      `DebtorReference` and `CreditorReference` are not carried, as each
+      payment carries its own, and the consent as returned carries no
+      `OpenFinanceBilling`. `NumberOfTransactions` has a `maximum` of
+      500, as a Bulk and Batch Payment carries at most 500 payments.
+      The PII decodes to `AEBulkBatchPaymentPII`, which carries only the
+      Bulk and Batch Risk block, `AEBulkBatchPaymentRisk`.
+    - Domestic or International Payment: the consent as before, with
+      `FilePayment` removed from its `ConsentSchedule`.
+
+    oasdiff reads the move of the consent's properties into the `oneOf` branches
+    as their removal from the consent, and the `oneOf` itself as an addition.
+    For single payments the effective contract is unchanged: every consent that
+    validated before, other than one carrying `FilePayment`, validates against
+    the Domestic or International Payment shape.
+
+    Acceptance rationale: the only consents that no longer validate are ones
+    carrying `FilePayment`, and no LFI has implemented File Payments.
+
+    Impact: none in production.

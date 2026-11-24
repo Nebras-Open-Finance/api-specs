@@ -140,3 +140,80 @@
     Impact: none. The API Hub sends this request and the TPP receives it. The
     ConsentId in a notification is the one the TPP created at `/par`, so the
     TPP's webhook already receives a UUID and may now rely on it.
+
+- rules:
+    - new-required-request-property
+    - request-property-removed
+  endpoints:
+    - method: POST
+      path: /
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Bulk/Batch Payment control parameters in the consent carried by the
+    notification
+    (`AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationBulkBatchPaymentConsent`,
+    at `ControlParameters.ConsentSchedule.FilePayment`) are revised for the
+    JSON-array model, per OFP-001 (approved, decision record DR-2026-001), to
+    match the object the TPP sends at `/par`. `FileType`, `FileHash` and
+    `FileReference` are removed, as there is no file to type, hash or
+    reference, and `RequestedExecutionDate` is removed. A required
+    `Description` is added. `NumberOfTransactions` is kept. `ControlSum` is
+    renamed `TotalValueOfPayments` and becomes an
+    `AEStandardModels.AEAmountAndCurrency` object (`Amount` and `Currency`),
+    the type `SinglePayment.Amount` uses.
+    The `AEBankServiceInitiation.AEReference` and
+    `AEBankServiceInitiationRichAuthorizationRequests.AERequestedExecutionDate`
+    schemas, used only by the removed fields, are removed.
+
+    Acceptance rationale: no LFI has implemented File Payments, so no File
+    Payment consent exists for the API Hub to notify a TPP about.
+
+    Impact: none in production.
+
+- rules:
+    - request-property-removed
+    - request-property-type-changed
+    - request-property-one-of-added
+    - request-body-one-of-added
+    - new-required-request-property
+    - request-property-became-required
+    - request-property-max-set
+  endpoints:
+    - method: POST
+      path: /
+  signedOffBy: Thomas Catchpole - CTO, Nebras
+  rationale: |
+    The Bank Service Initiation consent carried by the consent event
+    notification becomes a `oneOf` of two shapes, identified by structure alone,
+    with no new field to discriminate them. The Bulk/Batch Payment shape is the
+    one being worked on; the Domestic or International Payment shape keeps the
+    consent as it was for now.
+
+    - Bulk/Batch Payment: `ControlParameters.ConsentSchedule` carries only
+      a required `BulkBatchPayment` (formerly `FilePayment`), and
+      `ControlParameters` carry no `IsDelegatedAuthentication`.
+      `Permissions`, `CurrencyRequest`, `PaymentPurposeCode`,
+      `DebtorReference` and `CreditorReference` are not carried, as each
+      payment carries its own, and the consent as returned carries no
+      `OpenFinanceBilling`. `NumberOfTransactions` has a `maximum` of
+      500, as a Bulk and Batch Payment carries at most 500 payments.
+    - Domestic or International Payment: the consent as before, with
+      `FilePayment` removed from its `ConsentSchedule`.
+
+    This spec did not set `additionalProperties: false` on the consent or its
+    `ConsentSchedule`. Each branch, and the Domestic or International
+    `ConsentSchedule`, now sets it, as without it a Bulk/Batch Payment consent
+    would also match the Domestic or International shape. The API Hub's own
+    Consent Manager schemas already set it, so nothing the API Hub sends carries
+    properties outside these shapes.
+
+    oasdiff reads the move of the consent's properties into the `oneOf` branches
+    as their removal from the consent, and the `oneOf` itself as an addition.
+    For single payments the effective contract is unchanged: every consent that
+    validated before, other than one carrying `FilePayment`, validates against
+    the Domestic or International Payment shape.
+
+    Acceptance rationale: the only consents that no longer validate are ones
+    carrying `FilePayment`, and no LFI has implemented File Payments.
+
+    Impact: none in production.
