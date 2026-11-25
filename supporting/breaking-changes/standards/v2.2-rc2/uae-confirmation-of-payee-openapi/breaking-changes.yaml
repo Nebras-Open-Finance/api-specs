@@ -40,12 +40,20 @@
     whose items are the unchanged `AEConfirmationSourceProperties` schema. The
     Hub returns every endpoint pair that may service the supplied IBAN, and
     the TPP invokes the CoP operation against each in the order returned until
-    a match is obtained. `ConfirmationSource` is required and `minItems: 0`, so
-    an account that is not serviced by any participating LFI is expressed as an
-    empty array on a 200 rather than requiring an error status. This follows
-    the Data-is-an-object-holding-a-named-array convention used across the UAE
-    standards (for example `Data.Account` in uae-account-information-openapi)
-    rather than making `Data` itself an array.
+    one responds with a 200. `ConfirmationSource` is required and
+    `minItems: 1`: an account that cannot be paired with a participating LFI
+    is answered with the existing 204, so a 200 always carries at least one
+    source. This follows the Data-is-an-object-holding-a-named-array
+    convention used across the UAE standards (for example `Data.Account` in
+    uae-account-information-openapi) rather than making `Data` itself an
+    array.
+
+    The request gains an optional `AccountType` (`Retail`, `SME` or
+    `Corporate`, a single value, the same enum as on `/par`). A TPP that knows
+    the account type supplies it and receives only the sources that service
+    that type; when it is omitted, every source is returned. Adding an
+    optional request property is not itself breaking and is recorded here only
+    because it is how a TPP avoids the multiple-source case.
 
     oasdiff reports this as `response-required-property-removed` on POST
     /discovery, once for `message/Data/DiscoveryEndpointUrl` and once for
@@ -60,7 +68,8 @@
     fixes a defect that is failing CoP checks in production today.
 
     Impact: a TPP must read the discovery result from
-    `Data.ConfirmationSource[]` instead of `Data`, and must handle both the
-    empty case and the multiple-source case. Nothing about the shape of an
+    `Data.ConfirmationSource[]` instead of `Data`, and must be prepared for
+    more than one source; supplying `AccountType` narrows the result to the
+    sources for that account type. Nothing about the shape of an
     individual source changes: `DiscoveryEndpointUrl` and `ResourceServerUrl`
     keep their types, lengths and meanings.

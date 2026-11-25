@@ -78,7 +78,7 @@ paths:
   /discovery:
     post:
       operationId: ConfirmationOfPayeeDiscovery_signedDiscoveryRequest
-      summary: Discover the LFI that will confirm the payee attributes
+      summary: Discover the LFI endpoints that will confirm the payee attributes
       description: >-
         Before a Confirmation of Payee (CoP) operation takes place the TPP will need to resolve the LFI that will
         service the account properties request. This requirement is based on the separation of concerns implemented in
@@ -89,7 +89,16 @@ paths:
         with which to make the CoP operation.
 
 
-        An empty response will be returned if the Creditor Account IBAN cannot be paired with an LFI.
+        The response carries an array of confirmation sources. An LFI can expose a separate Resource Server per
+        account type (Retail, SME and Corporate), and the IBAN alone identifies the LFI but not the account type, so
+        more than one source may be returned for a single account. The TPP can supply the optional `AccountType` to
+        receive only the sources that service that account type. Where more than one source is returned, the TPP
+        should invoke the CoP operation against each in the order returned until one responds with a `200`; a `204`
+        from `/confirmation` means that source does not hold the account.
+
+
+        An empty response will be returned if the Creditor Account IBAN cannot be paired with an LFI, or, where
+        `AccountType` is supplied, with an LFI source that services that account type.
       parameters:
         - $ref: '#/components/parameters/Authorization'
         - $ref: '#/components/parameters/x-customer-user-agent'
@@ -112,7 +121,8 @@ paths:
         '204':
           description: >-
             No participating LFI could be resolved for the supplied IBAN. The account's bank identifier is not mapped
-            to an LFI that offers Confirmation of Payee, so no confirmation source is returned.
+            to an LFI that offers Confirmation of Payee or, where `AccountType` is supplied, the LFI offers no
+            Confirmation of Payee source for that account type, so no confirmation source is returned.
           headers:
             x-fapi-interaction-id:
               required: false
@@ -334,7 +344,23 @@ components:
         - Meta
       properties:
         Data:
-          $ref: '#/components/schemas/AEConfirmationSourceProperties'
+          type: object
+          description: Primary data for the resource
+          required:
+            - ConfirmationSource
+          properties:
+            ConfirmationSource:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/AEConfirmationSourceProperties'
+              description: >-
+                The Confirmation of Payee sources that may service the supplied Creditor Account, in the order the TPP
+                should try them. Each entry identifies one endpoint pair at which the Confirmation of Payee operation
+                can be invoked. More than one entry may be returned where an LFI exposes a separate Resource Server per
+                account type. Where `AccountType` is supplied in the request, only the sources that service that
+                account type are returned.
+          additionalProperties: false
         Links:
           $ref: '#/components/schemas/LinksSelf'
         Meta:
@@ -358,6 +384,16 @@ components:
           description: >-
             Identification for the account assigned by the LFI based on the Account Scheme Name, as understood by the
             Debtor.
+        AccountType:
+          type: string
+          enum:
+            - Retail
+            - SME
+            - Corporate
+          description: >-
+            Specifies the type of account (Retail, SME or Corporate). When supplied, only the confirmation sources that
+            service this account type are returned. When omitted, every confirmation source that may service the
+            Creditor Account is returned.
       additionalProperties: false
     AEConfirmationSourceProperties:
       type: object
