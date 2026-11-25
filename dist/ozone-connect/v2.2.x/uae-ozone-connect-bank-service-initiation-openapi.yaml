@@ -73,9 +73,10 @@ info:
       only, and `AEPaymentAndFilePaymentRequest`, the `oneOf` of `AEPaymentRequest` and `AEFilePaymentRequest`, is
       removed. `cbuae-file-payment` is removed from the `PaymentType` description.
 
-    * Changed the description of `get /payments/{paymentId}` to say that it also retrieves a single payment within a
-      Bulk and Batch Payment, by its `paymentId`, in the single-payment shape. The `AEPaymentIdResponse.data`
-      description no longer refers to file payments.
+    * Changed the description of `get /payments/{paymentId}` to say that it retrieves only a payment made on
+      `post /payments`. A payment within a Bulk and Batch Payment is retrieved only with
+      `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}`. The `AEPaymentIdResponse.data` description no longer
+      refers to file payments.
 
     * Fixed `AEFilePaymentInstruction.Amount`, which referenced the camelCase `AEActiveCurrencyAmount` (`amount`,
       `currency`). It now carries `Amount` and `Currency`, as the TPP sends them and as `AEPaymentRequest` carries
@@ -356,10 +357,9 @@ paths:
         Ozone can call this API from Financial Institutions to retrieve payment information.
 
 
-        It also retrieves a single payment within a Bulk and Batch Payment, by the `paymentId` the LFI assigned to that
-        payment in the `post /bulk-payments` response, and returns it in this single-payment shape: `instruction`,
-        `paymentPurposeCode` and `debtorReference` are those of that payment, and `openFinanceBilling`,
-        `currencyRequest` and `exchangeRate` are absent, as a Bulk and Batch Payment carries none.
+        It retrieves only a payment made on `post /payments`. A payment within a Bulk and Batch Payment is retrieved
+        only with `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}`, and the API Hub does not call this
+        operation for one.
       parameters:
         - $ref: '#/components/parameters/providerId'
         - $ref: '#/components/parameters/aspspId'
@@ -416,7 +416,7 @@ paths:
 
         The Financial Institution must generate a unique identifier for the Bulk and Batch Payment (`data.id`), and a
         unique `paymentId` for each payment within it, that can be sent on to the TPP as references. Each `paymentId`
-        can also be used with `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}` and `get /payments/{paymentId}`.
+        is used with `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}`, not with `get /payments/{paymentId}`.
 
 
         If the underlying consent has been patched with a `bankConnectToken`, then the token is passed in as the
@@ -478,9 +478,8 @@ paths:
         returns the same body as `post /bulk-payments`.
 
 
-        A single payment within the Bulk and Batch Payment can also be retrieved on its own, with
-        `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}`, or in the single-payment shape with
-        `get /payments/{paymentId}`.
+        A single payment within the Bulk and Batch Payment can be retrieved on its own only with
+        `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}`.
       parameters:
         - $ref: '#/components/parameters/providerId'
         - $ref: '#/components/parameters/aspspId'
@@ -2496,8 +2495,7 @@ components:
         data:
           type: object
           description: >-
-            Required fields are common to all payments, including a single payment within a Bulk and Batch Payment
-            returned by `get /payments/{paymentId}`.
+            Required fields are common to all payments made on `post /payments`.
           additionalProperties: false
           required:
             - id
@@ -2669,8 +2667,8 @@ components:
       properties:
         paymentId:
           description: >-
-            An API specific unique identification as assigned by the LFI to identify this payment. It can be used with
-            `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}` and `get /payments/{paymentId}`.
+            An API specific unique identification as assigned by the LFI to identify this payment. It is used with
+            `get /bulk-payments/{bulkPaymentId}/payments/{paymentId}`, not with `get /payments/{paymentId}`.
           type: string
         paymentTransactionId:
           description: >

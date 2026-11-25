@@ -402,12 +402,10 @@ paths:
         - Payment Initiation
       summary: Retrieve a Payment
       description: |
-        Retrieve a Payment.
+        Retrieve a Payment made on `POST /payments`.
 
-        This also retrieves a single payment within a Bulk/Batch Payment, by the `PaymentId` returned for it in
-        `Data.Instructions` on `POST /bulk-payments`. It is returned in this single-payment shape: `Instruction.Amount`,
-        `PaymentPurposeCode` and `DebtorReference` are those of that payment, `ConsentId` is the Bulk/Batch Payment's
-        consent, and `OpenFinanceBilling` is absent, as a Bulk/Batch Payment carries none.
+        This does not retrieve a payment within a Bulk/Batch Payment. Such a payment is retrieved only with
+        `GET /bulk-payments/{BulkPaymentId}/payments/{PaymentId}`, and its `PaymentId` returns `404` here.
       operationId: RetrievePayment
       parameters:
         - $ref: '#/components/parameters/authorization'
@@ -466,8 +464,9 @@ paths:
         `x-idempotency-key` conflict, or a failed check against the control parameters above) rejects the whole request
         with an error response, and no payment is made.
 
-        Each payment is returned with its own `PaymentId`, which can be used with
-        `GET /bulk-payments/{BulkPaymentId}/payments/{PaymentId}` and `GET /payments/{PaymentId}`.
+        Each payment is returned with its own `PaymentId`, which is used to retrieve that payment with
+        `GET /bulk-payments/{BulkPaymentId}/payments/{PaymentId}`. It is not a `PaymentId` for
+        `GET /payments/{PaymentId}`, which retrieves only payments made on `POST /payments`.
       operationId: CreateBulkPayment
       parameters:
         - $ref: '#/components/parameters/authorization'
@@ -562,7 +561,7 @@ paths:
       description: |
         Retrieve a Bulk/Batch Payment, with the current status of each payment within it in `Instructions`.
 
-        A single payment within it can be retrieved on its own with
+        A single payment within it can be retrieved on its own only with
         `GET /bulk-payments/{BulkPaymentId}/payments/{PaymentId}`.
       operationId: RetrieveBulkPayment
       parameters:
@@ -610,8 +609,9 @@ paths:
 
         It returns that payment's element of `Data.Instructions`, with its current `Status`, `StatusUpdateDateTime`,
         `PaymentRail`, `PaymentTransactionId` and `RejectReasonCode`, so that a TPP can follow one payment without
-        retrieving the whole Bulk/Batch Payment. A `PaymentId` that is not a payment within the Bulk/Batch Payment
-        identified by `BulkPaymentId` returns `404`.
+        retrieving the whole Bulk/Batch Payment. This is the only operation that retrieves a single payment within a
+        Bulk/Batch Payment: `GET /payments/{PaymentId}` does not. A `PaymentId` that is not a payment within the
+        Bulk/Batch Payment identified by `BulkPaymentId` returns `404`.
       operationId: RetrieveBulkPaymentPayment
       parameters:
         - $ref: '#/components/parameters/authorization'
@@ -1970,11 +1970,6 @@ components:
     AEPaymentIdResponse:
       description: |
         Payment Id Response Schema
-
-        The response for a single payment, on `POST /payments` and `GET /payments/{PaymentId}`. The latter also
-        returns a single payment within a Bulk/Batch Payment in this shape. `OpenFinanceBilling` is present for every
-        payment made on `POST /payments`, and absent for a payment within a Bulk/Batch Payment, which carries no
-        `OpenFinanceBilling`.
       type: object
       additionalProperties: false
       required:
@@ -1992,6 +1987,7 @@ components:
             - Instruction
             - CreationDateTime
             - PaymentPurposeCode
+            - OpenFinanceBilling
           properties:
             PaymentId:
               $ref: '#/components/schemas/AEPaymentId'
