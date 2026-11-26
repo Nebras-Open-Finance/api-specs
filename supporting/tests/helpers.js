@@ -81,6 +81,13 @@ function isPreReleaseLine(major, minor) {
   return line.length > 0 && line.every(v => v.parsed.stage < STAGE.base);
 }
 
+// True when `major` has only pre-publication Standards folders: no `vX.Y` base and
+// no errata in any of its lines yet, so the major is still being assembled.
+function isPreReleaseMajor(major) {
+  const folders = listVersionDirs('standards').filter(v => v.parsed.major === major);
+  return folders.length > 0 && folders.every(v => v.parsed.stage < STAGE.base);
+}
+
 // How many `major.minor` lines the latest set is assembled from. A minor is
 // published incrementally: `v2.2-rc1` carries only the specs that version
 // actually changed, and the rest stay current at `v2.1`. Reaching back one line
@@ -113,16 +120,24 @@ function findLatestSpecs(dir = distDir) {
 
     if (versionDirs.length === 0) continue;
 
-    // Only the current major: a major bump is free to drop or rename specs.
-    const highestMajor = Math.max(...versionDirs.map(v => v.parsed.major));
-    const inMajor = versionDirs.filter(v => v.parsed.major === highestMajor);
-    const minorsInWindow = [...new Set(inMajor.map(v => v.parsed.minor))]
-      .sort((a, b) => b - a)
-      .slice(0, LINE_WINDOW);
-
-    const newestFirst = inMajor
-      .filter(v => minorsInWindow.includes(v.parsed.minor))
-      .sort((a, b) => compareVersions(b.parsed, a.parsed));
+    // Only the current major once it is published: a major bump is free to drop or
+    // rename specs. Until then the new major is assembled incrementally, the way a
+    // minor is (`v3.0-draft1` carries only the specs it has changed), so the
+    // previous major's latest set sits beneath it and supplies every spec the new
+    // major has not carried forward yet. A spec the new major drops lingers in the
+    // latest set until the major's base is published.
+    const majorsNewestFirst = [...new Set(versionDirs.map(v => v.parsed.major))].sort((a, b) => b - a);
+    const newestFirst = [];
+    for (const major of majorsNewestFirst) {
+      const inMajor = versionDirs.filter(v => v.parsed.major === major);
+      const minorsInWindow = [...new Set(inMajor.map(v => v.parsed.minor))]
+        .sort((a, b) => b - a)
+        .slice(0, LINE_WINDOW);
+      newestFirst.push(...inMajor
+        .filter(v => minorsInWindow.includes(v.parsed.minor))
+        .sort((a, b) => compareVersions(b.parsed, a.parsed)));
+      if (!isPreReleaseMajor(major)) break;
+    }
 
     const specsByName = {};
     for (const { name: versionDir } of newestFirst) {
@@ -169,6 +184,7 @@ module.exports = {
   findEffectiveSpec,
   listVersionDirs,
   isPreReleaseLine,
+  isPreReleaseMajor,
   parseVersion,
   compareVersions,
   versionLabel,

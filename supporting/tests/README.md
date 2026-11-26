@@ -35,6 +35,8 @@ A minor version is published incrementally: `v2.2-rc1` holds only the specs that
 
 Once a minor is published complete the older line contributes nothing, so the overlay costs nothing outside the pre-release window. The one case it cannot see is a spec *retired* at a minor boundary — that file lingers in the latest set until the older line drops out of the window.
 
+A new major is assembled the same way. While every Standards folder of the newest major is still a draft or release candidate (`v3.0-draft1`, with no `v3.0` base yet), the previous major's latest set sits beneath it: `v3.0-draft1/uae-authorization-endpoints-openapi.yaml` shadows the v2.2 copy, and every spec the new major has not carried forward yet stays current at v2.2. This applies to api-hub and ozone-connect too, which take the answer from Standards. Once the major's base is published, only the new major counts, as a major is free to drop or rename specs. Until then, a spec the new major drops stays in the latest set.
+
 Tests that compare versions rather than read the latest set follow the same rule: the first revision of a new line (`v2.2-rc1`) is compared against the *effective* set of the previous line, per file, so `uae-product-openapi.yaml` is diffed from `v2.1` while `uae-bank-initiation-openapi.yaml` is diffed from `v2.1-errata3`. Checks that only make sense against a finished line — "no spec files removed", and the api-hub missing-file check — are skipped while the line is still pre-release.
 
 ## Per-test restrictions

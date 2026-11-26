@@ -54,6 +54,10 @@ const FAMILIES = [
         file: 'uae-authorization-endpoints-openapi.yaml',
         schema: 'AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingConsentPermissionCodes',
       },
+      'v3.0': {
+        file: 'uae-authorization-endpoints-openapi.yaml',
+        schema: 'AEBankDataSharingRichAuthorizationRequests.AEBankDataSharingConsentPermissionCodes',
+      },
     },
     consumers: [
       {
@@ -87,6 +91,10 @@ const FAMILIES = [
         schema: 'AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes',
       },
       'v2.2': {
+        file: 'uae-authorization-endpoints-openapi.yaml',
+        schema: 'AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes',
+      },
+      'v3.0': {
         file: 'uae-authorization-endpoints-openapi.yaml',
         schema: 'AEBankServiceInitiationRichAuthorizationRequests.AEBankServiceInitiationConsentPermissionCodes',
       },
@@ -133,6 +141,7 @@ const FAMILIES = [
       'v2.0': { file: 'uae-insurance-openapi.yaml', schema: 'AEConsentPermissionCodes' },
       'v2.1': { file: 'uae-authorization-endpoints-openapi.yaml', schema: 'AEInsurance.AEConsentPermissionCodes' },
       'v2.2': { file: 'uae-authorization-endpoints-openapi.yaml', schema: 'AEInsurance.AEConsentPermissionCodes' },
+      'v3.0': { file: 'uae-authorization-endpoints-openapi.yaml', schema: 'AEInsurance.AEConsentPermissionCodes' },
     },
     consumers: [
       {
